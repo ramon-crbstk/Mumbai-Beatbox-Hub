@@ -1,0 +1,89 @@
+@import "tailwindcss";
+
+@theme {
+  --font-poster: 'Anton', Impact, sans-serif;
+  --font-sans: 'Work Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --color-ink: #14120F;
+  --color-paper: #F4EFE4;
+  --color-paper-muted: #E5DFC8;
+  --color-taxi: #FFC93C;
+  --color-taxi-dark: #E2AE24;
+  --color-siren: #E4402A;
+  --color-siren-dark: #C2311D;
+}
+
+/* Custom Mumbai Kaali-Peeli & Flyer details */
+.bg-taxi-pattern {
+  background-image: repeating-linear-gradient(
+    45deg,
+    #FFC93C,
+    #FFC93C 12px,
+    #14120F 12px,
+    #14120F 24px
+  );
+}
+
+.bg-taxi-checker {
+  background-size: 16px 16px;
+  background-position: 0 0, 8px 8px;
+  background-image: 
+    linear-gradient(45deg, #14120F 25%, transparent 25%, transparent 75%, #14120F 75%, #14120F),
+    linear-gradient(45deg, #14120F 25%, transparent 25%, transparent 75%, #14120F 75%, #14120F);
+}
+
+/* Flyer ticket tear border */
+.ticket-tear-left {
+  position: relative;
+}
+.ticket-tear-left::before {
+  content: '';
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background-color: #14120F;
+}
+
+/* Equalizer keyframe animations */
+@keyframes pulseBar1 {
+  0%, 100% { height: 28%; }
+  50% { height: 95%; }
+}
+@keyframes pulseBar2 {
+  0%, 100% { height: 85%; }
+  50% { height: 35%; }
+}
+@keyframes pulseBar3 {
+  0%, 100% { height: 45%; }
+  50% { height: 100%; }
+}
+@keyframes pulseBar4 {
+  0%, 100% { height: 90%; }
+  50% { height: 20%; }
+}
+@keyframes pulseBar5 {
+  0%, 100% { height: 60%; }
+  50% { height: 80%; }
+}
+
+.animate-eq-1 { animation: pulseBar1 0.75s ease-in-out infinite; }
+.animate-eq-2 { animation: pulseBar2 0.9s ease-in-out infinite 0.15s; }
+.animate-eq-3 { animation: pulseBar3 0.65s ease-in-out infinite 0.05s; }
+.animate-eq-4 { animation: pulseBar4 0.85s ease-in-out infinite 0.2s; }
+.animate-eq-5 { animation: pulseBar5 0.7s ease-in-out infinite 0.1s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-eq-1,
+  .animate-eq-2,
+  .animate-eq-3,
+  .animate-eq-4,
+  .animate-eq-5 {
+    animation: none !important;
+    height: 60% !important;
+  }
+}
+

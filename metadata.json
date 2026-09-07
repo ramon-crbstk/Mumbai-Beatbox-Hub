@@ -1,0 +1,6 @@
+{
+  "name": "Mumbai Beatbox Hub",
+  "description": "Grassroots community website for Mumbai's vocal percussionists and beatboxers, featuring weekly cyphers, workshops, battles, and event RSVPs.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
