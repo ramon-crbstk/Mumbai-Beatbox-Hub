@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FEATURED_VIDEOS } from '../data/communityData';
 import { VideoItem } from '../types';
 import { Play, Video, X, Volume2, Flame } from 'lucide-react';
+import { fetchVideos } from '../lib/supabase';
 
-export const FeaturedVideosSection: React.FC = () => {
+interface FeaturedVideosSectionProps {
+  refreshTrigger?: number;
+}
+
+export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ refreshTrigger = 0 }) => {
+  const [videosList, setVideosList] = useState<VideoItem[]>(FEATURED_VIDEOS);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [isPlayingDemo, setIsPlayingDemo] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    async function loadVideos() {
+      const items = await fetchVideos();
+      if (active && items && items.length > 0) {
+        setVideosList(items);
+      }
+    }
+    loadVideos();
+    return () => {
+      active = false;
+    };
+  }, [refreshTrigger]);
 
   const toggleSoundRoutine = () => {
     try {
@@ -45,7 +65,7 @@ export const FeaturedVideosSection: React.FC = () => {
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
               <Video className="w-3.5 h-3.5" />
-              <span>COMMUNITY FOOTAGE</span>
+              <span>COMMUNITY FOOTAGE // ROUTINE DROPS</span>
             </div>
             <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
               Featured Videos & Routine Drops
@@ -62,7 +82,7 @@ export const FeaturedVideosSection: React.FC = () => {
 
         {/* Video Thumbnail Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {FEATURED_VIDEOS.map((vid, idx) => (
+          {videosList.map((vid, idx) => (
             <div
               key={vid.id}
               id={`video-card-${vid.id}`}
@@ -74,8 +94,15 @@ export const FeaturedVideosSection: React.FC = () => {
                 className="relative aspect-video bg-[#14120F] border border-[#FFC93C]/30 flex items-center justify-center cursor-pointer overflow-hidden"
                 onClick={() => setActiveVideo(vid)}
               >
-                {/* Background Poster Lines / Pattern */}
-                <div className="absolute inset-0 opacity-10 bg-taxi-checker" />
+                {vid.thumbnailUrl ? (
+                  <img
+                    src={vid.thumbnailUrl}
+                    alt={vid.title}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                ) : (
+                  <div className="absolute inset-0 opacity-10 bg-taxi-checker" />
+                )}
 
                 {/* Duration Badge */}
                 <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-[#14120F] text-[#FFC93C] text-[11px] font-mono font-bold border border-[#FFC93C]/40 z-10">
@@ -92,9 +119,9 @@ export const FeaturedVideosSection: React.FC = () => {
                   <Play className="w-6 h-6 fill-current translate-x-0.5" />
                 </div>
 
-                {/* Placeholder Label */}
-                <span className="absolute bottom-2 left-2 text-[10px] font-mono text-[#F4EFE4]/40">
-                  VIDEO SLOT #{idx + 1}
+                {/* Drop Label */}
+                <span className="absolute bottom-2 left-2 text-[10px] font-mono text-[#F4EFE4]/40 z-10 bg-[#14120F]/80 px-1.5 py-0.5">
+                  DROP #{idx + 1}
                 </span>
               </div>
 
@@ -161,19 +188,29 @@ export const FeaturedVideosSection: React.FC = () => {
 
             {/* Video Stage Frame */}
             <div className="aspect-video bg-[#000] border-2 border-[#FFC93C]/40 flex flex-col items-center justify-center p-6 text-center relative overflow-hidden mb-5">
-              <div className="space-y-3 relative z-10">
-                <div className="w-16 h-16 rounded-full bg-[#FFC93C] text-[#14120F] flex items-center justify-center mx-auto shadow-md">
-                  <Play className="w-7 h-7 fill-current translate-x-0.5" />
+              {activeVideo.videoUrl && activeVideo.videoUrl.includes('youtube') ? (
+                <iframe
+                  src={activeVideo.videoUrl.replace('watch?v=', 'embed/')}
+                  title={activeVideo.title}
+                  className="w-full h-full border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="space-y-3 relative z-10">
+                  <div className="w-16 h-16 rounded-full bg-[#FFC93C] text-[#14120F] flex items-center justify-center mx-auto shadow-md">
+                    <Play className="w-7 h-7 fill-current translate-x-0.5" />
+                  </div>
+                  <div>
+                    <p className="font-['Anton'] text-lg text-[#F4EFE4] uppercase">
+                      Live Community Acoustic Routine
+                    </p>
+                    <p className="text-xs font-mono text-[#F4EFE4]/60 mt-1">
+                      Performer: {activeVideo.performer} • Venue: {activeVideo.venue}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-['Anton'] text-lg text-[#F4EFE4] uppercase">
-                    Ready to Embed Real Community Drop
-                  </p>
-                  <p className="text-xs font-mono text-[#F4EFE4]/60 mt-1">
-                    Directly swap in YouTube / Vimeo iframe or raw MP4 video source.
-                  </p>
-                </div>
-              </div>
+              )}
 
               {/* Sound sample test button inside player */}
               <button

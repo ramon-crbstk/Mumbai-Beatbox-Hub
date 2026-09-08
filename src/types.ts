@@ -26,6 +26,8 @@ export interface GalleryItem {
   location: string;
   dateStr: string;
   aspect: 'square' | 'tall' | 'wide';
+  photoUrl?: string;
+  createdAt?: string;
 }
 
 export interface VideoItem {
@@ -36,6 +38,9 @@ export interface VideoItem {
   duration: string;
   category: string;
   viewsEstimate: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  createdAt?: string;
 }
 
 export interface PartnerLogo {
@@ -71,5 +76,7 @@ export interface CommunityMember {
   soundType: 'bass-growl' | 'liproll' | 'fast-tech' | 'trap-click' | 'polyphonic' | 'scratch';
   avatarInitials: string;
   accentBg: string;
+  photoUrl?: string;
+  createdAt?: string;
 }
 

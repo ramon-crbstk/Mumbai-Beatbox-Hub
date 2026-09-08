@@ -135,7 +135,7 @@ export const FEATURED_VIDEOS: VideoItem[] = [
   {
     id: 'vid-1',
     title: 'Carter Road Sunset Cypher: 4-Bar Bassline Round',
-    performer: 'MBX Collective ft. Local Crew',
+    performer: 'MHB Collective ft. Local Crew',
     venue: 'Bandra Carter Road',
     duration: '04:18',
     category: 'Street Cypher',
@@ -153,7 +153,7 @@ export const FEATURED_VIDEOS: VideoItem[] = [
   {
     id: 'vid-3',
     title: 'Inward Bass & Click Roll Masterclass (Street Breakdown)',
-    performer: 'MBX Mentors Circle',
+    performer: 'MHB Mentors Circle',
     venue: 'Shivaji Park Amphitheatre',
     duration: '05:30',
     category: 'Workshop Drill',
@@ -172,7 +172,7 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 'post-1',
-    title: 'From Carter Road to Competitive Brackets: How MBX Began',
+    title: 'From Carter Road to Competitive Brackets: How MHB Began',
     date: 'February 18, 2026',
     category: 'Community History',
     excerpt:
@@ -201,7 +201,7 @@ export const BLOG_POSTS: BlogPost[] = [
 
 export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
   {
-    id: 'mbx-01',
+    id: 'mhb-01',
     name: 'Rohan "Sub-Zero" Sharma',
     handle: '@subzero_bx',
     specialty: 'Inward Bass & Vocal Sub Drops',
@@ -215,7 +215,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-02',
+    id: 'mhb-02',
     name: 'Ayesha "VocalClaw" Merchant',
     handle: '@ayesha_claw',
     specialty: 'Liproll Tech & Glitch Snare',
@@ -229,9 +229,9 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-03',
+    id: 'mhb-03',
     name: 'Kabir "DrillByte" Kulkarni',
-    handle: '@drillbyte_mbx',
+    handle: '@drillbyte_mhb',
     specialty: '140 BPM UK Drill & Double-Tonguing',
     area: 'Chembur',
     experience: 'Cypher Host',
@@ -243,7 +243,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-04',
+    id: 'mhb-04',
     name: 'Farhan "EchoSpit" Qureshi',
     handle: '@echospit_q',
     specialty: 'Trap 808s & Rimshot Polyphony',
@@ -257,7 +257,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-05',
+    id: 'mhb-05',
     name: 'Priya "Resonance" Joshi',
     handle: '@priya_poly',
     specialty: 'Polyphonic Throat Bass & Melodic Flute',
@@ -271,7 +271,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-06',
+    id: 'mhb-06',
     name: 'Vikram "VinylScratch" Jadhav',
     handle: '@scratch_vik',
     specialty: 'Crab Scratch & Old School Boom-Bap',
@@ -285,7 +285,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-07',
+    id: 'mhb-07',
     name: 'Siddharth "Subsonic" Mehta',
     handle: '@sid_subsonic',
     specialty: 'Chest Bass & OD Bass Growls',
@@ -299,7 +299,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-08',
+    id: 'mhb-08',
     name: 'Tanvi "ClickMatrix" Sawant',
     handle: '@tanvi_clicks',
     specialty: 'Hollow Clop & Water Drop Illusions',
@@ -313,7 +313,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-09',
+    id: 'mhb-09',
     name: 'Arjun "Mach-1" Nair',
     handle: '@mach1_nair',
     specialty: 'Speed Combos & Spit Snare Combos',
@@ -327,7 +327,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-10',
+    id: 'mhb-10',
     name: 'Zoya "Bassline" Fernandes',
     handle: '@zoya_drops',
     specialty: 'EDM Synth Leads & Vocal Wobbles',
@@ -341,7 +341,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-11',
+    id: 'mhb-11',
     name: 'Aditya "Pulse" Deshmukh',
     handle: '@aditya_pulse',
     specialty: 'Heavy Kick Stomp & Snare Roll',
@@ -355,7 +355,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-12',
+    id: 'mhb-12',
     name: 'Dev "VibeCutter" Roy',
     handle: '@dev_cutter',
     specialty: 'Electro Glitch & Needle Scratches',
@@ -369,7 +369,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-13',
+    id: 'mhb-13',
     name: 'Nikhil "AlienBass" Patil',
     handle: '@alienbass_patil',
     specialty: 'Alien Inward Bass & Pitch Glides',
@@ -383,7 +383,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1463453091185-61582044d556?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-14',
+    id: 'mhb-14',
     name: 'Simran "VocalEcho" Kaur',
     handle: '@simran_echo',
     specialty: 'Reverb Illusions & Breath Control',
@@ -397,7 +397,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-15',
+    id: 'mhb-15',
     name: 'Manish "BeatForge" Singh',
     handle: '@forge_manish',
     specialty: 'Boom-Bap 90s Percussion & K-Snare',
@@ -411,7 +411,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-16',
+    id: 'mhb-16',
     name: 'Ritika "VocalHarmonics" Rao',
     handle: '@ritika_harmonics',
     specialty: 'Tuvan Throat Singing & Harmonics',
@@ -425,7 +425,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-17',
+    id: 'mhb-17',
     name: 'Gaurav "ThunderSnare" More',
     handle: '@thundersnare_g',
     specialty: 'Spit Snare Snaps & Hi-Hat Rolls',
@@ -439,7 +439,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-18',
+    id: 'mhb-18',
     name: 'Sneha "GrooveQueen" Pillai',
     handle: '@groove_sneha',
     specialty: 'Afrobeats Bounce & Lip Shaker',
@@ -453,7 +453,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-19',
+    id: 'mhb-19',
     name: 'Kunal "DropSmith" Verma',
     handle: '@kunal_dropsmith',
     specialty: 'House 4-on-the-Floor & Synth Leads',
@@ -467,12 +467,12 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-20',
+    id: 'mhb-20',
     name: 'Aniket "SubVortex" Tambe',
     handle: '@subvortex_aniket',
     specialty: 'Vibration Bass & Hollow Throat Snaps',
     area: 'Sion Circle',
-    experience: '3 yrs in MBX',
+    experience: '3 yrs in MHB',
     voiceNoteTitle: 'Vibration Bass & Slap-Tongue',
     voiceNoteDuration: '0:13',
     soundType: 'bass-growl',
@@ -481,7 +481,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-21',
+    id: 'mhb-21',
     name: 'Varun "CypherKing" Shetty',
     handle: '@varun_cypher',
     specialty: 'Battle Routines & Poly-Counterpoint',
@@ -495,7 +495,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
   },
   {
-    id: 'mbx-22',
+    id: 'mhb-22',
     name: 'Meera "EchoWave" Iyer',
     handle: '@meera_echowave',
     specialty: 'Bhangra Dhol Voice Emulation & Bass',

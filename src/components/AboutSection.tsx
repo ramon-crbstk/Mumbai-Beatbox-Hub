@@ -35,7 +35,7 @@ export const AboutSection: React.FC = () => {
             </p>
 
             <p>
-              Today, <strong className="text-[#F4EFE4]">Mumbai Beatbox Hub (MBX)</strong> is an open-door sanctuary for anyone fascinated by the art of vocal drumming. Whether you are picking up your very first &lsquo;B-T-K&rsquo; pattern or you are a battle-tested routine architect rehearsing inward bass combinations for national qualifiers, our cyphers are designed to be respectful, ego-free spaces.
+              Today, <strong className="text-[#F4EFE4]">Mumbai Beatbox Hub (MHB)</strong> is an open-door sanctuary for anyone fascinated by the art of vocal drumming. Whether you are picking up your very first &lsquo;B-T-K&rsquo; pattern or you are a battle-tested routine architect rehearsing inward bass combinations for national qualifiers, our cyphers are designed to be respectful, ego-free spaces.
             </p>
 
             <p className="text-sm sm:text-base text-[#F4EFE4]/75 font-mono">

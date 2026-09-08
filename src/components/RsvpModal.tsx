@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Ticket, MapPin, Calendar, Clock, MessageCircle, ArrowRight } from 'lucide-react';
+import { X, CheckCircle2, Ticket, MapPin, Calendar, Clock, MessageCircle, ArrowRight, Database, Loader2 } from 'lucide-react';
+import { saveEventRsvp, isSupabaseConfigured } from '../lib/supabase';
 
 interface RsvpModalProps {
   isOpen: boolean;
@@ -11,13 +12,29 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [skill, setSkill] = useState('Beginner');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [saveSource, setSaveSource] = useState<'supabase' | 'local'>('local');
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setConfirmed(true);
+    setIsSubmitting(true);
+    try {
+      const res = await saveEventRsvp({
+        eventName: eventName || 'Next Community Cypher',
+        attendeeName: name,
+        whatsapp,
+        skillLevel: skill,
+      });
+      setSaveSource(res.source);
+    } catch {
+      // fallback handled
+    } finally {
+      setIsSubmitting(false);
+      setConfirmed(true);
+    }
   };
 
   return (
@@ -45,7 +62,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
             </div>
 
             <div className="inline-block px-3 py-1 bg-[#14120F] text-[#FFC93C] text-xs font-bold uppercase">
-              RSVP CONFIRMED // TICKET #MBX-2026
+              RSVP CONFIRMED // TICKET #MHB-2026
             </div>
 
             <h3 className="font-['Anton'] text-3xl uppercase tracking-tight text-[#14120F]">
@@ -60,6 +77,14 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
               <div><strong>Event:</strong> {eventName || 'Next Community Cypher'}</div>
               <div><strong>Coordinates:</strong> Bandra Carter Rd Promenade</div>
               <div><strong>Time:</strong> Sat 5:30 PM IST onwards</div>
+              <div className="pt-1 flex items-center gap-1 text-[10px] text-[#14120F]/70">
+                <Database className="w-3 h-3 text-[#14120F]" />
+                <span>
+                  {saveSource === 'supabase'
+                    ? 'Synced live to Supabase database (rsvps)'
+                    : 'Saved to local cypher attendee registry'}
+                </span>
+              </div>
             </div>
 
             <div className="pt-2">
@@ -149,9 +174,17 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
             <div className="pt-3">
               <button
                 type="submit"
-                className="w-full py-3.5 bg-[#14120F] hover:bg-[#E4402A] text-[#FFC93C] hover:text-[#F4EFE4] font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer"
+                disabled={isSubmitting}
+                className="w-full py-3.5 bg-[#14120F] hover:bg-[#E4402A] disabled:opacity-70 text-[#FFC93C] hover:text-[#F4EFE4] font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
-                Confirm Free RSVP
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Confirming with Database...</span>
+                  </>
+                ) : (
+                  <span>Confirm Free RSVP</span>
+                )}
               </button>
             </div>
 

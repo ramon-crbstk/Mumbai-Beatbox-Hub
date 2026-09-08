@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Send, CheckCircle2, MessageCircle, Instagram, Youtube, MapPin, Mail, ArrowUpRight } from 'lucide-react';
+import { Send, CheckCircle2, MessageCircle, Instagram, Youtube, MapPin, Mail, ArrowUpRight, Database, Loader2 } from 'lucide-react';
+import { saveContactDispatch } from '../lib/supabase';
 
 export const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -9,11 +10,22 @@ export const ContactSection: React.FC = () => {
     area: 'Bandra (Carter Rd / Bandstand)',
     message: '',
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [saveSource, setSaveSource] = useState<'supabase' | 'local'>('local');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setIsSubmitting(true);
+    try {
+      const res = await saveContactDispatch(formData);
+      setSaveSource(res.source);
+    } catch {
+      // fallback handled
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }
   };
 
   return (
@@ -127,6 +139,14 @@ export const ContactSection: React.FC = () => {
                 <p className="text-sm font-sans text-[#14120F]/80 max-w-md mx-auto">
                   Thanks for reaching out, <strong>{formData.name}</strong>. A community mentor will ping you on WhatsApp with the upcoming cypher location and meetup details.
                 </p>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#E5DFC8] border border-[#14120F]/30 text-[11px] font-mono text-[#14120F]/80">
+                  <Database className="w-3.5 h-3.5 text-[#14120F]" />
+                  <span>
+                    {saveSource === 'supabase'
+                      ? 'Dispatch stored in Supabase database (contact_dispatches)'
+                      : 'Dispatch saved to local community inbox'}
+                  </span>
+                </div>
                 <div className="pt-4">
                   <button
                     type="button"
@@ -236,10 +256,20 @@ export const ContactSection: React.FC = () => {
                   <button
                     type="submit"
                     id="contact-submit-button"
-                    className="w-full flex items-center justify-center gap-2.5 bg-[#14120F] hover:bg-[#E4402A] text-[#FFC93C] hover:text-[#F4EFE4] py-3.5 px-6 font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                    disabled={isSubmitting}
+                    className="w-full flex items-center justify-center gap-2.5 bg-[#14120F] hover:bg-[#E4402A] disabled:opacity-75 text-[#FFC93C] hover:text-[#F4EFE4] py-3.5 px-6 font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
                   >
-                    <Send className="w-4 h-4" />
-                    <span>Submit & Get Connected</span>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Connecting to Database...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4" />
+                        <span>Submit & Get Connected</span>
+                      </>
+                    )}
                   </button>
                 </div>
 

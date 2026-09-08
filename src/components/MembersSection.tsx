@@ -1,13 +1,36 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
-import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Volume2, Radio, Headphones, Sparkles, Filter } from 'lucide-react';
+import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Volume2, Radio, Headphones, Sparkles, Filter, Database } from 'lucide-react';
+import { fetchCommunityMembers, isSupabaseConfigured } from '../lib/supabase';
 
-export const MembersSection: React.FC = () => {
+interface MembersSectionProps {
+  onOpenAdmin?: () => void;
+  refreshTrigger?: number;
+}
+
+export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, refreshTrigger = 0 }) => {
+  const [membersList, setMembersList] = useState<(CommunityMember & { photoUrl: string })[]>(COMMUNITY_MEMBERS);
+  const [isDbSynced, setIsDbSynced] = useState(false);
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [playbackProgress, setPlaybackProgress] = useState<{ [id: string]: number }>({});
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadMembers() {
+      const remote = await fetchCommunityMembers();
+      if (isMounted && remote && remote.length > 0) {
+        setMembersList(remote);
+        setIsDbSynced(isSupabaseConfigured());
+      }
+    }
+    loadMembers();
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshTrigger]);
   
   // Audio state references
   const audioContextRef = useRef<AudioContext | null>(null);
@@ -252,8 +275,8 @@ export const MembersSection: React.FC = () => {
   };
 
   const filteredMembers = selectedFilter === 'all'
-    ? COMMUNITY_MEMBERS
-    : COMMUNITY_MEMBERS.filter((m) => m.soundType === selectedFilter);
+    ? membersList
+    : membersList.filter((m) => m.soundType === selectedFilter);
 
   const filterOptions = [
     { label: 'All Beatboxers (22)', value: 'all' },
@@ -376,7 +399,7 @@ export const MembersSection: React.FC = () => {
                   <div className="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-gradient-to-br from-[#1E1B16] to-[#2B261F] text-[#FFC93C]">
                     <span className="font-['Anton'] text-4xl">{member.avatarInitials}</span>
                     <span className="font-mono text-[10px] text-[#F4EFE4]/60 mt-1 uppercase tracking-widest">
-                      MBX ARTIST #{index + 1}
+                      MHB ARTIST #{index + 1}
                     </span>
                   </div>
 
@@ -503,6 +526,12 @@ export const MembersSection: React.FC = () => {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#FFC93C]" />
             <span>Showing {filteredMembers.length} active vocalists across Western, Central, and Harbour zones</span>
+            {isDbSynced && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/40 text-[10px] uppercase">
+                <Database className="w-3 h-3" />
+                Live Supabase Sync
+              </span>
+            )}
           </div>
 
           <div className="flex items-center gap-3">

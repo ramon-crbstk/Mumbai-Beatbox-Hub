@@ -20,9 +20,9 @@ export const Footer: React.FC = () => {
           {/* Brand Mark & Tagline */}
           <div className="md:col-span-6 space-y-4">
             <div className="flex items-center gap-3">
-              {/* MBX Mark */}
+              {/* MHB Mark */}
               <div className="w-10 h-10 bg-[#FFC93C] text-[#14120F] flex items-center justify-center font-['Anton'] text-xl font-bold border border-[#14120F] shadow-[2px_2px_0px_0px_#F4EFE4]">
-                MBX
+                MHB
               </div>
               <span className="font-['Anton'] text-2xl uppercase tracking-wider text-[#F4EFE4]">
                 Mumbai Beatbox Hub
@@ -49,6 +49,7 @@ export const Footer: React.FC = () => {
               <li><a href="#events" className="hover:text-[#FFC93C] transition-colors">Upcoming Cyphers</a></li>
               <li><a href="#gallery" className="hover:text-[#FFC93C] transition-colors">Visual Archive</a></li>
               <li><a href="#videos" className="hover:text-[#FFC93C] transition-colors">Routine Drops</a></li>
+              <li><a href="#members" className="hover:text-[#FFC93C] transition-colors">Community Members</a></li>
               <li><a href="#blog" className="hover:text-[#FFC93C] transition-colors">Hub Journal</a></li>
               <li><a href="#contact" className="hover:text-[#FFC93C] transition-colors">Contact & Join</a></li>
             </ul>
@@ -57,7 +58,7 @@ export const Footer: React.FC = () => {
           {/* Social Links & Location */}
           <div className="md:col-span-3 space-y-4 font-mono text-xs">
             <span className="text-[#FFC93C] font-bold uppercase tracking-wider block">
-              CONNECT WITH MBX
+              CONNECT WITH MHB
             </span>
 
             <div className="flex flex-col gap-2.5">
@@ -108,7 +109,7 @@ export const Footer: React.FC = () => {
         {/* Bottom Bar: Copyright & Back to Top */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[#F4EFE4]/60">
           <div>
-            © 2026 Mumbai Beatbox Hub. All rights reserved.
+            © 2026 Mumbai Beatbox Hub (MHB). All rights reserved.
           </div>
 
           <div className="flex items-center gap-6">

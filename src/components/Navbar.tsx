@@ -43,9 +43,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
             className="group flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC93C]"
             onClick={(e) => handleLinkClick(e, '#home')}
           >
-            {/* MBX Kaali-Peeli Stamp Badge */}
+            {/* MHB Kaali-Peeli Stamp Badge */}
             <div className="relative flex items-center justify-center w-11 h-11 bg-[#FFC93C] text-[#14120F] font-black border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-[1px_1px_0px_0px_#F4EFE4] transition-all">
-              <span className="font-['Anton'] tracking-wider text-xl leading-none">MBX</span>
+              <span className="font-['Anton'] tracking-wider text-xl leading-none">MHB</span>
               <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-[#E4402A] rounded-full ring-2 ring-[#14120F]" title="Vocal Live Division" />
             </div>
 
@@ -84,7 +84,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
               className="relative inline-flex items-center gap-2 bg-[#FFC93C] text-[#14120F] px-4 py-2 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] hover:bg-[#F4EFE4] hover:shadow-[1px_1px_0px_0px_#FFC93C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
             >
               <Mic2 className="w-4 h-4 text-[#14120F]" />
-              <span>Join a Cypher</span>
+              <span>Join Cypher</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
             </button>
           </div>
@@ -124,6 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
               </a>
             ))}
           </div>
+
           <div className="pt-2">
             <button
               type="button"

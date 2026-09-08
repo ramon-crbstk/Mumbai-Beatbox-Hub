@@ -1,11 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GALLERY_ITEMS } from '../data/communityData';
 import { GalleryItem } from '../types';
 import { Image as ImageIcon, Plus, Upload, X, MapPin, Tag } from 'lucide-react';
+import { fetchGalleryItems } from '../lib/supabase';
 
-export const GallerySection: React.FC = () => {
+interface GallerySectionProps {
+  refreshTrigger?: number;
+}
+
+export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger = 0 }) => {
+  const [galleryList, setGalleryList] = useState<GalleryItem[]>(GALLERY_ITEMS);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [customPhotos, setCustomPhotos] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let active = true;
+    async function loadGallery() {
+      const items = await fetchGalleryItems();
+      if (active && items && items.length > 0) {
+        setGalleryList(items);
+      }
+    }
+    loadGallery();
+    return () => {
+      active = false;
+    };
+  }, [refreshTrigger]);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
     const file = e.target.files?.[0];
@@ -30,19 +50,19 @@ export const GallerySection: React.FC = () => {
               Cypher Visual Gallery
             </h2>
             <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-1 max-w-xl">
-              Real scenes from Carter Road, Shivaji Park, and Bandstand. Modular placeholder tiles ready for live community snaps.
+              Real scenes from Carter Road, Shivaji Park, and Bandstand. Street cyphers captured in raw sunlight.
             </p>
           </div>
 
           <div className="text-xs font-mono text-[#F4EFE4]/60">
-            Click any tile to inspect specs or swap photos
+            <span>{galleryList.length} ARCHIVED MOMENTS</span>
           </div>
         </div>
 
         {/* Asymmetric Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {GALLERY_ITEMS.map((item, idx) => {
-            const uploadedSrc = customPhotos[item.id];
+          {galleryList.map((item, idx) => {
+            const uploadedSrc = customPhotos[item.id] || item.photoUrl;
 
             return (
               <div
@@ -59,9 +79,9 @@ export const GallerySection: React.FC = () => {
                   {uploadedSrc ? (
                     <img
                       src={uploadedSrc}
-                      alt={item.caption}
+                      alt={item.caption || item.title}
                       referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   ) : (
                     <div className="space-y-3">
@@ -88,11 +108,11 @@ export const GallerySection: React.FC = () => {
                 {/* Caption and Location */}
                 <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 space-y-1.5">
                   <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C]">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3" />
-                      {item.location}
+                    <span className="flex items-center gap-1 truncate max-w-[180px]">
+                      <MapPin className="w-3 h-3 flex-shrink-0" />
+                      <span className="truncate">{item.location}</span>
                     </span>
-                    <span className="text-[10px] text-[#F4EFE4]/50 uppercase">
+                    <span className="text-[10px] text-[#F4EFE4]/50 uppercase flex-shrink-0">
                       Tile #{idx + 1}
                     </span>
                   </div>
@@ -104,11 +124,6 @@ export const GallerySection: React.FC = () => {
               </div>
             );
           })}
-        </div>
-
-        {/* Replaceable Note Label */}
-        <div className="mt-8 text-center text-xs font-mono text-[#F4EFE4]/50 border border-dashed border-[#F4EFE4]/20 p-3 bg-[#181512]/50">
-          NOTE: All photo slots are designated placeholders. Swap in real cypher photos anytime by replacing filenames or uploading in the tile viewer.
         </div>
 
       </div>
@@ -133,12 +148,22 @@ export const GallerySection: React.FC = () => {
 
             <div className="flex items-center gap-2 font-mono text-xs text-[#E4402A] font-bold uppercase mb-2">
               <Tag className="w-3.5 h-3.5" />
-              <span>PHOTO SLOT SPECIFICATION</span>
+              <span>CYPHER PHOTO METADATA</span>
             </div>
 
             <h3 className="font-['Anton'] text-3xl uppercase tracking-tight text-[#14120F] mb-3">
               {selectedItem.title}
             </h3>
+
+            {selectedItem.photoUrl && (
+              <div className="mb-4 aspect-video overflow-hidden border-2 border-[#14120F]">
+                <img
+                  src={selectedItem.photoUrl}
+                  alt={selectedItem.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
 
             <p className="text-sm font-sans text-[#14120F]/80 mb-4">
               {selectedItem.caption}
@@ -147,14 +172,12 @@ export const GallerySection: React.FC = () => {
             <div className="bg-[#E5DFC8] p-3.5 border border-[#14120F]/30 font-mono text-xs space-y-1.5 mb-6 text-[#14120F]">
               <div><strong>Location:</strong> {selectedItem.location}, Mumbai</div>
               <div><strong>Session:</strong> {selectedItem.dateStr}</div>
-              <div><strong>Recommended Aspect:</strong> 4:3 (1200 x 900px JPG/PNG)</div>
-              <div><strong>Status:</strong> Ready for real community asset</div>
             </div>
 
             <div className="space-y-3">
               <label className="flex items-center justify-center gap-2 w-full py-3 bg-[#14120F] text-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer">
                 <Upload className="w-4 h-4" />
-                <span>Test Upload Local Photo</span>
+                <span>Swap / Test Local Photo</span>
                 <input
                   type="file"
                   accept="image/*"
@@ -169,7 +192,7 @@ export const GallerySection: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
-                className="w-full py-2.5 bg-transparent text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F]/40 hover:bg-[#14120F]/10 transition-colors"
+                className="w-full py-2 bg-transparent text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F]/40 hover:bg-[#14120F]/10 transition-colors"
               >
                 Close Preview
               </button>
