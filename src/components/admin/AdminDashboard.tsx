@@ -111,16 +111,16 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     onLogout();
   };
 
-  const pendingBlogsCount = blogs.filter((b) => b.status === 'pending').length;
+  const unapprovedBlogsCount = blogs.filter((b) => !b.published).length;
 
   const navItems = [
     { id: 'overview' as const, label: 'Overview', icon: LayoutDashboard, count: null },
     { id: 'events' as const, label: 'Events & Cyphers', icon: Calendar, count: events.length },
     { 
       id: 'blogs' as const, 
-      label: 'Blog Approvals', 
+      label: 'Blog Articles', 
       icon: BookOpen, 
-      count: pendingBlogsCount > 0 ? `${pendingBlogsCount} New` : blogs.length 
+      count: unapprovedBlogsCount > 0 ? `${unapprovedBlogsCount} Draft` : blogs.length 
     },
     { id: 'gallery' as const, label: 'Gallery', icon: ImageIcon, count: gallery.length },
     { id: 'videos' as const, label: 'Videos', icon: VideoIcon, count: videos.length },
@@ -306,6 +306,8 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
               </div>
               <h1 className="font-['Anton'] text-3xl uppercase tracking-tight text-[#F4EFE4] mt-0.5">
                 {activeTab === 'overview' && 'System Overview & Activity'}
+                {activeTab === 'events' && 'Upcoming Events & Cyphers'}
+                {activeTab === 'blogs' && 'Blog Articles & Editorial Journal'}
                 {activeTab === 'gallery' && 'Gallery Media Management'}
                 {activeTab === 'videos' && 'Featured Video Drops'}
                 {activeTab === 'members' && 'Beatboxer Community Roster'}

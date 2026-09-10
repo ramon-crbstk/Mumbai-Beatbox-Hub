@@ -7,6 +7,8 @@ export interface EventItem {
   area: string;
   blurb: string;
   entry: string;
+  coverImageUrl?: string;
+  cover_image_url?: string;
   isBattleOrLive?: boolean;
   createdAt?: string;
 }
@@ -14,12 +16,15 @@ export interface EventItem {
 export interface BlogPostRecord {
   id: string;
   title: string;
+  slug: string;
+  excerpt: string;
   content: string;
-  publisherName: string;
-  status: 'pending' | 'approved' | 'rejected';
-  category?: string;
-  createdAt: string;
-  approvedAt?: string | null;
+  author: string;
+  category: string;
+  published: boolean;
+  published_at?: string | null;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface PillarCard {

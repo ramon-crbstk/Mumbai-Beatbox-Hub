@@ -1,5 +1,4 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { supabase as sharedSupabaseClient } from './supabase.js';
 import { CommunityMember, GalleryItem, VideoItem, EventItem, BlogPostRecord } from '../types';
 import { COMMUNITY_MEMBERS, GALLERY_ITEMS, FEATURED_VIDEOS } from '../data/communityData';
 
@@ -8,10 +7,13 @@ const DEFAULT_SUPABASE_URL = 'https://tcsovxxhoypfpkbmowhd.supabase.co';
 const DEFAULT_SUPABASE_ANON_KEY =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjc292eHhob3lwZnBrYm1vd2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NTQzMjcsImV4cCI6MjEwNDMzMDMyN30.ff3GkoOL1Zz2rjmrIp_azLevX-vabB7Tlvicb3JVJUo';
 
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
+const envUrl = (typeof import.meta !== 'undefined' && import.meta && import.meta.env) ? import.meta.env.VITE_SUPABASE_URL : (typeof process !== 'undefined' ? process.env.VITE_SUPABASE_URL : undefined);
+const envKey = (typeof import.meta !== 'undefined' && import.meta && import.meta.env) ? import.meta.env.VITE_SUPABASE_ANON_KEY : (typeof process !== 'undefined' ? process.env.VITE_SUPABASE_ANON_KEY : undefined);
 
-export const supabase = sharedSupabaseClient;
+const supabaseUrl = envUrl || DEFAULT_SUPABASE_URL;
+const supabaseAnonKey = envKey || DEFAULT_SUPABASE_ANON_KEY;
+
+export const supabase: SupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
 /**
  * Checks if Supabase credentials are configured in the environment
@@ -47,7 +49,7 @@ export function getSupabase(): SupabaseClient | null {
   if (!isSupabaseConfigured()) {
     return null;
   }
-  return sharedSupabaseClient;
+  return supabase;
 }
 
 export interface RsvpRecord {
@@ -1183,16 +1185,53 @@ const DEMO_BLOG_IDS = new Set(['post-1', 'post-2', 'post-3']);
 
 const DEFAULT_INITIAL_BLOGS: BlogPostRecord[] = [];
 
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '') || `blog-${Date.now()}`;
+}
+
+export function mapBlogRecord(d: Record<string, unknown>): BlogPostRecord {
+  const id = String(d.id || `blog-${Date.now()}`);
+  const title = String(d.title || 'Untitled');
+  const slug = String(d.slug || generateSlug(title));
+  const excerpt = String(d.excerpt || '');
+  const content = String(d.content || '');
+  const author = String(d.author || d.publisher_name || 'Community Voice');
+  const category = String(d.category || 'Community Voice');
+  const published = Boolean(d.published ?? (d.status === 'approved'));
+  const published_at = d.published_at ? String(d.published_at) : (d.approved_at ? String(d.approved_at) : null);
+  const created_at = String(d.created_at || new Date().toISOString());
+  const updated_at = String(d.updated_at || created_at);
+
+  return {
+    id,
+    title,
+    slug,
+    excerpt,
+    content,
+    author,
+    category,
+    published,
+    published_at,
+    created_at,
+    updated_at,
+  };
+}
+
 export function getLocalBlogs(): BlogPostRecord[] {
   try {
     const raw = localStorage.getItem(LOCAL_BLOGS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter((b: BlogPostRecord) => !DEMO_BLOG_IDS.has(b.id));
-        if (cleaned.length !== parsed.length) {
-          localStorage.setItem(LOCAL_BLOGS_KEY, JSON.stringify(cleaned));
-        }
+        const cleaned = parsed
+          .filter((b: BlogPostRecord) => !DEMO_BLOG_IDS.has(b.id))
+          .map((b) => mapBlogRecord(b as unknown as Record<string, unknown>));
         return cleaned;
       }
     }
@@ -1211,75 +1250,53 @@ export function setLocalBlogs(blogs: BlogPostRecord[]): void {
 }
 
 /**
- * Fetch approved blogs for public display on the website
+ * Fetch published blogs for public display on the website
  */
-export async function fetchApprovedBlogs(): Promise<BlogPostRecord[]> {
+export async function fetchPublishedBlogs(): Promise<BlogPostRecord[]> {
   const supabase = getSupabase();
 
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('blogs')
-        .select('*')
-        .eq('status', 'approved')
-        .order('created_at', { ascending: false });
-
-      if (!error && data && data.length > 0) {
-        const mapped: BlogPostRecord[] = data.map((d) => ({
-          id: d.id,
-          title: d.title,
-          content: d.content,
-          publisherName: d.publisher_name,
-          status: d.status,
-          category: d.category || 'Community Voice',
-          createdAt: d.created_at,
-          approvedAt: d.approved_at,
-        }));
-        return mapped;
-      }
-      if (error) {
-        console.warn('Supabase approved blogs fetch error, using local fallback:', error.message);
-      }
-    } catch (err) {
-      console.warn('Supabase approved blogs exception:', err);
-    }
-  }
-
-  // Return approved items from local storage
-  return getLocalBlogs().filter((b) => b.status === 'approved');
-}
-
-/**
- * Fetch all blogs for admin panel review (pending, approved, rejected)
- */
-export async function fetchAllBlogsAdmin(): Promise<BlogPostRecord[]> {
-  if (!isAdminAuthenticated()) {
-    await verifyAdminSessionLive();
-  }
-  if (!isAdminAuthenticated()) {
-    return [];
-  }
-
-  const supabase = getSupabase();
-
-  if (supabase) {
-    try {
-      const { data, error } = await supabase
-        .from('blogs')
-        .select('*')
+        .select('id, title, slug, excerpt, content, author, category, published, published_at, created_at, updated_at')
+        .eq('published', true)
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        const mapped: BlogPostRecord[] = data.map((d) => ({
-          id: d.id,
-          title: d.title,
-          content: d.content,
-          publisherName: d.publisher_name,
-          status: d.status,
-          category: d.category || 'Community Voice',
-          createdAt: d.created_at,
-          approvedAt: d.approved_at,
-        }));
+        const mapped: BlogPostRecord[] = data.map((d) => mapBlogRecord(d as Record<string, unknown>));
+        return mapped;
+      }
+      if (error) {
+        console.warn('Supabase published blogs fetch error, using local fallback:', error.message);
+      }
+    } catch (err) {
+      console.warn('Supabase published blogs exception:', err);
+    }
+  }
+
+  // Return published items from local storage
+  return getLocalBlogs().filter((b) => b.published);
+}
+
+// Backward-compatible alias
+export const fetchApprovedBlogs = fetchPublishedBlogs;
+
+/**
+ * Fetch all blogs for admin panel review
+ */
+export async function fetchAllBlogsAdmin(): Promise<BlogPostRecord[]> {
+  const supabase = getSupabase();
+
+  if (supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('blogs')
+        .select('id, title, slug, excerpt, content, author, category, published, published_at, created_at, updated_at')
+        .order('created_at', { ascending: false });
+
+      if (!error && data) {
+        const mapped: BlogPostRecord[] = data.map((d) => mapBlogRecord(d as Record<string, unknown>));
         setLocalBlogs(mapped);
         return mapped;
       }
@@ -1295,48 +1312,69 @@ export async function fetchAllBlogsAdmin(): Promise<BlogPostRecord[]> {
 }
 
 /**
- * Public user blog submission - sets status to 'pending'
+ * Create a blog post in public.blogs
  */
-export async function submitPublicBlog(data: {
+export async function createBlog(data: {
   title: string;
+  slug?: string;
+  excerpt?: string;
   content: string;
-  publisherName: string;
+  author: string;
   category?: string;
+  published?: boolean;
 }): Promise<{ success: boolean; blog: BlogPostRecord; error?: string; source: 'supabase' | 'local' }> {
+  const now = new Date().toISOString();
+  const blogId = `blog-${Date.now()}`;
+  const title = data.title.trim();
+  const slug = (data.slug?.trim() || generateSlug(title)).trim();
+  const excerpt = (data.excerpt?.trim() || data.content.trim().slice(0, 160)).trim();
+  const author = data.author.trim();
+  const category = data.category?.trim() || 'Community Voice';
+  const isPublished = Boolean(data.published);
+
   const newBlog: BlogPostRecord = {
-    id: `blog-${Date.now()}`,
-    title: data.title.trim(),
+    id: blogId,
+    title,
+    slug,
+    excerpt,
     content: data.content.trim(),
-    publisherName: data.publisherName.trim(),
-    status: 'pending',
-    category: data.category?.trim() || 'Community Voice',
-    createdAt: new Date().toISOString(),
-    approvedAt: null,
+    author,
+    category,
+    published: isPublished,
+    published_at: isPublished ? now : null,
+    created_at: now,
+    updated_at: now,
   };
 
-  // Always cache locally so admin can see it in admin session immediately
+  // Update local cache
   const localList = getLocalBlogs();
   setLocalBlogs([newBlog, ...localList]);
 
   const supabase = getSupabase();
   if (supabase) {
     try {
-      const { data: inserted, error } = await supabase.from('blogs').insert([
-        {
-          id: newBlog.id,
-          title: newBlog.title,
-          content: newBlog.content,
-          publisher_name: newBlog.publisherName,
-          status: 'pending',
-          category: newBlog.category,
-          created_at: newBlog.createdAt,
-        },
-      ]).select();
+      const payload = {
+        id: newBlog.id,
+        title: newBlog.title,
+        slug: newBlog.slug,
+        excerpt: newBlog.excerpt,
+        content: newBlog.content,
+        author: newBlog.author,
+        category: newBlog.category,
+        published: newBlog.published,
+        published_at: newBlog.published_at,
+        created_at: newBlog.created_at,
+        updated_at: newBlog.updated_at,
+      };
+
+      const { data: inserted, error } = await supabase.from('blogs').insert([payload]).select();
 
       if (!error) {
-        return { success: true, blog: newBlog, source: 'supabase' };
+        const mapped = inserted && inserted.length > 0 ? mapBlogRecord(inserted[0] as Record<string, unknown>) : newBlog;
+        return { success: true, blog: mapped, source: 'supabase' };
       }
       console.warn('Supabase blog insert warning:', error.message);
+      // Fallback to local storage so user submission and admin review persist seamlessly
       return { success: true, blog: newBlog, error: error.message, source: 'local' };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
@@ -1349,83 +1387,267 @@ export async function submitPublicBlog(data: {
 }
 
 /**
- * Admin updates blog status (e.g. 'approved' or 'rejected')
+ * Update an existing blog post in public.blogs
  */
-export async function updateBlogStatus(
+export async function updateBlog(
   id: string,
-  status: 'approved' | 'rejected' | 'pending'
-): Promise<{ success: boolean; error?: string }> {
-  if (!isAdminAuthenticated()) {
-    await verifyAdminSessionLive();
-  }
-  if (!isAdminAuthenticated()) {
-    return { success: false, error: 'Security constraint: Administrator authentication required.' };
-  }
-
-  // Update local cache
-  const localList = getLocalBlogs();
-  const updatedList = localList.map((b) =>
-    b.id === id
-      ? {
-          ...b,
-          status,
-          approvedAt: status === 'approved' ? new Date().toISOString() : b.approvedAt,
-        }
-      : b
-  );
-  setLocalBlogs(updatedList);
-
+  data: Partial<Omit<BlogPostRecord, 'id' | 'created_at'>>
+): Promise<{ success: boolean; blog?: BlogPostRecord; error?: string }> {
   const supabase = getSupabase();
-  if (supabase) {
-    try {
-      const payload: Record<string, unknown> = { status };
-      if (status === 'approved') {
-        payload.approved_at = new Date().toISOString();
-      }
-      const { error } = await supabase.from('blogs').update(payload).eq('id', id);
-      if (error) {
-        console.warn('Supabase update blog status warning:', error.message);
-      }
-      return { success: true };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase update blog status exception:', msg);
-      return { success: true };
-    }
+  if (!supabase) {
+    return { success: false, error: 'Supabase client is not available.' };
   }
+
+  // 5. Verify the authenticated user exists before the update
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  let currentUser = authData?.user;
+
+  if (authError || !currentUser) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    currentUser = sessionData?.session?.user ?? null;
+  }
+
+  if (!currentUser) {
+    return {
+      success: false,
+      error: 'Administrator authentication required. Please sign in to edit blogs.',
+    };
+  }
+
+  // 6. Verify the blog ID being passed to .eq('id', id) is the actual blog UUID/text ID from public.blogs
+  const { data: existingRow, error: verifyError } = await supabase
+    .from('blogs')
+    .select('id, title, slug, excerpt, content, author, category, published, published_at, created_at, updated_at')
+    .eq('id', id)
+    .maybeSingle();
+
+  if (verifyError) {
+    return { success: false, error: `Error verifying blog: ${verifyError.message}` };
+  }
+
+  if (!existingRow) {
+    return { success: false, error: `Blog not found in database with ID "${id}".` };
+  }
+
+  const now = new Date().toISOString();
+  const updatedBlog: BlogPostRecord = {
+    id: existingRow.id,
+    title: data.title !== undefined ? data.title.trim() : existingRow.title,
+    slug: data.slug !== undefined ? data.slug.trim() : existingRow.slug,
+    excerpt: data.excerpt !== undefined ? data.excerpt.trim() : (existingRow.excerpt || ''),
+    content: data.content !== undefined ? data.content.trim() : existingRow.content,
+    author: data.author !== undefined ? data.author.trim() : existingRow.author,
+    category: data.category !== undefined ? data.category.trim() : existingRow.category,
+    published: data.published !== undefined ? Boolean(data.published) : Boolean(existingRow.published),
+    published_at:
+      data.published !== undefined
+        ? data.published
+          ? existingRow.published_at || now
+          : null
+        : (existingRow.published_at || null),
+    created_at: existingRow.created_at || now,
+    updated_at: now,
+  };
+
+  try {
+    // Only update valid columns in public.blogs (never cover_image_url)
+    const payload: Record<string, unknown> = {
+      updated_at: now,
+    };
+    if (data.title !== undefined) payload.title = updatedBlog.title;
+    if (data.slug !== undefined) payload.slug = updatedBlog.slug;
+    if (data.excerpt !== undefined) payload.excerpt = updatedBlog.excerpt;
+    if (data.content !== undefined) payload.content = updatedBlog.content;
+    if (data.author !== undefined) payload.author = updatedBlog.author;
+    if (data.category !== undefined) payload.category = updatedBlog.category;
+    if (data.published !== undefined) {
+      payload.published = updatedBlog.published;
+      payload.published_at = updatedBlog.published_at;
+    }
+
+    const { error } = await supabase.from('blogs').update(payload).eq('id', existingRow.id);
+    if (error) {
+      console.error('Supabase update blog error:', error.message);
+      return { success: false, error: error.message };
+    }
+
+    const localList = getLocalBlogs();
+    setLocalBlogs(localList.map((b) => (b.id === existingRow.id ? updatedBlog : b)));
+    await fetchAllBlogsAdmin();
+
+    return { success: true, blog: updatedBlog };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error('Supabase update blog exception:', msg);
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Publish or unpublish an existing blog post in public.blogs.
+ * Uses the SAME authenticated Supabase client that is used by the working Members CRUD.
+ */
+export async function togglePublishBlog(
+  blogId: string,
+  newPublishedValue: boolean
+): Promise<{ success: boolean; error?: string }> {
+  // 1 & 2. Use existing authenticated Supabase client
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client is not available.' };
+  }
+
+  // 5. Verify the authenticated user exists before the update
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  let currentUser = authData?.user;
+
+  if (authError || !currentUser) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    currentUser = sessionData?.session?.user ?? null;
+  }
+
+  if (!currentUser) {
+    return {
+      success: false,
+      error: 'Administrator authentication required. Please ensure you are logged into your admin account.',
+    };
+  }
+
+  // 6. Verify the blog ID being passed to .eq('id', blogId) is the actual blog UUID/text ID from public.blogs
+  const { data: existingBlog, error: fetchErr } = await supabase
+    .from('blogs')
+    .select('id, title, published')
+    .eq('id', blogId)
+    .maybeSingle();
+
+  if (fetchErr) {
+    return {
+      success: false,
+      error: `Error checking blog in database (${blogId}): ${fetchErr.message}`,
+    };
+  }
+
+  if (!existingBlog) {
+    return {
+      success: false,
+      error: `Blog not found: Record with ID "${blogId}" does not exist in public.blogs table. Please refresh the blog list.`,
+    };
+  }
+
+  // 7, 8, 9. Update ONLY valid columns: published, published_at (no cover_image_url, no INSERT)
+  // Equivalent to:
+  // const { error } = await supabase
+  //   .from('blogs')
+  //   .update({
+  //     published: newPublishedValue,
+  //     published_at: newPublishedValue ? new Date().toISOString() : null
+  //   })
+  //   .eq('id', blogId);
+  const payload = {
+    published: newPublishedValue,
+    published_at: newPublishedValue ? new Date().toISOString() : null,
+  };
+
+  const { error } = await supabase
+    .from('blogs')
+    .update(payload)
+    .eq('id', existingBlog.id);
+
+  if (error) {
+    console.error('Supabase blog update error:', error.message);
+    return { success: false, error: error.message };
+  }
+
+  // Update local cache to reflect new status immediately
+  const localList = getLocalBlogs();
+  setLocalBlogs(
+    localList.map((b) =>
+      b.id === existingBlog.id
+        ? {
+            ...b,
+            published: newPublishedValue,
+            published_at: payload.published_at,
+            updated_at: new Date().toISOString(),
+          }
+        : b
+    )
+  );
+
+  // 10. After the update succeeds, refresh the blog list from Supabase
+  await fetchAllBlogsAdmin();
 
   return { success: true };
 }
 
+// Backward-compatible alias
+export async function updateBlogStatus(
+  id: string,
+  status: 'approved' | 'rejected' | 'pending'
+): Promise<{ success: boolean; error?: string }> {
+  return togglePublishBlog(id, status === 'approved');
+}
+
 /**
- * Admin deletes blog post
+ * Delete a blog post from public.blogs
  */
 export async function deleteBlog(id: string): Promise<{ success: boolean; error?: string }> {
-  if (!isAdminAuthenticated()) {
-    await verifyAdminSessionLive();
-  }
-  if (!isAdminAuthenticated()) {
-    return { success: false, error: 'Security constraint: Administrator authentication required.' };
-  }
-
-  // Update local cache
-  const localList = getLocalBlogs();
-  setLocalBlogs(localList.filter((b) => b.id !== id));
-
   const supabase = getSupabase();
-  if (supabase) {
-    try {
-      const { error } = await supabase.from('blogs').delete().eq('id', id);
-      if (error) {
-        console.warn('Supabase delete blog warning:', error.message);
-      }
-      return { success: true };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase delete blog exception:', msg);
-      return { success: true };
-    }
+  if (!supabase) {
+    return { success: false, error: 'Supabase client is not available.' };
   }
 
-  return { success: true };
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  let currentUser = authData?.user;
+
+  if (authError || !currentUser) {
+    const { data: sessionData } = await supabase.auth.getSession();
+    currentUser = sessionData?.session?.user ?? null;
+  }
+
+  if (!currentUser) {
+    return { success: false, error: 'Administrator authentication required to delete blogs.' };
+  }
+
+  try {
+    const { error } = await supabase.from('blogs').delete().eq('id', id);
+    if (error) {
+      console.warn('Supabase delete blog warning:', error.message);
+      return { success: false, error: error.message };
+    }
+
+    // Update local cache
+    const localList = getLocalBlogs();
+    setLocalBlogs(localList.filter((b) => b.id !== id));
+    await fetchAllBlogsAdmin();
+
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn('Supabase delete blog exception:', msg);
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Public user blog submission - stores in public.blogs (published: false by default for admin review)
+ */
+export async function submitPublicBlog(data: {
+  title: string;
+  slug?: string;
+  excerpt?: string;
+  content: string;
+  author?: string;
+  publisherName?: string;
+  category?: string;
+}): Promise<{ success: boolean; blog: BlogPostRecord; error?: string; source: 'supabase' | 'local' }> {
+  const author = (data.author || data.publisherName || 'Community Member').trim();
+  return createBlog({
+    title: data.title,
+    slug: data.slug,
+    excerpt: data.excerpt,
+    content: data.content,
+    author,
+    category: data.category,
+    published: false,
+  });
 }

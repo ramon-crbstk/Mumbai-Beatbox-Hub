@@ -2,19 +2,27 @@ import React, { useState } from 'react';
 import { 
   BookOpen, 
   CheckCircle2, 
-  XCircle, 
+  Clock, 
   Trash2, 
   Eye, 
-  Clock, 
   User, 
   Check, 
   X, 
   AlertCircle, 
-  Filter,
-  Plus
+  Plus,
+  Edit3,
+  Globe,
+  FileText,
+  Tag
 } from 'lucide-react';
 import { BlogPostRecord } from '../../types';
-import { updateBlogStatus, deleteBlog, submitPublicBlog } from '../../lib/supabase';
+import { 
+  createBlog, 
+  updateBlog, 
+  deleteBlog, 
+  togglePublishBlog,
+  generateSlug 
+} from '../../lib/supabase';
 
 interface BlogsTabProps {
   items: BlogPostRecord[];
@@ -22,65 +30,93 @@ interface BlogsTabProps {
 }
 
 export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all');
+  const [filter, setFilter] = useState<'all' | 'published' | 'drafts'>('all');
   const [readingBlog, setReadingBlog] = useState<BlogPostRecord | null>(null);
+  const [editingBlog, setEditingBlog] = useState<BlogPostRecord | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  // New admin blog modal
+  // Create Modal State
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [title, setTitle] = useState('');
-  const [publisherName, setPublisherName] = useState('');
+  const [slug, setSlug] = useState('');
+  const [slugManual, setSlugManual] = useState(false);
+  const [excerpt, setExcerpt] = useState('');
+  const [author, setAuthor] = useState('');
   const [category, setCategory] = useState('Hub Journal');
   const [content, setContent] = useState('');
+  const [published, setPublished] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  const pendingCount = items.filter((b) => b.status === 'pending').length;
-  const approvedCount = items.filter((b) => b.status === 'approved').length;
+  // Edit Modal State
+  const [editTitle, setEditTitle] = useState('');
+  const [editSlug, setEditSlug] = useState('');
+  const [editExcerpt, setEditExcerpt] = useState('');
+  const [editAuthor, setEditAuthor] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editPublished, setEditPublished] = useState(false);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
+  const publishedCount = items.filter((b) => b.published).length;
+  const draftsCount = items.filter((b) => !b.published).length;
 
   const filteredItems = items.filter((item) => {
-    if (filter === 'pending') return item.status === 'pending';
-    if (filter === 'approved') return item.status === 'approved';
-    if (filter === 'rejected') return item.status === 'rejected';
+    if (filter === 'published') return item.published;
+    if (filter === 'drafts') return !item.published;
     return true;
   });
 
-  const handleApprove = async (id: string) => {
-    setUpdatingId(id);
-    const res = await updateBlogStatus(id, 'approved');
-    setUpdatingId(null);
-
-    if (res.success) {
-      setNotification({
-        type: 'success',
-        message: 'Blog post approved! It is now published live on the public website.',
-      });
-      onRefresh();
-      if (readingBlog?.id === id) {
-        setReadingBlog((prev) => (prev ? { ...prev, status: 'approved' } : null));
-      }
-    } else {
-      setNotification({ type: 'error', message: res.error || 'Failed to approve blog post.' });
+  const handleTitleChange = (val: string) => {
+    setTitle(val);
+    if (!slugManual) {
+      setSlug(generateSlug(val));
     }
   };
 
-  const handleReject = async (id: string) => {
-    setUpdatingId(id);
-    const res = await updateBlogStatus(id, 'rejected');
+  const handleOpenCreateModal = () => {
+    setTitle('');
+    setSlug('');
+    setSlugManual(false);
+    setExcerpt('');
+    setAuthor('');
+    setCategory('Hub Journal');
+    setContent('');
+    setPublished(true);
+    setCreateModalOpen(true);
+  };
+
+  const handleOpenEditModal = (blog: BlogPostRecord) => {
+    setEditingBlog(blog);
+    setEditTitle(blog.title);
+    setEditSlug(blog.slug);
+    setEditExcerpt(blog.excerpt || '');
+    setEditAuthor(blog.author);
+    setEditCategory(blog.category || 'Hub Journal');
+    setEditContent(blog.content);
+    setEditPublished(blog.published);
+  };
+
+  const handleTogglePublish = async (blog: BlogPostRecord) => {
+    setUpdatingId(blog.id);
+    const newStatus = !blog.published;
+    const res = await togglePublishBlog(blog.id, newStatus);
     setUpdatingId(null);
 
     if (res.success) {
       setNotification({
         type: 'success',
-        message: 'Blog post marked as rejected (not shown publicly).',
+        message: newStatus 
+          ? 'Blog published! It is now live on the public website.' 
+          : 'Blog unpublished and moved to drafts.',
       });
       onRefresh();
-      if (readingBlog?.id === id) {
-        setReadingBlog((prev) => (prev ? { ...prev, status: 'rejected' } : null));
+      if (readingBlog?.id === blog.id) {
+        setReadingBlog((prev) => (prev ? { ...prev, published: newStatus } : null));
       }
     } else {
-      setNotification({ type: 'error', message: res.error || 'Failed to update blog.' });
+      setNotification({ type: 'error', message: res.error || 'Failed to toggle publish status.' });
     }
   };
 
@@ -91,7 +127,7 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
     setDeleteConfirmId(null);
 
     if (res.success) {
-      setNotification({ type: 'success', message: 'Blog post removed from database.' });
+      setNotification({ type: 'success', message: 'Blog post deleted from public.blogs.' });
       onRefresh();
       if (readingBlog?.id === id) {
         setReadingBlog(null);
@@ -101,37 +137,73 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
     }
   };
 
-  const handleCreateOfficial = async (e: React.FormEvent) => {
+  const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim() || !content.trim() || !publisherName.trim()) {
-      setNotification({ type: 'error', message: 'Title, publisher name, and content are required.' });
+    if (!title.trim() || !content.trim() || !author.trim()) {
+      setNotification({ type: 'error', message: 'Title, author, and content are required.' });
       return;
     }
 
     setSubmitting(true);
-    const res = await submitPublicBlog({
+    const res = await createBlog({
       title: title.trim(),
+      slug: slug.trim() || generateSlug(title),
+      excerpt: excerpt.trim(),
       content: content.trim(),
-      publisherName: publisherName.trim(),
+      author: author.trim(),
       category: category.trim() || 'Hub Journal',
+      published,
     });
 
-    if (res.success && res.blog) {
-      // Auto-approve admin created post
-      await updateBlogStatus(res.blog.id, 'approved');
-      setSubmitting(false);
+    setSubmitting(false);
+
+    if (res.success) {
       setCreateModalOpen(false);
-      setTitle('');
-      setContent('');
-      setPublisherName('');
       setNotification({
         type: 'success',
-        message: 'Official blog post created and published directly!',
+        message: published 
+          ? 'Blog post created and published live!' 
+          : 'Blog post saved as draft.',
       });
       onRefresh();
     } else {
-      setSubmitting(false);
-      setNotification({ type: 'error', message: res.error || 'Failed to publish post.' });
+      setNotification({ type: 'error', message: res.error || 'Failed to create blog post.' });
+    }
+  };
+
+  const handleEditSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingBlog) return;
+    if (!editTitle.trim() || !editContent.trim() || !editAuthor.trim()) {
+      setNotification({ type: 'error', message: 'Title, author, and content are required.' });
+      return;
+    }
+
+    setEditSubmitting(true);
+    const res = await updateBlog(editingBlog.id, {
+      title: editTitle.trim(),
+      slug: editSlug.trim() || generateSlug(editTitle),
+      excerpt: editExcerpt.trim(),
+      content: editContent.trim(),
+      author: editAuthor.trim(),
+      category: editCategory.trim() || 'Hub Journal',
+      published: editPublished,
+    });
+
+    setEditSubmitting(false);
+
+    if (res.success) {
+      setEditingBlog(null);
+      setNotification({
+        type: 'success',
+        message: 'Blog post updated successfully in public.blogs!',
+      });
+      onRefresh();
+      if (readingBlog?.id === editingBlog.id && res.blog) {
+        setReadingBlog(res.blog);
+      }
+    } else {
+      setNotification({ type: 'error', message: res.error || 'Failed to update blog post.' });
     }
   };
 
@@ -142,23 +214,24 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
         <div>
           <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider mb-2">
             <BookOpen className="w-3.5 h-3.5" />
-            <span>EDITORIAL REVIEW & MODERATION</span>
+            <span>EDITORIAL & ARTICLES</span>
           </div>
           <h2 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4]">
-            Community Blog Approvals
+            Blog Management
           </h2>
           <p className="text-sm font-mono text-[#F4EFE4]/70 mt-1">
-            Review user submissions, approve posts for the public journal, or publish official articles.
+            Create, edit, publish, or remove community articles and journal posts stored in Supabase.
           </p>
         </div>
 
         <button
           type="button"
-          onClick={() => setCreateModalOpen(true)}
+          id="admin-create-blog-btn"
+          onClick={handleOpenCreateModal}
           className="px-4 py-2.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
-          <span>Write Official Post</span>
+          <span>Write New Blog</span>
         </button>
       </div>
 
@@ -193,6 +266,7 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
       <div className="flex flex-wrap items-center gap-2 border-b border-[#F4EFE4]/15 pb-3 font-mono text-xs">
         <button
           type="button"
+          id="filter-all-blogs-btn"
           onClick={() => setFilter('all')}
           className={`px-3 py-1.5 uppercase transition-colors cursor-pointer ${
             filter === 'all'
@@ -205,43 +279,28 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
 
         <button
           type="button"
-          onClick={() => setFilter('pending')}
+          id="filter-published-blogs-btn"
+          onClick={() => setFilter('published')}
           className={`px-3 py-1.5 uppercase flex items-center gap-2 transition-colors cursor-pointer ${
-            filter === 'pending'
+            filter === 'published'
               ? 'bg-[#FFC93C] text-[#14120F] font-bold'
               : 'bg-[#1A1713] text-[#F4EFE4]/70 hover:text-[#F4EFE4] border border-[#F4EFE4]/10'
           }`}
         >
-          <span>Pending Review</span>
-          {pendingCount > 0 && (
-            <span className="px-1.5 py-0.2 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-bold">
-              {pendingCount}
-            </span>
-          )}
+          <span>Published ({publishedCount})</span>
         </button>
 
         <button
           type="button"
-          onClick={() => setFilter('approved')}
+          id="filter-drafts-blogs-btn"
+          onClick={() => setFilter('drafts')}
           className={`px-3 py-1.5 uppercase flex items-center gap-2 transition-colors cursor-pointer ${
-            filter === 'approved'
+            filter === 'drafts'
               ? 'bg-[#FFC93C] text-[#14120F] font-bold'
               : 'bg-[#1A1713] text-[#F4EFE4]/70 hover:text-[#F4EFE4] border border-[#F4EFE4]/10'
           }`}
         >
-          <span>Approved ({approvedCount})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setFilter('rejected')}
-          className={`px-3 py-1.5 uppercase transition-colors cursor-pointer ${
-            filter === 'rejected'
-              ? 'bg-[#FFC93C] text-[#14120F] font-bold'
-              : 'bg-[#1A1713] text-[#F4EFE4]/70 hover:text-[#F4EFE4] border border-[#F4EFE4]/10'
-          }`}
-        >
-          Rejected ({items.filter((b) => b.status === 'rejected').length})
+          <span>Drafts / Unpublished ({draftsCount})</span>
         </button>
       </div>
 
@@ -250,61 +309,66 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
         <div className="bg-[#1A1713] border border-dashed border-[#F4EFE4]/20 p-12 text-center">
           <BookOpen className="w-12 h-12 text-[#F4EFE4]/30 mx-auto mb-3" />
           <h3 className="font-['Anton'] text-xl uppercase text-[#F4EFE4] mb-1">
-            No Blog Submissions Found
+            No Blog Articles Found
           </h3>
-          <p className="text-xs font-mono text-[#F4EFE4]/60 max-w-sm mx-auto">
-            {filter === 'pending'
-              ? 'There are currently no submissions awaiting approval.'
-              : 'No blog posts match this filter.'}
+          <p className="text-xs font-mono text-[#F4EFE4]/60 max-w-sm mx-auto mb-4">
+            {filter === 'drafts'
+              ? 'There are currently no draft articles.'
+              : filter === 'published'
+              ? 'There are no published articles yet.'
+              : 'Start by publishing your first article to public.blogs.'}
           </p>
+          <button
+            type="button"
+            onClick={handleOpenCreateModal}
+            className="px-4 py-2 bg-[#FFC93C] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Create Article</span>
+          </button>
         </div>
       ) : (
         <div className="space-y-4">
           {filteredItems.map((blog) => {
-            const isPending = blog.status === 'pending';
-            const isApproved = blog.status === 'approved';
+            const isPublished = blog.published;
 
             return (
               <div
                 key={blog.id}
                 id={`admin-blog-${blog.id}`}
                 className={`bg-[#1A1713] border-2 p-5 sm:p-6 flex flex-col md:flex-row md:items-center justify-between gap-6 transition-colors ${
-                  isPending
-                    ? 'border-[#FFC93C] shadow-[4px_4px_0px_0px_#FFC93C]/30'
-                    : isApproved
+                  isPublished
                     ? 'border-emerald-500/40'
-                    : 'border-[#F4EFE4]/15 opacity-75'
+                    : 'border-[#FFC93C] shadow-[4px_4px_0px_0px_#FFC93C]/20'
                 }`}
               >
                 {/* Left side info */}
                 <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2.5 mb-2">
                     {/* Status Pill */}
-                    {isPending && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#FFC93C] text-[#14120F] font-mono text-[10px] font-bold uppercase tracking-wider">
-                        <Clock className="w-3 h-3" />
-                        Pending Approval
-                      </span>
-                    )}
-                    {isApproved && (
+                    {isPublished ? (
                       <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-500 text-[#14120F] font-mono text-[10px] font-bold uppercase tracking-wider">
                         <CheckCircle2 className="w-3 h-3" />
-                        Approved & Live
+                        Published & Live
                       </span>
-                    )}
-                    {blog.status === 'rejected' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-red-900/50 text-red-300 font-mono text-[10px] font-bold uppercase tracking-wider border border-red-500/30">
-                        <XCircle className="w-3 h-3" />
-                        Rejected
+                    ) : (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-[#FFC93C] text-[#14120F] font-mono text-[10px] font-bold uppercase tracking-wider">
+                        <Clock className="w-3 h-3" />
+                        Draft / Unpublished
                       </span>
                     )}
 
-                    <span className="text-xs font-mono text-[#FFC93C] uppercase">
+                    <span className="text-xs font-mono text-[#FFC93C] uppercase flex items-center gap-1">
+                      <Tag className="w-3 h-3 text-[#FFC93C]/60" />
                       {blog.category || 'Community Voice'}
                     </span>
 
                     <span className="text-[11px] font-mono text-[#F4EFE4]/50">
-                      Submitted: {new Date(blog.createdAt).toLocaleDateString()}
+                      Slug: <code className="text-[#F4EFE4]/80">/{blog.slug}</code>
+                    </span>
+
+                    <span className="text-[11px] font-mono text-[#F4EFE4]/50">
+                      Created: {new Date(blog.created_at).toLocaleDateString()}
                     </span>
                   </div>
 
@@ -313,15 +377,22 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                     {blog.title}
                   </h3>
 
-                  {/* Publisher */}
-                  <div className="flex items-center gap-2 text-xs font-mono text-[#F4EFE4]/80 mb-3">
+                  {/* Author */}
+                  <div className="flex items-center gap-2 text-xs font-mono text-[#F4EFE4]/80 mb-2">
                     <User className="w-3.5 h-3.5 text-[#FFC93C]" />
                     <span>
-                      Publisher: <strong className="text-[#FFC93C]">{blog.publisherName}</strong>
+                      Author: <strong className="text-[#FFC93C]">{blog.author}</strong>
                     </span>
                   </div>
 
-                  {/* Preview excerpt */}
+                  {/* Excerpt */}
+                  {blog.excerpt && (
+                    <p className="text-xs font-mono text-[#F4EFE4]/60 italic mb-2 line-clamp-1">
+                      "{blog.excerpt}"
+                    </p>
+                  )}
+
+                  {/* Content Preview */}
                   <p className="text-xs text-[#F4EFE4]/70 font-sans line-clamp-2 leading-relaxed">
                     {blog.content}
                   </p>
@@ -334,38 +405,44 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                     type="button"
                     onClick={() => setReadingBlog(blog)}
                     className="px-3 py-2 bg-[#14120F] hover:bg-[#25211B] text-[#F4EFE4] border border-[#F4EFE4]/20 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                    title="Read blog full text"
                   >
                     <Eye className="w-3.5 h-3.5 text-[#FFC93C]" />
-                    <span>Read Post</span>
+                    <span>Read</span>
                   </button>
 
-                  {/* Approve */}
-                  {!isApproved && (
-                    <button
-                      type="button"
-                      onClick={() => handleApprove(blog.id)}
-                      disabled={updatingId === blog.id}
-                      className="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      title="Approve for public display"
-                    >
-                      <Check className="w-3.5 h-3.5" />
-                      <span>{updatingId === blog.id ? '...' : 'Approve'}</span>
-                    </button>
-                  )}
+                  {/* Edit Post */}
+                  <button
+                    type="button"
+                    onClick={() => handleOpenEditModal(blog)}
+                    className="px-3 py-2 bg-[#14120F] hover:bg-[#25211B] text-[#FFC93C] border border-[#FFC93C]/40 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                    title="Edit blog post"
+                  >
+                    <Edit3 className="w-3.5 h-3.5" />
+                    <span>Edit</span>
+                  </button>
 
-                  {/* Reject */}
-                  {isPending && (
-                    <button
-                      type="button"
-                      onClick={() => handleReject(blog.id)}
-                      disabled={updatingId === blog.id}
-                      className="px-3 py-2 bg-[#14120F] hover:bg-red-950/40 text-red-400 border border-red-500/30 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
-                      title="Reject submission"
-                    >
-                      <X className="w-3.5 h-3.5" />
-                      <span>Reject</span>
-                    </button>
-                  )}
+                  {/* Publish / Unpublish Toggle */}
+                  <button
+                    type="button"
+                    onClick={() => handleTogglePublish(blog)}
+                    disabled={updatingId === blog.id}
+                    className={`px-3.5 py-2 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer disabled:opacity-50 ${
+                      isPublished
+                        ? 'bg-[#14120F] hover:bg-[#25211B] text-[#F4EFE4]/80 border border-[#F4EFE4]/20'
+                        : 'bg-emerald-500 hover:bg-emerald-400 text-[#14120F]'
+                    }`}
+                    title={isPublished ? 'Unpublish to draft' : 'Publish to live website'}
+                  >
+                    <Globe className="w-3.5 h-3.5" />
+                    <span>
+                      {updatingId === blog.id
+                        ? '...'
+                        : isPublished
+                        ? 'Unpublish'
+                        : 'Publish Live'}
+                    </span>
+                  </button>
 
                   {/* Delete */}
                   {deleteConfirmId === blog.id ? (
@@ -403,7 +480,9 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
         </div>
       )}
 
-      {/* Read Blog Modal in Admin */}
+      {/* ======================================================== */}
+      {/* READ BLOG READER MODAL (WITH CLOSE BLOG BUTTON)          */}
+      {/* ======================================================== */}
       {readingBlog && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-xs">
           <div
@@ -416,14 +495,12 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                 <div className="flex items-center gap-2 mb-2">
                   <span
                     className={`px-2 py-0.5 font-mono text-[10px] font-bold uppercase ${
-                      readingBlog.status === 'approved'
+                      readingBlog.published
                         ? 'bg-emerald-500 text-[#14120F]'
-                        : readingBlog.status === 'pending'
-                        ? 'bg-[#FFC93C] text-[#14120F]'
-                        : 'bg-red-900 text-red-200'
+                        : 'bg-[#FFC93C] text-[#14120F]'
                     }`}
                   >
-                    {readingBlog.status.toUpperCase()}
+                    {readingBlog.published ? 'LIVE PUBLISHED' : 'DRAFT'}
                   </span>
                   <span className="text-xs font-mono text-[#FFC93C] uppercase">
                     {readingBlog.category}
@@ -432,21 +509,31 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                 <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4]">
                   {readingBlog.title}
                 </h3>
-                <div className="flex items-center gap-3 text-xs font-mono text-[#F4EFE4]/70 mt-2">
-                  <span>Author: <strong className="text-[#FFC93C]">{readingBlog.publisherName}</strong></span>
+                <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-[#F4EFE4]/70 mt-2">
+                  <span>Author: <strong className="text-[#FFC93C]">{readingBlog.author}</strong></span>
                   <span>&bull;</span>
-                  <span>{new Date(readingBlog.createdAt).toLocaleDateString()}</span>
+                  <span>Slug: <code className="text-[#F4EFE4]/90">/{readingBlog.slug}</code></span>
+                  <span>&bull;</span>
+                  <span>{new Date(readingBlog.created_at).toLocaleDateString()}</span>
                 </div>
               </div>
 
               <button
                 type="button"
+                id="admin-close-blog-x-btn"
                 onClick={() => setReadingBlog(null)}
                 className="p-1.5 text-[#F4EFE4]/60 hover:text-[#F4EFE4] cursor-pointer shrink-0"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* Excerpt if present */}
+            {readingBlog.excerpt && (
+              <div className="p-3 bg-[#14120F] border-l-2 border-[#FFC93C] text-xs font-mono text-[#F4EFE4]/80 italic mb-4">
+                {readingBlog.excerpt}
+              </div>
+            )}
 
             {/* Content Body */}
             <div className="flex-1 overflow-y-auto text-sm sm:text-base text-[#F4EFE4]/90 font-sans leading-relaxed whitespace-pre-wrap space-y-4 mb-6 bg-[#14120F] p-5 border border-[#F4EFE4]/10">
@@ -456,35 +543,40 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
             {/* Action Bar */}
             <div className="pt-4 border-t border-[#F4EFE4]/15 flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2">
-                {readingBlog.status !== 'approved' && (
-                  <button
-                    type="button"
-                    onClick={() => handleApprove(readingBlog.id)}
-                    disabled={updatingId === readingBlog.id}
-                    className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <Check className="w-4 h-4" />
-                    <span>Approve & Publish Live</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    const target = readingBlog;
+                    setReadingBlog(null);
+                    handleOpenEditModal(target);
+                  }}
+                  className="px-4 py-2 bg-[#14120F] hover:bg-[#25211B] text-[#FFC93C] border border-[#FFC93C]/40 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Edit3 className="w-4 h-4" />
+                  <span>Edit Post</span>
+                </button>
 
-                {readingBlog.status === 'pending' && (
-                  <button
-                    type="button"
-                    onClick={() => handleReject(readingBlog.id)}
-                    disabled={updatingId === readingBlog.id}
-                    className="px-4 py-2 bg-red-950/40 text-red-300 border border-red-500/30 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                    <span>Reject Post</span>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => handleTogglePublish(readingBlog)}
+                  disabled={updatingId === readingBlog.id}
+                  className={`px-4 py-2 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer ${
+                    readingBlog.published
+                      ? 'bg-[#14120F] text-[#F4EFE4]/80 border border-[#F4EFE4]/20 hover:bg-[#25211B]'
+                      : 'bg-emerald-500 text-[#14120F] hover:bg-emerald-400'
+                  }`}
+                >
+                  <Globe className="w-4 h-4" />
+                  <span>{readingBlog.published ? 'Unpublish' : 'Publish Live'}</span>
+                </button>
               </div>
 
+              {/* Close Blog Button */}
               <button
                 type="button"
+                id="admin-close-blog-btn"
                 onClick={() => setReadingBlog(null)}
-                className="px-5 py-2 bg-[#14120F] hover:bg-[#25211B] text-[#F4EFE4] border border-[#F4EFE4]/20 font-mono text-xs uppercase tracking-wider cursor-pointer"
+                className="px-5 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider cursor-pointer shadow-[2px_2px_0px_0px_#14120F]"
               >
                 Close Blog
               </button>
@@ -493,17 +585,22 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
         </div>
       )}
 
-      {/* Write Official Admin Post Modal */}
+      {/* ======================================================== */}
+      {/* CREATE BLOG MODAL                                        */}
+      {/* ======================================================== */}
       {createModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
           <div
             id="admin-create-blog-modal"
-            className="bg-[#1A1713] text-[#F4EFE4] border-2 border-[#FFC93C] w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-[10px_10px_0px_0px_#FFC93C]"
+            className="bg-[#1A1713] text-[#F4EFE4] border-2 border-[#FFC93C] w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-[10px_10px_0px_0px_#FFC93C]"
           >
             <div className="flex items-center justify-between border-b border-[#F4EFE4]/15 pb-4 mb-6">
-              <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4]">
-                Publish Hub Article
-              </h3>
+              <div className="flex items-center gap-2">
+                <BookOpen className="w-5 h-5 text-[#FFC93C]" />
+                <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4]">
+                  Create Blog Post
+                </h3>
+              </div>
               <button
                 type="button"
                 onClick={() => setCreateModalOpen(false)}
@@ -513,7 +610,8 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
               </button>
             </div>
 
-            <form onSubmit={handleCreateOfficial} className="space-y-4">
+            <form onSubmit={handleCreateSubmit} className="space-y-4">
+              {/* Title */}
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
                   Blog Title *
@@ -522,23 +620,42 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                   type="text"
                   required
                   value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g. Master Your Spit Snare and Acoustic Timing"
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  placeholder="e.g. Master Your Inward K Snare and Acoustic Timing"
                   className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
                 />
               </div>
 
+              {/* Slug */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  Slug (URL identifier) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={slug}
+                  onChange={(e) => {
+                    setSlug(e.target.value);
+                    setSlugManual(true);
+                  }}
+                  placeholder="e.g. master-your-inward-k-snare"
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-xs focus:border-[#FFC93C] focus:outline-none"
+                />
+              </div>
+
+              {/* Author & Category */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
-                    Publisher's Name *
+                    Author *
                   </label>
                   <input
                     type="text"
                     required
-                    value={publisherName}
-                    onChange={(e) => setPublisherName(e.target.value)}
-                    placeholder="e.g. Rohan Sub-Zero"
+                    value={author}
+                    onChange={(e) => setAuthor(e.target.value)}
+                    placeholder="e.g. Ramon Bakuri"
                     className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
                   />
                 </div>
@@ -550,12 +667,27 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="e.g. Vocal Science, Cypher Guide"
+                    placeholder="e.g. Vocal Science, Cypher Guide, Tutorial"
                     className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
                   />
                 </div>
               </div>
 
+              {/* Excerpt */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  Excerpt (Brief Summary)
+                </label>
+                <input
+                  type="text"
+                  value={excerpt}
+                  onChange={(e) => setExcerpt(e.target.value)}
+                  placeholder="Short 1-2 sentence preview for cards..."
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                />
+              </div>
+
+              {/* Content */}
               <div>
                 <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
                   Blog Content *
@@ -565,9 +697,23 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                   rows={8}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Write your article paragraphs here..."
-                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                  placeholder="Write the full article content here..."
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none leading-relaxed"
                 />
+              </div>
+
+              {/* Published Toggle */}
+              <div className="flex items-center gap-3 p-3 bg-[#14120F] border border-[#F4EFE4]/15">
+                <input
+                  type="checkbox"
+                  id="create-published-checkbox"
+                  checked={published}
+                  onChange={(e) => setPublished(e.target.checked)}
+                  className="w-4 h-4 accent-[#FFC93C] cursor-pointer"
+                />
+                <label htmlFor="create-published-checkbox" className="text-xs font-mono text-[#F4EFE4] cursor-pointer">
+                  Publish immediately (check to make live on public website, uncheck to save as draft)
+                </label>
               </div>
 
               <div className="pt-4 border-t border-[#F4EFE4]/15 flex items-center justify-end gap-3">
@@ -583,7 +729,150 @@ export function BlogsTab({ items, onRefresh }: BlogsTabProps) {
                   disabled={submitting}
                   className="px-6 py-2.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F] cursor-pointer disabled:opacity-50"
                 >
-                  {submitting ? 'Publishing...' : 'Publish Article Live'}
+                  {submitting ? 'Saving...' : published ? 'Publish Blog' : 'Save as Draft'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* EDIT BLOG MODAL                                          */}
+      {/* ======================================================== */}
+      {editingBlog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
+          <div
+            id="admin-edit-blog-modal"
+            className="bg-[#1A1713] text-[#F4EFE4] border-2 border-[#FFC93C] w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-[10px_10px_0px_0px_#FFC93C]"
+          >
+            <div className="flex items-center justify-between border-b border-[#F4EFE4]/15 pb-4 mb-6">
+              <div className="flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-[#FFC93C]" />
+                <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4]">
+                  Edit Blog Post
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingBlog(null)}
+                className="p-1.5 text-[#F4EFE4]/60 hover:text-[#F4EFE4] cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="space-y-4">
+              {/* Title */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  Blog Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                />
+              </div>
+
+              {/* Slug */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  Slug (URL identifier) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editSlug}
+                  onChange={(e) => setEditSlug(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-xs focus:border-[#FFC93C] focus:outline-none"
+                />
+              </div>
+
+              {/* Author & Category */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                    Author *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={editAuthor}
+                    onChange={(e) => setEditAuthor(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                    Category
+                  </label>
+                  <input
+                    type="text"
+                    value={editCategory}
+                    onChange={(e) => setEditCategory(e.target.value)}
+                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* Excerpt */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  Excerpt (Brief Summary)
+                </label>
+                <input
+                  type="text"
+                  value={editExcerpt}
+                  onChange={(e) => setEditExcerpt(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                />
+              </div>
+
+              {/* Content */}
+              <div>
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  Blog Content *
+                </label>
+                <textarea
+                  required
+                  rows={8}
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none leading-relaxed"
+                />
+              </div>
+
+              {/* Published Toggle */}
+              <div className="flex items-center gap-3 p-3 bg-[#14120F] border border-[#F4EFE4]/15">
+                <input
+                  type="checkbox"
+                  id="edit-published-checkbox"
+                  checked={editPublished}
+                  onChange={(e) => setEditPublished(e.target.checked)}
+                  className="w-4 h-4 accent-[#FFC93C] cursor-pointer"
+                />
+                <label htmlFor="edit-published-checkbox" className="text-xs font-mono text-[#F4EFE4] cursor-pointer">
+                  Published (check to display live on the public website)
+                </label>
+              </div>
+
+              <div className="pt-4 border-t border-[#F4EFE4]/15 flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingBlog(null)}
+                  className="px-4 py-2 bg-transparent text-[#F4EFE4]/70 font-mono text-xs uppercase cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={editSubmitting}
+                  className="px-6 py-2.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F] cursor-pointer disabled:opacity-50"
+                >
+                  {editSubmitting ? 'Updating...' : 'Save Changes'}
                 </button>
               </div>
             </form>

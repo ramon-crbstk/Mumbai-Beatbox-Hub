@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { User, Session } from '@supabase/supabase-js';
-import { supabase } from './supabase.js';
+import { supabase } from './supabase';
 
 export interface AdminUser {
   id: string;

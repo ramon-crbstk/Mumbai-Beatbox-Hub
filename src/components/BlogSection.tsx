@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { BlogPostRecord } from '../types';
 import { BookOpen, User, Calendar, Plus, X, Check, AlertCircle, Sparkles } from 'lucide-react';
-import { fetchApprovedBlogs, submitPublicBlog, getLocalBlogs } from '../lib/supabase';
+import { fetchPublishedBlogs, submitPublicBlog, getLocalBlogs } from '../lib/supabase';
 
 export const BlogSection: React.FC = () => {
   const [blogs, setBlogs] = useState<BlogPostRecord[]>(() => 
-    getLocalBlogs().filter((b) => b.status === 'approved')
+    getLocalBlogs().filter((b) => b.published)
   );
   const [activeReadingBlog, setActiveReadingBlog] = useState<BlogPostRecord | null>(null);
   const [submitModalOpen, setSubmitModalOpen] = useState(false);
@@ -19,7 +19,7 @@ export const BlogSection: React.FC = () => {
 
   useEffect(() => {
     let isMounted = true;
-    fetchApprovedBlogs().then((data) => {
+    fetchPublishedBlogs().then((data) => {
       if (isMounted && data) {
         setBlogs(data);
       }
@@ -52,7 +52,7 @@ export const BlogSection: React.FC = () => {
 
     const res = await submitPublicBlog({
       title: title.trim(),
-      publisherName: publisherName.trim(),
+      author: publisherName.trim(),
       content: content.trim(),
       category: 'Community Voice',
     });
@@ -143,7 +143,7 @@ export const BlogSection: React.FC = () => {
                     </span>
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3 h-3 text-[#14120F]" />
-                      <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                      <span>{new Date(post.published_at || post.created_at).toLocaleDateString()}</span>
                     </div>
                   </div>
 
@@ -152,15 +152,15 @@ export const BlogSection: React.FC = () => {
                     {post.title}
                   </h3>
 
-                  {/* Publisher Name */}
+                  {/* Publisher / Author Name */}
                   <div className="flex items-center gap-1.5 text-xs font-mono text-[#14120F]/80 mb-3 bg-[#E5DFC8] px-2.5 py-1 w-fit border border-[#14120F]/20">
                     <User className="w-3 h-3 text-[#E4402A]" />
-                    <span>By <strong className="text-[#14120F]">{post.publisherName}</strong></span>
+                    <span>By <strong className="text-[#14120F]">{post.author}</strong></span>
                   </div>
 
-                  {/* Excerpt */}
+                  {/* Excerpt / Content snippet */}
                   <p className="text-sm font-sans text-[#14120F]/85 leading-relaxed line-clamp-3 mb-6">
-                    {post.content}
+                    {post.excerpt || post.content}
                   </p>
                 </div>
 
@@ -326,12 +326,12 @@ export const BlogSection: React.FC = () => {
                     <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#14120F]/80 mt-3">
                       <div className="flex items-center gap-1.5">
                         <User className="w-3.5 h-3.5 text-[#E4402A]" />
-                        <span>Published by: <strong className="text-[#14120F]">{activeReadingBlog.publisherName}</strong></span>
+                        <span>Published by: <strong className="text-[#14120F]">{activeReadingBlog.author}</strong></span>
                       </div>
                       <span>&bull;</span>
                       <div className="flex items-center gap-1.5">
                         <Calendar className="w-3.5 h-3.5 text-[#14120F]" />
-                        <span>{new Date(activeReadingBlog.createdAt).toLocaleDateString(undefined, {
+                        <span>{new Date(activeReadingBlog.published_at || activeReadingBlog.created_at).toLocaleDateString(undefined, {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
