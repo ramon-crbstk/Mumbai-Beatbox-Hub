@@ -92,4 +92,41 @@ ALTER TABLE public.contact_dispatches ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public contact dispatch select" ON public.contact_dispatches FOR SELECT TO public USING (true);
 CREATE POLICY "Allow public contact dispatch insert" ON public.contact_dispatches FOR INSERT TO public WITH CHECK (true);
 CREATE POLICY "Allow public contact dispatch delete" ON public.contact_dispatches FOR DELETE TO public USING (true);
+
+-- 6. UPCOMING EVENTS & CYPHER SCHEDULE TABLE
+CREATE TABLE IF NOT EXISTS public.events (
+    id TEXT PRIMARY KEY DEFAULT ('evt-' || floor(extract(epoch from now()) * 1000)::text),
+    name TEXT NOT NULL,
+    date TEXT NOT NULL,
+    time TEXT NOT NULL DEFAULT '5:30 PM – 8:00 PM IST',
+    venue TEXT NOT NULL,
+    area TEXT NOT NULL DEFAULT 'Mumbai',
+    blurb TEXT NOT NULL DEFAULT '',
+    entry TEXT NOT NULL DEFAULT 'Free Entry / Open to all',
+    is_battle_or_live BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public events select" ON public.events FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public events insert" ON public.events FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public events update" ON public.events FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public events delete" ON public.events FOR DELETE TO public USING (true);
+
+-- 7. COMMUNITY BLOGS & EDITORIAL SUBMISSIONS TABLE
+CREATE TABLE IF NOT EXISTS public.blogs (
+    id TEXT PRIMARY KEY DEFAULT ('blog-' || floor(extract(epoch from now()) * 1000)::text),
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    publisher_name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'Community Voice',
+    status TEXT NOT NULL DEFAULT 'pending',
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public blogs select" ON public.blogs FOR SELECT TO public USING (true);
+CREATE POLICY "Allow public blogs insert" ON public.blogs FOR INSERT TO public WITH CHECK (true);
+CREATE POLICY "Allow public blogs update" ON public.blogs FOR UPDATE TO public USING (true);
+CREATE POLICY "Allow public blogs delete" ON public.blogs FOR DELETE TO public USING (true);
 `;

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
-import { MbhSkylineBanner } from '../components/MbhSkylineBanner';
 import { AboutSection } from '../components/AboutSection';
 import { WhatWeDoSection } from '../components/WhatWeDoSection';
 import { MidPageCta } from '../components/MidPageCta';
@@ -48,9 +47,6 @@ export function PublicHomePage() {
       <main>
         {/* Hero Section */}
         <Hero onOpenJoinModal={() => handleOpenJoinModal('Weekend Community Jam')} />
-
-        {/* Official MBH Mumbai Skyline Banner with Gateway & Sea Link */}
-        <MbhSkylineBanner onJoinClick={() => handleOpenJoinModal('Mumbai Skyline Cypher Session')} />
 
         {/* About Section */}
         <AboutSection />

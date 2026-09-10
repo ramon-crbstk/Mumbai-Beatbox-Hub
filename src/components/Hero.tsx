@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowRight, Volume2, Sparkles, MapPin, Radio } from 'lucide-react';
+import { ArrowRight, Volume2, Sparkles, MapPin } from 'lucide-react';
 
 interface HeroProps {
   onOpenJoinModal: () => void;
@@ -75,35 +75,12 @@ export const Hero: React.FC<HeroProps> = ({ onOpenJoinModal }) => {
       />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        {/* Top Flyer Header Stamp */}
-        <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-[#F4EFE4]/15 font-mono text-xs text-[#F4EFE4]/70">
-          <div className="flex items-center gap-2">
-            <span className="inline-block w-2.5 h-2.5 bg-[#FFC93C] rounded-none rotate-45" />
-            <span className="uppercase tracking-widest text-[#FFC93C] font-semibold">
-              STREET FLYER BULLETIN // ISSUE NO. 26
-            </span>
-          </div>
-          <div className="flex items-center gap-4 text-[11px] tracking-wider uppercase">
-            <span className="hidden sm:inline">100% ACOUSTIC VOCAL PERCUSSION</span>
-            <span className="px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/30">
-              MUMBAI, MH-01
-            </span>
-          </div>
-        </div>
-
         {/* Asymmetric Hero Poster Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
           {/* Left Column: Headline & Narrative */}
           <div className="lg:col-span-7 space-y-6">
             
-            {/* Live Cypher Alert Tag - rotated street badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#14120F] border-2 border-[#E4402A] text-[#F4EFE4] text-xs font-mono font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#E4402A] -rotate-1 hover:rotate-0 transition-transform">
-              <span className="w-2 h-2 rounded-full bg-[#E4402A] animate-ping" />
-              <Radio className="w-3.5 h-3.5 text-[#E4402A]" />
-              <span>Next Open Jam: Sat 5:30 PM @ Carter Road Bandra</span>
-            </div>
-
             {/* Poster Headline */}
             <div className="space-y-2">
               <div className="flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-[#FFC93C]">

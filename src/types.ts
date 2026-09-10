@@ -8,6 +8,18 @@ export interface EventItem {
   blurb: string;
   entry: string;
   isBattleOrLive?: boolean;
+  createdAt?: string;
+}
+
+export interface BlogPostRecord {
+  id: string;
+  title: string;
+  content: string;
+  publisherName: string;
+  status: 'pending' | 'approved' | 'rejected';
+  category?: string;
+  createdAt: string;
+  approvedAt?: string | null;
 }
 
 export interface PillarCard {

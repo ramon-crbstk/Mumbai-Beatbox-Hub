@@ -24,7 +24,7 @@ interface OverviewTabProps {
   members: (CommunityMember & { photoUrl: string })[];
   rsvps: RsvpRecord[];
   messages: ContactDispatchRecord[];
-  onSelectTab: (tab: 'overview' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages') => void;
+  onSelectTab: (tab: 'overview' | 'events' | 'blogs' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages') => void;
   onOpenAddModal: (tab: 'gallery' | 'videos' | 'members') => void;
 }
 

@@ -14,7 +14,9 @@ import {
   Menu,
   X,
   AlertCircle,
-  Radio
+  Radio,
+  Calendar,
+  BookOpen
 } from 'lucide-react';
 import { AdminUser, signOutAdmin } from '../../lib/adminAuth';
 import { 
@@ -23,12 +25,16 @@ import {
   fetchCommunityMembers, 
   fetchRsvps, 
   fetchContactDispatches,
+  fetchUpcomingEvents,
+  fetchAllBlogsAdmin,
   RsvpRecord,
   ContactDispatchRecord
 } from '../../lib/supabase';
-import { GalleryItem, VideoItem, CommunityMember } from '../../types';
+import { GalleryItem, VideoItem, CommunityMember, EventItem, BlogPostRecord } from '../../types';
 
 import { OverviewTab } from './OverviewTab';
+import { EventsTab } from './EventsTab';
+import { BlogsTab } from './BlogsTab';
 import { GalleryTab } from './GalleryTab';
 import { VideosTab } from './VideosTab';
 import { MembersTab } from './MembersTab';
@@ -36,7 +42,7 @@ import { RsvpsTab } from './RsvpsTab';
 import { MessagesTab } from './MessagesTab';
 import { SessionDiagnosisBanner } from './SessionDiagnosisBanner';
 
-type AdminTab = 'overview' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages';
+type AdminTab = 'overview' | 'events' | 'blogs' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages';
 
 interface AdminDashboardProps {
   adminUser: AdminUser;
@@ -52,13 +58,15 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
   const [loadError, setLoadError] = useState<string | null>(null);
 
   // Data collections
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [blogs, setBlogs] = useState<BlogPostRecord[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [members, setMembers] = useState<(CommunityMember & { photoUrl: string })[]>([]);
   const [rsvps, setRsvps] = useState<RsvpRecord[]>([]);
   const [messages, setMessages] = useState<ContactDispatchRecord[]>([]);
 
-  // Load all 5 Supabase tables concurrently
+  // Load all Supabase tables concurrently
   const loadAllData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
@@ -68,12 +76,14 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     setLoadError(null);
 
     try {
-      const [galRes, vidRes, memRes, rsvpRes, msgRes] = await Promise.all([
+      const [galRes, vidRes, memRes, rsvpRes, msgRes, evtRes, blogRes] = await Promise.all([
         fetchGalleryItems(),
         fetchVideoItems(),
         fetchCommunityMembers(),
         fetchRsvps(),
         fetchContactDispatches(),
+        fetchUpcomingEvents(),
+        fetchAllBlogsAdmin(),
       ]);
 
       if (galRes) setGallery(galRes);
@@ -81,6 +91,8 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
       if (memRes) setMembers(memRes);
       if (rsvpRes) setRsvps(rsvpRes);
       if (msgRes) setMessages(msgRes);
+      if (evtRes) setEvents(evtRes);
+      if (blogRes) setBlogs(blogRes);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setLoadError(msg || 'Failed to sync with Supabase tables.');
@@ -99,8 +111,17 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     onLogout();
   };
 
+  const pendingBlogsCount = blogs.filter((b) => b.status === 'pending').length;
+
   const navItems = [
     { id: 'overview' as const, label: 'Overview', icon: LayoutDashboard, count: null },
+    { id: 'events' as const, label: 'Events & Cyphers', icon: Calendar, count: events.length },
+    { 
+      id: 'blogs' as const, 
+      label: 'Blog Approvals', 
+      icon: BookOpen, 
+      count: pendingBlogsCount > 0 ? `${pendingBlogsCount} New` : blogs.length 
+    },
     { id: 'gallery' as const, label: 'Gallery', icon: ImageIcon, count: gallery.length },
     { id: 'videos' as const, label: 'Videos', icon: VideoIcon, count: videos.length },
     { id: 'members' as const, label: 'Members', icon: Users, count: members.length },
@@ -316,6 +337,20 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
                   messages={messages}
                   onSelectTab={(tab) => setActiveTab(tab)}
                   onOpenAddModal={(tab) => setActiveTab(tab)}
+                />
+              )}
+
+              {activeTab === 'events' && (
+                <EventsTab
+                  items={events}
+                  onRefresh={() => loadAllData(true)}
+                />
+              )}
+
+              {activeTab === 'blogs' && (
+                <BlogsTab
+                  items={blogs}
+                  onRefresh={() => loadAllData(true)}
                 />
               )}
 

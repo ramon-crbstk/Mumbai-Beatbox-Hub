@@ -72,6 +72,8 @@ GRANT ALL ON TABLE public.gallery TO authenticated, anon;
 GRANT ALL ON TABLE public.videos TO authenticated, anon;
 GRANT ALL ON TABLE public.rsvps TO authenticated, anon;
 GRANT ALL ON TABLE public.contact_dispatches TO authenticated, anon;
+GRANT ALL ON TABLE public.events TO authenticated, anon;
+GRANT ALL ON TABLE public.blogs TO authenticated, anon;
 
 -- ============================================================================
 -- 2. GALLERY MEDIA TABLE
@@ -261,3 +263,78 @@ CREATE POLICY "Allow admin contact dispatch select" ON public.contact_dispatches
 
 CREATE POLICY "Allow admin contact dispatch delete" ON public.contact_dispatches
     FOR DELETE TO authenticated USING (public.is_admin());
+
+-- ============================================================================
+-- 7. UPCOMING EVENTS & CYPHER SCHEDULE TABLE
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.events (
+    id TEXT PRIMARY KEY DEFAULT ('evt-' || floor(extract(epoch from now()) * 1000)::text),
+    name TEXT NOT NULL,
+    date TEXT NOT NULL,
+    time TEXT NOT NULL DEFAULT '5:30 PM – 8:00 PM IST',
+    venue TEXT NOT NULL,
+    area TEXT NOT NULL DEFAULT 'Mumbai',
+    blurb TEXT NOT NULL DEFAULT '',
+    entry TEXT NOT NULL DEFAULT 'Free Entry / Open to all',
+    is_battle_or_live BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public events select" ON public.events;
+DROP POLICY IF EXISTS "Allow admin events insert" ON public.events;
+DROP POLICY IF EXISTS "Allow admin events update" ON public.events;
+DROP POLICY IF EXISTS "Allow admin events delete" ON public.events;
+
+-- Everyone can view upcoming cyphers and events
+CREATE POLICY "Allow public events select" ON public.events
+    FOR SELECT TO public USING (true);
+
+-- Only admins can add, update, or remove events
+CREATE POLICY "Allow admin events insert" ON public.events
+    FOR INSERT TO authenticated WITH CHECK (public.is_admin());
+
+CREATE POLICY "Allow admin events update" ON public.events
+    FOR UPDATE TO authenticated USING (public.is_admin());
+
+CREATE POLICY "Allow admin events delete" ON public.events
+    FOR DELETE TO authenticated USING (public.is_admin());
+
+-- ============================================================================
+-- 8. COMMUNITY BLOGS & EDITORIAL SUBMISSIONS TABLE
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS public.blogs (
+    id TEXT PRIMARY KEY DEFAULT ('blog-' || floor(extract(epoch from now()) * 1000)::text),
+    title TEXT NOT NULL,
+    content TEXT NOT NULL,
+    publisher_name TEXT NOT NULL,
+    category TEXT NOT NULL DEFAULT 'Community Voice',
+    status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'approved' | 'rejected'
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public blogs select approved" ON public.blogs;
+DROP POLICY IF EXISTS "Allow admin blogs select all" ON public.blogs;
+DROP POLICY IF EXISTS "Allow public blogs submit pending" ON public.blogs;
+DROP POLICY IF EXISTS "Allow admin blogs update status" ON public.blogs;
+DROP POLICY IF EXISTS "Allow admin blogs delete" ON public.blogs;
+
+-- Public can read approved blog posts
+CREATE POLICY "Allow public blogs select approved" ON public.blogs
+    FOR SELECT TO public USING (status = 'approved' OR public.is_admin());
+
+-- Public can submit blogs (defaults to pending approval)
+CREATE POLICY "Allow public blogs submit pending" ON public.blogs
+    FOR INSERT TO public WITH CHECK (status = 'pending' OR public.is_admin());
+
+-- Only admins can update status (approve/reject) or edit blogs
+CREATE POLICY "Allow admin blogs update status" ON public.blogs
+    FOR UPDATE TO authenticated USING (public.is_admin());
+
+-- Only admins can delete blogs
+CREATE POLICY "Allow admin blogs delete" ON public.blogs
+    FOR DELETE TO authenticated USING (public.is_admin());
+
