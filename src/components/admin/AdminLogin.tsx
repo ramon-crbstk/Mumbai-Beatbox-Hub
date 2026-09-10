@@ -217,7 +217,7 @@ export function AdminLogin({ onLoginSuccess, onGoHome }: AdminLoginProps) {
       
       {/* Route watermark */}
       <div className="mt-6 text-center font-mono text-[11px] text-[#F4EFE4]/40">
-        ROUTE: <span className="text-[#FFC93C]">/mhb-admin/login</span> &bull; SUPABASE AUTH PROTECTED
+        ROUTE: <span className="text-[#FFC93C]">/mbh-admin/login</span> &bull; SUPABASE AUTH PROTECTED
       </div>
     </div>
   );
