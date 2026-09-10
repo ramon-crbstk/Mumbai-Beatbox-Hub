@@ -53,32 +53,7 @@ export const PILLARS: PillarCard[] = [
   },
 ];
 
-export const UPCOMING_EVENTS: EventItem[] = [
-  {
-    id: 'carter-road-cypher-48',
-    name: 'Bandra Carter Road Cypher #48',
-    date: 'Saturday, March 14, 2026',
-    time: '5:30 PM – 8:00 PM IST',
-    venue: 'Carter Road Promenade (Near Amphitheatre)',
-    area: 'Bandra West, Mumbai',
-    blurb:
-      'Open circle session against the Arabian Sea breeze. Beginners welcome for 15-min sound clinics before we open the main 8-bar trading circle.',
-    entry: 'Free Entry / Open Mic',
-    isBattleOrLive: false,
-  },
-  {
-    id: 'dadar-acoustic-jam',
-    name: 'Shivaji Park Acoustic Bass Jam',
-    date: 'Sunday, March 22, 2026',
-    time: '4:00 PM – 7:00 PM IST',
-    venue: 'Shivaji Park Grounds (South-West Corner)',
-    area: 'Dadar, Mumbai',
-    blurb:
-      'Pure unplugged vocal power. Focused breakdown on polyphonic textures, click rolls, and structuring clean freestyle combinations.',
-    entry: 'Community Session · RSVP for Location Ping',
-    isBattleOrLive: true,
-  },
-];
+export const UPCOMING_EVENTS: EventItem[] = [];
 
 export const GALLERY_ITEMS: GalleryItem[] = [
   {
@@ -169,35 +144,7 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
   { id: 'p5', name: 'Suburban Jam Series', role: 'Jam Supporter' },
 ];
 
-export const BLOG_POSTS: BlogPost[] = [
-  {
-    id: 'post-1',
-    title: 'From Carter Road to Competitive Brackets: How MBH Began',
-    date: 'February 18, 2026',
-    category: 'Community History',
-    excerpt:
-      'What started with three beatboxers sitting on sea-facing benches with zero amplification turned into a city-spanning collective of vocal percussionists.',
-    readTime: '4 min read',
-  },
-  {
-    id: 'post-2',
-    title: 'Mastering the Inward Bass in High-Humidity Mumbai Climates',
-    date: 'January 29, 2026',
-    category: 'Vocal Science & Health',
-    excerpt:
-      'Practical hydration habits, diaphragm warmups, and airway safety when pushing sub-bass frequencies during long open-air weekend sessions.',
-    readTime: '5 min read',
-  },
-  {
-    id: 'post-3',
-    title: 'The Anatomy of a Cypher: How to Step In When You’re a Beginner',
-    date: 'January 12, 2026',
-    category: 'Cypher Etiquette',
-    excerpt:
-      'Never be intimidated by seasoned battlers. Here is how tempo recognition, 4-count nods, and passing the vocal baton works in our circles.',
-    readTime: '3 min read',
-  },
-];
+export const BLOG_POSTS: BlogPost[] = [];
 
 export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
   {

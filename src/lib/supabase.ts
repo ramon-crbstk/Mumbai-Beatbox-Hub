@@ -1,7 +1,7 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { supabase as sharedSupabaseClient } from './supabase.js';
 import { CommunityMember, GalleryItem, VideoItem, EventItem, BlogPostRecord } from '../types';
-import { COMMUNITY_MEMBERS, GALLERY_ITEMS, FEATURED_VIDEOS, UPCOMING_EVENTS, BLOG_POSTS } from '../data/communityData';
+import { COMMUNITY_MEMBERS, GALLERY_ITEMS, FEATURED_VIDEOS } from '../data/communityData';
 
 // Retrieve environment variables safely
 const DEFAULT_SUPABASE_URL = 'https://tcsovxxhoypfpkbmowhd.supabase.co';
@@ -989,20 +989,25 @@ export async function deleteContactDispatch(id: string): Promise<boolean> {
    ========================================================================= */
 
 const LOCAL_EVENTS_KEY = 'mbh_community_events_cache';
+const DEMO_EVENT_IDS = new Set(['carter-road-cypher-48', 'dadar-acoustic-jam', 'evt-01', 'evt-02']);
 
 export function getLocalEvents(): EventItem[] {
   try {
     const raw = localStorage.getItem(LOCAL_EVENTS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter((item: EventItem) => !DEMO_EVENT_IDS.has(item.id));
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
       }
     }
   } catch {
     // fallback
   }
-  return UPCOMING_EVENTS;
+  return [];
 }
 
 export function setLocalEvents(events: EventItem[]): void {
@@ -1174,75 +1179,21 @@ export async function deleteUpcomingEvent(id: string): Promise<{ success: boolea
    ========================================================================= */
 
 const LOCAL_BLOGS_KEY = 'mbh_community_blogs_cache';
+const DEMO_BLOG_IDS = new Set(['post-1', 'post-2', 'post-3']);
 
-const DEFAULT_INITIAL_BLOGS: BlogPostRecord[] = [
-  {
-    id: 'post-1',
-    title: 'From Carter Road to Competitive Brackets: How MBH Began',
-    content: `What started with three beatboxers sitting on sea-facing benches with zero amplification turned into a city-spanning collective of vocal percussionists.
-
-Back in 2021, beatboxing in Mumbai was isolated. You practiced alone in your bedroom, recorded grainy Instagram videos, and struggled to find acoustic spaces where you could project without people thinking you were coughing.
-
-One Saturday afternoon, we sat on the stone stairs of Carter Road promenade, right by the sea. The crashing tide gave us a natural metronome, and the open sea air let our sub-frequencies carry without distortion. Within 30 minutes, two other beatboxers who happened to be strolling by walked over, asked to drop a 16-bar routine, and the first informal Mumbai Beatbox Hub circle was born.
-
-Today, we host bi-weekly open cyphers across Bandra, Dadar, and Colaba, mentor fresh talent, and produce collegiate battle brackets. But that foundational spirit hasn't changed: no passes, no auditions, no ego. Just raw vocal drums under the open sky.`,
-    publisherName: 'Rohan "Sub-Zero" Sharma',
-    status: 'approved',
-    category: 'Community History',
-    createdAt: '2026-02-18T14:30:00Z',
-    approvedAt: '2026-02-18T15:00:00Z',
-  },
-  {
-    id: 'post-2',
-    title: 'Mastering the Inward Bass in High-Humidity Mumbai Climates',
-    content: `Practical hydration habits, diaphragm warmups, and airway safety when pushing sub-bass frequencies during long open-air weekend sessions.
-
-When practicing inward bass in coastal Mumbai, air moisture and vocal fold tension behave very differently than in dry, air-conditioned rooms. Because you are inhaling air rapidly while vibrating the ventricular folds (false vocal cords), dry throat or sudden temperature shifts can cause immediate rasping and fatigue.
-
-Here is the three-step safety routine our senior beatboxers swear by:
-
-1. Lukewarm Hydration Only: Never drink chilled water between intensive bass routines. Cold water constricts laryngeal muscles and makes tissue vibration harsher.
-2. The 5-Minute Silent Humming Warmup: Before attempting full-force chest or throat vibrations, gently hum descending five-note scales through your nasal passage.
-3. Airway Relaxation & False Cord Engagement: The inward bass does not come from pushing forcefully with your lungs; it is born from relaxing the epiglottis so the incoming draft naturally flaps the ventricular folds.
-
-Remember: if your throat feels scratchy or hurts, stop immediately. Vocal longevity is the hallmark of a true master.`,
-    publisherName: 'Ayesha "VocalClaw" Merchant',
-    status: 'approved',
-    category: 'Vocal Science & Health',
-    createdAt: '2026-01-29T11:20:00Z',
-    approvedAt: '2026-01-29T12:00:00Z',
-  },
-  {
-    id: 'post-3',
-    title: 'The Anatomy of a Cypher: How to Step In When You’re a Beginner',
-    content: `Never be intimidated by seasoned battlers. Here is how tempo recognition, 4-count nods, and passing the vocal baton works in our circles.
-
-Stepping into a live street circle for the first time can make anyone's palms sweat. You see battlers dropping 140 BPM drill patterns and liquid liprolls, and you wonder: "Is my basic kick-hat-snare pattern good enough?"
-
-The answer is an emphatic YES. In the Mumbai Beatbox Hub cypher, we prize timing, groove, and heart far more than flashy technical tricks.
-
-Here are 3 golden rules for jumping in:
-
-1. Catch the 4-Count: Listen to whoever is currently beatboxing. Lock your head nod into the snare count on beats 2 and 4.
-2. The Polite Entry Tap: When the current performer is finishing their 16 bars, make eye contact, nod, and step half a foot forward. They will hand off the beat on the 1-count.
-3. Keep Your First 8 Bars Clean: Don't rush into your fastest routine. Drop a rock-solid boom-bap or straight 4/4 groove. Let the circle feel your pocket.
-
-Once the circle nods with you, the fear vanishes and the music takes over. See you at the next Jam!`,
-    publisherName: 'Kabir "DrillByte" Kulkarni',
-    status: 'approved',
-    category: 'Cypher Etiquette',
-    createdAt: '2026-01-12T16:45:00Z',
-    approvedAt: '2026-01-12T17:00:00Z',
-  },
-];
+const DEFAULT_INITIAL_BLOGS: BlogPostRecord[] = [];
 
 export function getLocalBlogs(): BlogPostRecord[] {
   try {
     const raw = localStorage.getItem(LOCAL_BLOGS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        const cleaned = parsed.filter((b: BlogPostRecord) => !DEMO_BLOG_IDS.has(b.id));
+        if (cleaned.length !== parsed.length) {
+          localStorage.setItem(LOCAL_BLOGS_KEY, JSON.stringify(cleaned));
+        }
+        return cleaned;
       }
     }
   } catch {
