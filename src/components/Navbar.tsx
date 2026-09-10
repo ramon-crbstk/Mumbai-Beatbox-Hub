@@ -43,9 +43,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
             className="group flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC93C]"
             onClick={(e) => handleLinkClick(e, '#home')}
           >
-            {/* MHB Kaali-Peeli Stamp Badge */}
+            {/* MBH Kaali-Peeli Stamp Badge with Soundwave Mark */}
             <div className="relative flex items-center justify-center w-11 h-11 bg-[#FFC93C] text-[#14120F] font-black border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-[1px_1px_0px_0px_#F4EFE4] transition-all">
-              <span className="font-['Anton'] tracking-wider text-xl leading-none">MHB</span>
+              <span className="font-['Anton'] tracking-wider text-xl leading-none">MBH</span>
               <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-[#E4402A] rounded-full ring-2 ring-[#14120F]" title="Vocal Live Division" />
             </div>
 
@@ -55,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
               </span>
               <span className="text-[11px] font-mono tracking-widest text-[#FFC93C] uppercase mt-0.5 flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#FFC93C] inline-block animate-pulse" />
-                Vocal Percussion Collective
+                MBH Vocal Percussion Collective
               </span>
             </div>
           </a>

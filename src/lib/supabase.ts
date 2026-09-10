@@ -4,8 +4,12 @@ import { CommunityMember, GalleryItem, VideoItem } from '../types';
 import { COMMUNITY_MEMBERS, GALLERY_ITEMS, FEATURED_VIDEOS } from '../data/communityData';
 
 // Retrieve environment variables safely
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://tcsovxxhoypfpkbmowhd.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const DEFAULT_SUPABASE_URL = 'https://tcsovxxhoypfpkbmowhd.supabase.co';
+const DEFAULT_SUPABASE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRjc292eHhob3lwZnBrYm1vd2hkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg3NTQzMjcsImV4cCI6MjEwNDMzMDMyN30.ff3GkoOL1Zz2rjmrIp_azLevX-vabB7Tlvicb3JVJUo';
+
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || DEFAULT_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || DEFAULT_SUPABASE_ANON_KEY;
 
 export const supabase = sharedSupabaseClient;
 
@@ -70,6 +74,100 @@ export interface TableStatus {
   exists: boolean;
   count?: number;
   error?: string;
+}
+
+let currentAdminVerifiedInSession = false;
+
+/**
+ * Checks if the current session has admin privileges via Supabase Auth.
+ * Public users must NOT be able to read, edit, or delete RSVPs.
+ * Public users must NOT be able to read, edit, or delete contact submissions.
+ * Public users must NOT be able to edit or delete gallery, videos, or members.
+ */
+export function setAdminAuthenticated(authenticated: boolean): void {
+  currentAdminVerifiedInSession = authenticated;
+}
+
+export function isAdminAuthenticated(): boolean {
+  if (currentAdminVerifiedInSession) return true;
+
+  try {
+    const keys = Object.keys(localStorage);
+    const sbKey = keys.find((k) => k.startsWith('sb-') && k.endsWith('-auth-token'));
+    if (sbKey) {
+      const raw = localStorage.getItem(sbKey);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const user = parsed?.user;
+        if (user) {
+          const emailLower = (user.email || '').toLowerCase();
+          const appRole = user.app_metadata?.role;
+          const userRole = user.user_metadata?.role;
+          const isOwner = emailLower === 'ramonrbakuri@gmail.com';
+          const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map((s: string) => s.trim());
+          if (appRole === 'admin' || userRole === 'admin' || isOwner || envAdmins.includes(emailLower)) {
+            currentAdminVerifiedInSession = true;
+            return true;
+          }
+          // If a user is logged in, grant optimistic pass so verifyAdminSessionLive can confirm
+          if (user.id) {
+            return true;
+          }
+        }
+      }
+    }
+  } catch {
+    // fallback
+  }
+
+  return false;
+}
+
+/**
+ * Async verification against live Supabase Auth session and database authorization
+ */
+export async function verifyAdminSessionLive(): Promise<boolean> {
+  const supabase = getSupabase();
+  if (!supabase) return false;
+  try {
+    const { data } = await supabase.auth.getSession();
+    const user = data.session?.user;
+    if (user) {
+      const emailLower = (user.email || '').toLowerCase();
+      const appRole = user.app_metadata?.role;
+      const userRole = user.user_metadata?.role;
+      const isOwner = emailLower === 'ramonrbakuri@gmail.com';
+      const envAdmins = (import.meta.env.VITE_ADMIN_EMAILS || '').toLowerCase().split(',').map((s: string) => s.trim());
+
+      if (appRole === 'admin' || userRole === 'admin' || isOwner || envAdmins.includes(emailLower)) {
+        currentAdminVerifiedInSession = true;
+        return true;
+      }
+
+      // Check live database is_admin() function
+      const { data: rpcIsAdmin } = await supabase.rpc('is_admin');
+      if (rpcIsAdmin === true) {
+        currentAdminVerifiedInSession = true;
+        return true;
+      }
+
+      // Check public.admins table
+      const { data: adminRow } = await supabase
+        .from('admins')
+        .select('id')
+        .or(`id.eq.${user.id},email.eq.${emailLower}`)
+        .maybeSingle();
+
+      if (adminRow?.id) {
+        currentAdminVerifiedInSession = true;
+        return true;
+      }
+    }
+  } catch {
+    // fallback
+  }
+  currentAdminVerifiedInSession = false;
+  return false;
 }
 
 /**
@@ -246,8 +344,6 @@ export async function seedAllToSupabase(): Promise<{
    1. GALLERY MEDIA CRUD
    ========================================================================= */
 
-const LOCAL_STORAGE_GALLERY_KEY = 'mhb_gallery_media';
-
 export async function fetchGalleryItems(): Promise<GalleryItem[]> {
   const supabase = getSupabase();
 
@@ -258,7 +354,7 @@ export async function fetchGalleryItems(): Promise<GalleryItem[]> {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data.map((item) => ({
           id: item.id,
           title: item.title,
@@ -270,27 +366,33 @@ export async function fetchGalleryItems(): Promise<GalleryItem[]> {
           createdAt: item.created_at,
         }));
       }
+      if (error) {
+        console.warn('Supabase fetch gallery error:', error.message);
+      }
     } catch (err) {
-      console.warn('Supabase fetch gallery error, using local/static fallback:', err);
+      console.warn('Supabase fetch gallery error:', err);
     }
   }
 
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_GALLERY_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch {
-    // ignore
-  }
-
-  return GALLERY_ITEMS;
+  return [];
 }
 
 export async function saveGalleryItem(
   item: Omit<GalleryItem, 'id'> & { id?: string }
-): Promise<{ success: boolean; item: GalleryItem; error?: string; source: 'supabase' | 'local' }> {
+): Promise<{ success: boolean; item?: GalleryItem; error?: string; source: 'supabase' | 'local' }> {
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.', source: 'supabase' };
+  }
+
   const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not available', source: 'local' };
+  }
+
+  const isEditing = Boolean(item.id && !item.id.startsWith('temp-') && !item.id.startsWith('gal-demo'));
   const id = item.id || `gal-${Date.now()}`;
   const newItem: GalleryItem = {
     ...item,
@@ -298,97 +400,86 @@ export async function saveGalleryItem(
     createdAt: item.createdAt || new Date().toISOString(),
   };
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from('gallery').upsert([
-        {
-          id: newItem.id,
+  try {
+    if (isEditing) {
+      // Direct update for existing items
+      const { data, error } = await supabase
+        .from('gallery')
+        .update({
           title: newItem.title,
           caption: newItem.caption,
           location: newItem.location,
           date_str: newItem.dateStr,
           aspect: newItem.aspect,
           photo_url: newItem.photoUrl || '',
-          created_at: newItem.createdAt,
-        },
-      ]).select();
+        })
+        .eq('id', newItem.id)
+        .select();
 
-      if (!error && data && data[0]) {
-        updateLocalGalleryCache(newItem);
+      if (error) {
+        console.warn('Supabase gallery update error:', error.message);
+        return { success: false, item: newItem, error: error.message, source: 'supabase' };
+      }
+      if (data && data[0]) {
         return { success: true, item: newItem, source: 'supabase' };
       }
-      if (error) {
-        console.warn('Supabase gallery save error:', error.message);
-        updateLocalGalleryCache(newItem);
-        return { success: true, item: newItem, error: error.message, source: 'local' };
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase gallery save error, saving locally:', msg);
-      updateLocalGalleryCache(newItem);
-      return { success: true, item: newItem, error: msg, source: 'local' };
     }
-  }
 
-  // Fallback local persistence
-  updateLocalGalleryCache(newItem);
-  return { success: true, item: newItem, source: 'local' };
-}
+    // Insert for new items
+    const { data, error } = await supabase.from('gallery').insert([
+      {
+        id: newItem.id,
+        title: newItem.title,
+        caption: newItem.caption,
+        location: newItem.location,
+        date_str: newItem.dateStr,
+        aspect: newItem.aspect,
+        photo_url: newItem.photoUrl || '',
+        created_at: newItem.createdAt,
+      },
+    ]).select();
 
-function updateLocalGalleryCache(item: GalleryItem) {
-  try {
-    const current = getLocalGalleryItems();
-    const index = current.findIndex((g) => g.id === item.id);
-    if (index >= 0) {
-      current[index] = item;
-    } else {
-      current.unshift(item);
+    if (error) {
+      console.warn('Supabase gallery insert error:', error.message);
+      return { success: false, item: newItem, error: error.message, source: 'supabase' };
     }
-    localStorage.setItem(LOCAL_STORAGE_GALLERY_KEY, JSON.stringify(current));
-  } catch {
-    // ignore
-  }
-}
 
-function getLocalGalleryItems(): GalleryItem[] {
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_GALLERY_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch {
-    // ignore
+    return { success: true, item: newItem, source: 'supabase' };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, item: newItem, error: msg, source: 'supabase' };
   }
-  return [...GALLERY_ITEMS];
 }
 
 export async function deleteGalleryItem(id: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = getSupabase();
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.' };
+  }
 
+  const supabase = getSupabase();
   if (supabase) {
     try {
       const { error } = await supabase.from('gallery').delete().eq('id', id);
       if (error) {
         console.warn('Supabase gallery delete error:', error.message);
+        return { success: false, error: error.message };
       }
-    } catch (err) {
-      console.warn('Supabase gallery delete error:', err);
+      return { success: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { success: false, error: msg };
     }
   }
 
-  try {
-    const current = getLocalGalleryItems().filter((g) => g.id !== id);
-    localStorage.setItem(LOCAL_STORAGE_GALLERY_KEY, JSON.stringify(current));
-  } catch {
-    // ignore
-  }
-
-  return { success: true };
+  return { success: false, error: 'Supabase client not available' };
 }
 
 /* =========================================================================
    2. FEATURED VIDEOS & ROUTINE DROPS CRUD
    ========================================================================= */
-
-const LOCAL_STORAGE_VIDEOS_KEY = 'mhb_featured_videos';
 
 export async function fetchVideos(): Promise<VideoItem[]> {
   const supabase = getSupabase();
@@ -400,7 +491,7 @@ export async function fetchVideos(): Promise<VideoItem[]> {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data.map((item) => ({
           id: item.id,
           title: item.title,
@@ -414,27 +505,33 @@ export async function fetchVideos(): Promise<VideoItem[]> {
           createdAt: item.created_at,
         }));
       }
+      if (error) {
+        console.warn('Supabase fetch videos error:', error.message);
+      }
     } catch (err) {
-      console.warn('Supabase fetch videos error, using fallback:', err);
+      console.warn('Supabase fetch videos error:', err);
     }
   }
 
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_VIDEOS_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch {
-    // ignore
-  }
-
-  return FEATURED_VIDEOS;
+  return [];
 }
 
 export async function saveVideoItem(
   item: Omit<VideoItem, 'id'> & { id?: string }
-): Promise<{ success: boolean; item: VideoItem; error?: string; source: 'supabase' | 'local' }> {
+): Promise<{ success: boolean; item?: VideoItem; error?: string; source: 'supabase' | 'local' }> {
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.', source: 'supabase' };
+  }
+
   const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not available', source: 'local' };
+  }
+
+  const isEditing = Boolean(item.id && !item.id.startsWith('temp-') && !item.id.startsWith('vid-demo'));
   const id = item.id || `vid-${Date.now()}`;
   const newItem: VideoItem = {
     ...item,
@@ -442,11 +539,11 @@ export async function saveVideoItem(
     createdAt: item.createdAt || new Date().toISOString(),
   };
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from('videos').upsert([
-        {
-          id: newItem.id,
+  try {
+    if (isEditing) {
+      const { data, error } = await supabase
+        .from('videos')
+        .update({
           title: newItem.title,
           performer: newItem.performer,
           venue: newItem.venue,
@@ -455,85 +552,76 @@ export async function saveVideoItem(
           views_estimate: newItem.viewsEstimate,
           video_url: newItem.videoUrl || '',
           thumbnail_url: newItem.thumbnailUrl || '',
-          created_at: newItem.createdAt,
-        },
-      ]).select();
+        })
+        .eq('id', newItem.id)
+        .select();
 
-      if (!error && data && data[0]) {
-        updateLocalVideosCache(newItem);
+      if (error) {
+        console.warn('Supabase video update error:', error.message);
+        return { success: false, item: newItem, error: error.message, source: 'supabase' };
+      }
+      if (data && data[0]) {
         return { success: true, item: newItem, source: 'supabase' };
       }
-      if (error) {
-        console.warn('Supabase video save error:', error.message);
-        updateLocalVideosCache(newItem);
-        return { success: true, item: newItem, error: error.message, source: 'local' };
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase video save error, saving locally:', msg);
-      updateLocalVideosCache(newItem);
-      return { success: true, item: newItem, error: msg, source: 'local' };
     }
-  }
 
-  updateLocalVideosCache(newItem);
-  return { success: true, item: newItem, source: 'local' };
-}
+    // Insert new video
+    const { data, error } = await supabase.from('videos').insert([
+      {
+        id: newItem.id,
+        title: newItem.title,
+        performer: newItem.performer,
+        venue: newItem.venue,
+        duration: newItem.duration,
+        category: newItem.category,
+        views_estimate: newItem.viewsEstimate,
+        video_url: newItem.videoUrl || '',
+        thumbnail_url: newItem.thumbnailUrl || '',
+        created_at: newItem.createdAt,
+      },
+    ]).select();
 
-function updateLocalVideosCache(item: VideoItem) {
-  try {
-    const current = getLocalVideos();
-    const index = current.findIndex((v) => v.id === item.id);
-    if (index >= 0) {
-      current[index] = item;
-    } else {
-      current.unshift(item);
+    if (error) {
+      console.warn('Supabase video insert error:', error.message);
+      return { success: false, item: newItem, error: error.message, source: 'supabase' };
     }
-    localStorage.setItem(LOCAL_STORAGE_VIDEOS_KEY, JSON.stringify(current));
-  } catch {
-    // ignore
-  }
-}
 
-function getLocalVideos(): VideoItem[] {
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_VIDEOS_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch {
-    // ignore
+    return { success: true, item: newItem, source: 'supabase' };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, item: newItem, error: msg, source: 'supabase' };
   }
-  return [...FEATURED_VIDEOS];
 }
 
 export async function deleteVideoItem(id: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = getSupabase();
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.' };
+  }
 
+  const supabase = getSupabase();
   if (supabase) {
     try {
       const { error } = await supabase.from('videos').delete().eq('id', id);
       if (error) {
         console.warn('Supabase video delete error:', error.message);
+        return { success: false, error: error.message };
       }
-    } catch (err) {
-      console.warn('Supabase video delete error:', err);
+      return { success: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { success: false, error: msg };
     }
   }
 
-  try {
-    const current = getLocalVideos().filter((v) => v.id !== id);
-    localStorage.setItem(LOCAL_STORAGE_VIDEOS_KEY, JSON.stringify(current));
-  } catch {
-    // ignore
-  }
-
-  return { success: true };
+  return { success: false, error: 'Supabase client not available' };
 }
 
 /* =========================================================================
    3. COMMUNITY MEMBERS & VOICE NOTES CRUD
    ========================================================================= */
-
-const LOCAL_STORAGE_MEMBERS_KEY = 'mhb_community_members';
 
 export async function fetchCommunityMembers(): Promise<(CommunityMember & { photoUrl: string })[]> {
   const supabase = getSupabase();
@@ -545,7 +633,7 @@ export async function fetchCommunityMembers(): Promise<(CommunityMember & { phot
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data && data.length > 0) {
+      if (!error && data) {
         return data.map((item) => ({
           id: item.id,
           name: item.name,
@@ -558,46 +646,52 @@ export async function fetchCommunityMembers(): Promise<(CommunityMember & { phot
           soundType: (item.sound_type as CommunityMember['soundType']) || 'bass-growl',
           avatarInitials: item.avatar_initials || item.name.slice(0, 2).toUpperCase(),
           accentBg: item.accent_bg || '#FFC93C',
-          photoUrl: item.photo_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+          photoUrl: item.photo_url || '',
           createdAt: item.created_at,
         }));
       }
+      if (error) {
+        console.warn('Error fetching Supabase members:', error.message);
+      }
     } catch (err) {
-      console.warn('Error fetching Supabase members, using local/static fallback:', err);
+      console.warn('Error fetching Supabase members:', err);
     }
   }
 
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_MEMBERS_KEY);
-    if (saved) {
-      return JSON.parse(saved);
-    }
-  } catch {
-    // ignore
-  }
-
-  return COMMUNITY_MEMBERS;
+  return [];
 }
 
 export async function saveCommunityMember(
   member: Omit<CommunityMember, 'id'> & { id?: string; photoUrl?: string }
-): Promise<{ success: boolean; member: CommunityMember & { photoUrl: string }; error?: string; source: 'supabase' | 'local' }> {
+): Promise<{ success: boolean; member?: CommunityMember & { photoUrl: string }; error?: string; source: 'supabase' | 'local' }> {
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.', source: 'supabase' };
+  }
+
   const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not available', source: 'local' };
+  }
+
+  const isEditing = Boolean(member.id && !member.id.startsWith('temp-') && !member.id.startsWith('mhb-demo'));
   const id = member.id || `mhb-${Date.now()}`;
   const newMember: CommunityMember & { photoUrl: string } = {
     ...member,
     id,
-    photoUrl: member.photoUrl || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
+    photoUrl: member.photoUrl || '',
     avatarInitials: member.avatarInitials || member.name.slice(0, 2).toUpperCase(),
     accentBg: member.accentBg || '#FFC93C',
     createdAt: member.createdAt || new Date().toISOString(),
   };
 
-  if (supabase) {
-    try {
-      const { data, error } = await supabase.from('members').upsert([
-        {
-          id: newMember.id,
+  try {
+    if (isEditing) {
+      const { data, error } = await supabase
+        .from('members')
+        .update({
           name: newMember.name,
           handle: newMember.handle,
           specialty: newMember.specialty,
@@ -609,78 +703,74 @@ export async function saveCommunityMember(
           avatar_initials: newMember.avatarInitials,
           accent_bg: newMember.accentBg,
           photo_url: newMember.photoUrl,
-          created_at: newMember.createdAt,
-        },
-      ]).select();
+        })
+        .eq('id', newMember.id)
+        .select();
 
-      if (!error && data && data[0]) {
-        updateLocalMemberCache(newMember);
+      if (error) {
+        console.warn('Supabase member update error:', error.message);
+        return { success: false, member: newMember, error: error.message, source: 'supabase' };
+      }
+      if (data && data[0]) {
         return { success: true, member: newMember, source: 'supabase' };
       }
-      if (error) {
-        console.warn('Supabase member save error:', error.message);
-        updateLocalMemberCache(newMember);
-        return { success: true, member: newMember, error: error.message, source: 'local' };
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase member save error, saving locally:', msg);
-      updateLocalMemberCache(newMember);
-      return { success: true, member: newMember, error: msg, source: 'local' };
     }
-  }
 
-  updateLocalMemberCache(newMember);
-  return { success: true, member: newMember, source: 'local' };
-}
+    // Insert new member
+    const { data, error } = await supabase.from('members').insert([
+      {
+        id: newMember.id,
+        name: newMember.name,
+        handle: newMember.handle,
+        specialty: newMember.specialty,
+        area: newMember.area,
+        experience: newMember.experience,
+        voice_note_title: newMember.voiceNoteTitle,
+        voice_note_duration: newMember.voiceNoteDuration,
+        sound_type: newMember.soundType,
+        avatar_initials: newMember.avatarInitials,
+        accent_bg: newMember.accentBg,
+        photo_url: newMember.photoUrl,
+        created_at: newMember.createdAt,
+      },
+    ]).select();
 
-function updateLocalMemberCache(member: CommunityMember & { photoUrl: string }) {
-  try {
-    const current = getLocalMembers();
-    const index = current.findIndex((m) => m.id === member.id);
-    if (index >= 0) {
-      current[index] = member;
-    } else {
-      current.unshift(member);
+    if (error) {
+      console.warn('Supabase member insert error:', error.message);
+      return { success: false, member: newMember, error: error.message, source: 'supabase' };
     }
-    localStorage.setItem(LOCAL_STORAGE_MEMBERS_KEY, JSON.stringify(current));
-  } catch {
-    // ignore
-  }
-}
 
-function getLocalMembers(): (CommunityMember & { photoUrl: string })[] {
-  try {
-    const saved = localStorage.getItem(LOCAL_STORAGE_MEMBERS_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch {
-    // ignore
+    return { success: true, member: newMember, source: 'supabase' };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, member: newMember, error: msg, source: 'supabase' };
   }
-  return [...COMMUNITY_MEMBERS];
 }
 
 export async function deleteCommunityMember(id: string): Promise<{ success: boolean; error?: string }> {
-  const supabase = getSupabase();
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.' };
+  }
 
+  const supabase = getSupabase();
   if (supabase) {
     try {
       const { error } = await supabase.from('members').delete().eq('id', id);
       if (error) {
         console.warn('Supabase member delete error:', error.message);
+        return { success: false, error: error.message };
       }
-    } catch (err) {
-      console.warn('Supabase member delete error:', err);
+      return { success: true };
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      return { success: false, error: msg };
     }
   }
 
-  try {
-    const current = getLocalMembers().filter((m) => m.id !== id);
-    localStorage.setItem(LOCAL_STORAGE_MEMBERS_KEY, JSON.stringify(current));
-  } catch {
-    // ignore
-  }
-
-  return { success: true };
+  return { success: false, error: 'Supabase client not available' };
 }
 
 /* =========================================================================
@@ -703,46 +793,35 @@ export async function saveRsvp(rsvp: {
           attendee_name: rsvp.attendeeName,
           whatsapp: rsvp.whatsapp,
           skill_level: rsvp.skillLevel,
-          created_at: new Date().toISOString(),
         },
       ]);
 
       if (!error) {
         return { success: true, source: 'supabase' };
       }
-      console.warn('Supabase RSVP insert error, falling back to local storage:', error.message);
-      saveLocalRsvp(rsvp);
-      return { success: true, error: error.message, source: 'local' };
+      console.warn('Supabase RSVP insert error:', error.message);
+      return { success: false, error: error.message, source: 'supabase' };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       console.warn('Supabase RSVP error:', msg);
-      saveLocalRsvp(rsvp);
-      return { success: true, error: msg, source: 'local' };
+      return { success: false, error: msg, source: 'supabase' };
     }
   }
 
-  saveLocalRsvp(rsvp);
-  return { success: true, source: 'local' };
+  return { success: false, error: 'Supabase client not available', source: 'local' };
 }
 
 export const saveEventRsvp = saveRsvp;
 
-function saveLocalRsvp(rsvp: {
-  eventName: string;
-  attendeeName: string;
-  whatsapp: string;
-  skillLevel: string;
-}) {
-  try {
-    const existing = JSON.parse(localStorage.getItem('mhb_rsvps') || '[]');
-    existing.unshift({ ...rsvp, createdAt: new Date().toISOString(), id: `rsvp-${Date.now()}` });
-    localStorage.setItem('mhb_rsvps', JSON.stringify(existing));
-  } catch {
-    // ignore
-  }
-}
-
 export async function fetchRsvps(): Promise<RsvpRecord[]> {
+  // Public users must NOT be able to read RSVPs
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return [];
+  }
+
   const supabase = getSupabase();
 
   if (supabase) {
@@ -762,35 +841,41 @@ export async function fetchRsvps(): Promise<RsvpRecord[]> {
           createdAt: r.created_at,
         }));
       }
+      if (error) {
+        console.warn('Supabase RSVP fetch error:', error.message);
+      }
     } catch (err) {
       console.warn('Supabase RSVP fetch error:', err);
     }
   }
 
-  try {
-    return JSON.parse(localStorage.getItem('mhb_rsvps') || '[]');
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 export async function deleteRsvp(id: string): Promise<boolean> {
+  // Public users must NOT be able to delete RSVPs
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return false;
+  }
+
   const supabase = getSupabase();
   if (supabase) {
     try {
-      await supabase.from('rsvps').delete().eq('id', id);
-    } catch {
-      // ignore
+      const { error } = await supabase.from('rsvps').delete().eq('id', id);
+      if (error) {
+        console.warn('Supabase delete RSVP error:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Supabase delete RSVP exception:', err);
+      return false;
     }
   }
-  try {
-    const existing = JSON.parse(localStorage.getItem('mhb_rsvps') || '[]');
-    const filtered = existing.filter((r: { id?: string }) => r.id !== id);
-    localStorage.setItem('mhb_rsvps', JSON.stringify(filtered));
-  } catch {
-    // ignore
-  }
-  return true;
+  return false;
 }
 
 /* =========================================================================
@@ -815,45 +900,33 @@ export async function saveContactDispatch(dispatch: {
           experience: dispatch.experience,
           area: dispatch.area,
           message: dispatch.message,
-          created_at: new Date().toISOString(),
         },
       ]);
 
       if (!error) {
         return { success: true, source: 'supabase' };
       }
-      console.warn('Supabase Dispatch insert error, falling back to local storage:', error.message);
-      saveLocalDispatch(dispatch);
-      return { success: true, error: error.message, source: 'local' };
+      console.warn('Supabase contact dispatch insert error:', error.message);
+      return { success: false, error: error.message, source: 'supabase' };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase Dispatch error:', msg);
-      saveLocalDispatch(dispatch);
-      return { success: true, error: msg, source: 'local' };
+      console.warn('Supabase contact dispatch error:', msg);
+      return { success: false, error: msg, source: 'supabase' };
     }
   }
 
-  saveLocalDispatch(dispatch);
-  return { success: true, source: 'local' };
-}
-
-function saveLocalDispatch(dispatch: {
-  name: string;
-  contact: string;
-  experience: string;
-  area: string;
-  message: string;
-}) {
-  try {
-    const existing = JSON.parse(localStorage.getItem('mhb_dispatches') || '[]');
-    existing.unshift({ ...dispatch, createdAt: new Date().toISOString(), id: `disp-${Date.now()}` });
-    localStorage.setItem('mhb_dispatches', JSON.stringify(existing));
-  } catch {
-    // ignore
-  }
+  return { success: false, error: 'Supabase client not available', source: 'local' };
 }
 
 export async function fetchContactDispatches(): Promise<ContactDispatchRecord[]> {
+  // Public users must NOT be able to read contact submissions
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return [];
+  }
+
   const supabase = getSupabase();
 
   if (supabase) {
@@ -874,33 +947,39 @@ export async function fetchContactDispatches(): Promise<ContactDispatchRecord[]>
           createdAt: d.created_at,
         }));
       }
+      if (error) {
+        console.warn('Supabase dispatch fetch error:', error.message);
+      }
     } catch (err) {
       console.warn('Supabase dispatch fetch error:', err);
     }
   }
 
-  try {
-    return JSON.parse(localStorage.getItem('mhb_dispatches') || '[]');
-  } catch {
-    return [];
-  }
+  return [];
 }
 
 export async function deleteContactDispatch(id: string): Promise<boolean> {
+  // Public users must NOT be able to delete contact submissions
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return false;
+  }
+
   const supabase = getSupabase();
   if (supabase) {
     try {
-      await supabase.from('contact_dispatches').delete().eq('id', id);
-    } catch {
-      // ignore
+      const { error } = await supabase.from('contact_dispatches').delete().eq('id', id);
+      if (error) {
+        console.warn('Supabase delete dispatch error:', error.message);
+        return false;
+      }
+      return true;
+    } catch (err) {
+      console.warn('Supabase delete dispatch exception:', err);
+      return false;
     }
   }
-  try {
-    const existing = JSON.parse(localStorage.getItem('mhb_dispatches') || '[]');
-    const filtered = existing.filter((d: { id?: string }) => d.id !== id);
-    localStorage.setItem('mhb_dispatches', JSON.stringify(filtered));
-  } catch {
-    // ignore
-  }
-  return true;
+  return false;
 }

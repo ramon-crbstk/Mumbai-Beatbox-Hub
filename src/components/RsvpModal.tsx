@@ -62,7 +62,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
             </div>
 
             <div className="inline-block px-3 py-1 bg-[#14120F] text-[#FFC93C] text-xs font-bold uppercase">
-              RSVP CONFIRMED // TICKET #MHB-2026
+              RSVP CONFIRMED // TICKET #MBH-2026
             </div>
 
             <h3 className="font-['Anton'] text-3xl uppercase tracking-tight text-[#14120F]">

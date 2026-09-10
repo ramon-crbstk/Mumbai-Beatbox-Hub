@@ -5,12 +5,11 @@ import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Volume2, Radio, H
 import { fetchCommunityMembers, isSupabaseConfigured } from '../lib/supabase';
 
 interface MembersSectionProps {
-  onOpenAdmin?: () => void;
   refreshTrigger?: number;
 }
 
-export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, refreshTrigger = 0 }) => {
-  const [membersList, setMembersList] = useState<(CommunityMember & { photoUrl: string })[]>(COMMUNITY_MEMBERS);
+export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger = 0 }) => {
+  const [membersList, setMembersList] = useState<(CommunityMember & { photoUrl: string })[]>([]);
   const [isDbSynced, setIsDbSynced] = useState(false);
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [playbackProgress, setPlaybackProgress] = useState<{ [id: string]: number }>({});
@@ -21,7 +20,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, ref
     let isMounted = true;
     async function loadMembers() {
       const remote = await fetchCommunityMembers();
-      if (isMounted && remote && remote.length > 0) {
+      if (isMounted) {
         setMembersList(remote);
         setIsDbSynced(isSupabaseConfigured());
       }
@@ -279,7 +278,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, ref
     : membersList.filter((m) => m.soundType === selectedFilter);
 
   const filterOptions = [
-    { label: 'All Beatboxers (22)', value: 'all' },
+    { label: `All Beatboxers (${membersList.length})`, value: 'all' },
     { label: 'Inward & Sub Bass', value: 'bass-growl' },
     { label: 'Liproll & Glitch', value: 'liproll' },
     { label: 'Fast Tech & Speed', value: 'fast-tech' },
@@ -301,7 +300,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, ref
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
               <Radio className="w-3.5 h-3.5 animate-pulse text-[#FFC93C]" />
-              <span>ROSTER & AUDIO ARCHIVE // 20+ ARTISTS</span>
+              <span>ROSTER & AUDIO ARCHIVE // {membersList.length > 0 ? `${membersList.length} ARTISTS` : 'COMMUNITY ARTISTS'}</span>
             </div>
             
             <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
@@ -359,7 +358,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, ref
           ))}
         </div>
 
-        {/* Horizontal Scrollable Row for 20+ Member Cards */}
+        {/* Horizontal Scrollable Row for Member Cards */}
         <div
           ref={scrollContainerRef}
           id="members-scroll-container"
@@ -368,17 +367,26 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, ref
           role="region"
           aria-label="Community members showcase list"
         >
-          {filteredMembers.map((member, index) => {
-            const isPlaying = activeMemberId === member.id;
-            const progress = playbackProgress[member.id] || 0;
+          {filteredMembers.length === 0 ? (
+            <div className="w-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
+              <Headphones className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
+              <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Community Roster</h3>
+              <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto">
+                Connected to Supabase <code className="text-[#FFC93C]">members</code> table. Beatboxer profiles added to the database will appear here.
+              </p>
+            </div>
+          ) : (
+            filteredMembers.map((member, index) => {
+              const isPlaying = activeMemberId === member.id;
+              const progress = playbackProgress[member.id] || 0;
 
-            return (
-              <div
-                key={member.id}
-                id={`member-card-${member.id}`}
-                className={`snap-start shrink-0 w-[290px] sm:w-[320px] bg-[#1A1713] border-2 transition-all duration-300 flex flex-col justify-between group ${
-                  isPlaying
-                    ? 'border-[#FFC93C] shadow-[0_0_25px_rgba(255,201,60,0.25)] scale-[1.01]'
+              return (
+                <div
+                  key={member.id}
+                  id={`member-card-${member.id}`}
+                  className={`snap-start shrink-0 w-[290px] sm:w-[320px] bg-[#1A1713] border-2 transition-all duration-300 flex flex-col justify-between group ${
+                    isPlaying
+                      ? 'border-[#FFC93C] shadow-[0_0_25px_rgba(255,201,60,0.25)] scale-[1.01]'
                     : 'border-[#FFC93C]/25 hover:border-[#FFC93C]/70 hover:shadow-lg'
                 }`}
               >
@@ -399,7 +407,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, ref
                   <div className="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-gradient-to-br from-[#1E1B16] to-[#2B261F] text-[#FFC93C]">
                     <span className="font-['Anton'] text-4xl">{member.avatarInitials}</span>
                     <span className="font-mono text-[10px] text-[#F4EFE4]/60 mt-1 uppercase tracking-widest">
-                      MHB ARTIST #{index + 1}
+                      MBH ARTIST #{index + 1}
                     </span>
                   </div>
 
@@ -518,7 +526,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ onOpenAdmin, ref
                 </div>
               </div>
             );
-          })}
+          }))}
         </div>
 
         {/* Directory Footer Info & Scroll Tip */}

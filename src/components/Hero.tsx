@@ -106,18 +106,21 @@ export const Hero: React.FC<HeroProps> = ({ onOpenJoinModal }) => {
 
             {/* Poster Headline */}
             <div className="space-y-2">
-              <div className="text-xs font-mono tracking-widest uppercase text-[#FFC93C]">
-                Official Grassroots Movement
+              <div className="flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-[#FFC93C]">
+                <span className="w-2 h-2 bg-[#FFC93C]" />
+                <span>MBH Official Grassroots Movement</span>
               </div>
-              <h1 className="font-['Anton'] text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#F4EFE4] uppercase leading-[0.92]">
-                Mumbai <br />
-                <span className="text-[#FFC93C] inline-block relative">
-                  Beatbox
-                  {/* Subtle underline hazard bar */}
-                  <span className="absolute left-0 -bottom-2 w-full h-2 bg-[#FFC93C] -skew-x-12 opacity-80" />
-                </span>{' '}
-                <span className="text-[#F4EFE4]">Hub</span>
-              </h1>
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <h1 className="font-['Anton'] text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#F4EFE4] uppercase leading-[0.92]">
+                  Mumbai <br />
+                  <span className="text-[#FFC93C] inline-block relative">
+                    Beatbox
+                    {/* Subtle underline hazard bar */}
+                    <span className="absolute left-0 -bottom-2 w-full h-2 bg-[#FFC93C] -skew-x-12 opacity-80" />
+                  </span>{' '}
+                  <span className="text-[#F4EFE4]">Hub</span>
+                </h1>
+              </div>
             </div>
 
             {/* Subhead and Supporting Line */}

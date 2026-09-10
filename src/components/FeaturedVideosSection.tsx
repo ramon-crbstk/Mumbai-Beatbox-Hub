@@ -9,7 +9,7 @@ interface FeaturedVideosSectionProps {
 }
 
 export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ refreshTrigger = 0 }) => {
-  const [videosList, setVideosList] = useState<VideoItem[]>(FEATURED_VIDEOS);
+  const [videosList, setVideosList] = useState<VideoItem[]>([]);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [isPlayingDemo, setIsPlayingDemo] = useState(false);
 
@@ -17,7 +17,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
     let active = true;
     async function loadVideos() {
       const items = await fetchVideos();
-      if (active && items && items.length > 0) {
+      if (active) {
         setVideosList(items);
       }
     }
@@ -82,12 +82,21 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
 
         {/* Video Thumbnail Row */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {videosList.map((vid, idx) => (
-            <div
-              key={vid.id}
-              id={`video-card-${vid.id}`}
-              className="bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-all p-4 flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C]"
-            >
+          {videosList.length === 0 ? (
+            <div className="col-span-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
+              <Video className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
+              <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Routine Drops Archive</h3>
+              <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto">
+                Connected to Supabase <code className="text-[#FFC93C]">videos</code> table. Video drops added to the database will appear here.
+              </p>
+            </div>
+          ) : (
+            videosList.map((vid, idx) => (
+              <div
+                key={vid.id}
+                id={`video-card-${vid.id}`}
+                className="bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-all p-4 flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C]"
+              >
               
               {/* Thumbnail Container with Play-Button Overlay */}
               <div 
@@ -154,7 +163,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
               </div>
 
             </div>
-          ))}
+          )))}
         </div>
 
       </div>

@@ -1,4 +1,4 @@
-export const SUPABASE_SCHEMA_SQL = `-- Mumbai Beatbox Hub (MHB) - Complete Supabase Database Schema
+export const SUPABASE_SCHEMA_SQL = `-- Mumbai Beatbox Hub (MBH) - Complete Supabase Database Schema
 -- Run this in your Supabase SQL Editor: https://supabase.com/dashboard/project/_/sql
 
 -- 1. GALLERY MEDIA TABLE

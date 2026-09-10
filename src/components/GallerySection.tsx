@@ -9,7 +9,7 @@ interface GallerySectionProps {
 }
 
 export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger = 0 }) => {
-  const [galleryList, setGalleryList] = useState<GalleryItem[]>(GALLERY_ITEMS);
+  const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
   const [customPhotos, setCustomPhotos] = useState<Record<string, string>>({});
 
@@ -17,7 +17,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
     let active = true;
     async function loadGallery() {
       const items = await fetchGalleryItems();
-      if (active && items && items.length > 0) {
+      if (active) {
         setGalleryList(items);
       }
     }
@@ -61,16 +61,25 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
 
         {/* Asymmetric Gallery Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {galleryList.map((item, idx) => {
-            const uploadedSrc = customPhotos[item.id] || item.photoUrl;
+          {galleryList.length === 0 ? (
+            <div className="col-span-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
+              <ImageIcon className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
+              <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Visual Archive</h3>
+              <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto">
+                Connected to Supabase <code className="text-[#FFC93C]">gallery</code> table. Photos added to the database will appear here.
+              </p>
+            </div>
+          ) : (
+            galleryList.map((item, idx) => {
+              const uploadedSrc = customPhotos[item.id] || item.photoUrl;
 
-            return (
-              <div
-                key={item.id}
-                id={`gallery-tile-${item.id}`}
-                onClick={() => setSelectedItem(item)}
-                className="group relative bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:-translate-y-1"
-              >
+              return (
+                <div
+                  key={item.id}
+                  id={`gallery-tile-${item.id}`}
+                  onClick={() => setSelectedItem(item)}
+                  className="group relative bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:-translate-y-1"
+                >
                 {/* Paper Tape Corner Accent */}
                 <div className="absolute -top-2 left-6 w-12 h-3.5 bg-[#FFC93C]/80 -rotate-3 border border-[#14120F]/30 pointer-events-none" />
 
@@ -123,7 +132,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
 
               </div>
             );
-          })}
+          }))}
         </div>
 
       </div>

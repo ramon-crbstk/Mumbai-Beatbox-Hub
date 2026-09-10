@@ -135,7 +135,7 @@ export const FEATURED_VIDEOS: VideoItem[] = [
   {
     id: 'vid-1',
     title: 'Carter Road Sunset Cypher: 4-Bar Bassline Round',
-    performer: 'MHB Collective ft. Local Crew',
+    performer: 'MBH Collective ft. Local Crew',
     venue: 'Bandra Carter Road',
     duration: '04:18',
     category: 'Street Cypher',
@@ -153,7 +153,7 @@ export const FEATURED_VIDEOS: VideoItem[] = [
   {
     id: 'vid-3',
     title: 'Inward Bass & Click Roll Masterclass (Street Breakdown)',
-    performer: 'MHB Mentors Circle',
+    performer: 'MBH Mentors Circle',
     venue: 'Shivaji Park Amphitheatre',
     duration: '05:30',
     category: 'Workshop Drill',
@@ -172,7 +172,7 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
 export const BLOG_POSTS: BlogPost[] = [
   {
     id: 'post-1',
-    title: 'From Carter Road to Competitive Brackets: How MHB Began',
+    title: 'From Carter Road to Competitive Brackets: How MBH Began',
     date: 'February 18, 2026',
     category: 'Community History',
     excerpt:
@@ -472,7 +472,7 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     handle: '@subvortex_aniket',
     specialty: 'Vibration Bass & Hollow Throat Snaps',
     area: 'Sion Circle',
-    experience: '3 yrs in MHB',
+    experience: '3 yrs in MBH',
     voiceNoteTitle: 'Vibration Bass & Slap-Tongue',
     voiceNoteDuration: '0:13',
     soundType: 'bass-growl',
