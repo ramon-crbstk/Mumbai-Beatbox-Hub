@@ -1491,89 +1491,83 @@ export async function togglePublishBlog(
   blogId: string,
   newPublishedValue: boolean
 ): Promise<{ success: boolean; error?: string }> {
-  // 1 & 2. Use existing authenticated Supabase client
+  // 1 & 2. Use existing authenticated Supabase client (same singleton as Members/Gallery/Videos)
   const supabase = getSupabase();
   if (!supabase) {
     return { success: false, error: 'Supabase client is not available.' };
   }
 
-  // 5. Verify the authenticated user exists before the update
-  const { data: authData, error: authError } = await supabase.auth.getUser();
-  let currentUser = authData?.user;
+  // 3 & 4 & 11. Verify the authenticated browser session is available before the UPDATE
+  const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+  let session = sessionData?.session;
 
-  if (authError || !currentUser) {
-    const { data: sessionData } = await supabase.auth.getSession();
-    currentUser = sessionData?.session?.user ?? null;
+  if (sessionError || !session?.user) {
+    // Attempt live session verification to refresh or restore auth state
+    await verifyAdminSessionLive();
+    const { data: refreshedData } = await supabase.auth.getSession();
+    session = refreshedData?.session;
   }
 
-  if (!currentUser) {
+  if (!session?.user) {
+    console.error('[Blog Publish/Unpublish] No active authenticated session found prior to UPDATE.');
     return {
       success: false,
       error: 'Administrator authentication required. Please ensure you are logged into your admin account.',
     };
   }
 
-  // 6. Verify the blog ID being passed to .eq('id', blogId) is the actual blog UUID/text ID from public.blogs
-  const { data: existingBlog, error: fetchErr } = await supabase
-    .from('blogs')
-    .select('id, title, published')
-    .eq('id', blogId)
-    .maybeSingle();
+  // 5, 6, 7. Use the actual database ID returned by Supabase without generating a new ID
+  const actualBlogId = blogId.trim();
 
-  if (fetchErr) {
-    return {
-      success: false,
-      error: `Error checking blog in database (${blogId}): ${fetchErr.message}`,
-    };
-  }
-
-  if (!existingBlog) {
-    return {
-      success: false,
-      error: `Blog not found: Record with ID "${blogId}" does not exist in public.blogs table. Please refresh the blog list.`,
-    };
-  }
-
-  // 7, 8, 9. Update ONLY valid columns: published, published_at (no cover_image_url, no INSERT)
-  // Equivalent to:
-  // const { error } = await supabase
-  //   .from('blogs')
-  //   .update({
-  //     published: newPublishedValue,
-  //     published_at: newPublishedValue ? new Date().toISOString() : null
-  //   })
-  //   .eq('id', blogId);
-  const payload = {
+  // 8 & 9. Strict UPDATE with only published and published_at (no INSERT, no upsert, no full-object overwrite, no cover_image_url)
+  const updatePayload = {
     published: newPublishedValue,
     published_at: newPublishedValue ? new Date().toISOString() : null,
   };
 
+  console.log(`[Blog Publish/Unpublish] Executing UPDATE on public.blogs:`, {
+    actualBlogId,
+    newPublishedValue,
+    updatePayload,
+    authenticatedUser: session.user.email,
+  });
+
   const { error } = await supabase
     .from('blogs')
-    .update(payload)
-    .eq('id', existingBlog.id);
+    .update(updatePayload)
+    .eq('id', actualBlogId);
 
+  // 12. Log the exact Supabase error returned by the update
   if (error) {
-    console.error('Supabase blog update error:', error.message);
+    console.error('Supabase blog update error details:', {
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+      actualBlogId,
+      newPublishedValue,
+    });
     return { success: false, error: error.message };
   }
+
+  console.log(`[Blog Publish/Unpublish] UPDATE succeeded for blog ID: "${actualBlogId}" (published = ${newPublishedValue})`);
 
   // Update local cache to reflect new status immediately
   const localList = getLocalBlogs();
   setLocalBlogs(
     localList.map((b) =>
-      b.id === existingBlog.id
+      b.id === actualBlogId
         ? {
             ...b,
             published: newPublishedValue,
-            published_at: payload.published_at,
+            published_at: updatePayload.published_at,
             updated_at: new Date().toISOString(),
           }
         : b
     )
   );
 
-  // 10. After the update succeeds, refresh the blog list from Supabase
+  // After the update succeeds, refresh the blog list from Supabase
   await fetchAllBlogsAdmin();
 
   return { success: true };
