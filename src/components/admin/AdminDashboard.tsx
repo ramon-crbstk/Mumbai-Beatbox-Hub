@@ -26,15 +26,13 @@ import {
   fetchRsvps, 
   fetchContactDispatches,
   fetchUpcomingEvents,
-  fetchAllBlogsAdmin,
   RsvpRecord,
   ContactDispatchRecord
 } from '../../lib/supabase';
-import { GalleryItem, VideoItem, CommunityMember, EventItem, BlogPostRecord } from '../../types';
+import { GalleryItem, VideoItem, CommunityMember, EventItem } from '../../types';
 
 import { OverviewTab } from './OverviewTab';
 import { EventsTab } from './EventsTab';
-import { BlogsTab } from './BlogsTab';
 import { GalleryTab } from './GalleryTab';
 import { VideosTab } from './VideosTab';
 import { MembersTab } from './MembersTab';
@@ -42,7 +40,7 @@ import { RsvpsTab } from './RsvpsTab';
 import { MessagesTab } from './MessagesTab';
 import { SessionDiagnosisBanner } from './SessionDiagnosisBanner';
 
-type AdminTab = 'overview' | 'events' | 'blogs' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages';
+type AdminTab = 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages';
 
 interface AdminDashboardProps {
   adminUser: AdminUser;
@@ -59,7 +57,6 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
 
   // Data collections
   const [events, setEvents] = useState<EventItem[]>([]);
-  const [blogs, setBlogs] = useState<BlogPostRecord[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [members, setMembers] = useState<(CommunityMember & { photoUrl: string })[]>([]);
@@ -76,14 +73,13 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     setLoadError(null);
 
     try {
-      const [galRes, vidRes, memRes, rsvpRes, msgRes, evtRes, blogRes] = await Promise.all([
+      const [galRes, vidRes, memRes, rsvpRes, msgRes, evtRes] = await Promise.all([
         fetchGalleryItems(),
         fetchVideoItems(),
         fetchCommunityMembers(),
         fetchRsvps(),
         fetchContactDispatches(),
         fetchUpcomingEvents(),
-        fetchAllBlogsAdmin(),
       ]);
 
       if (galRes) setGallery(galRes);
@@ -92,7 +88,6 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
       if (rsvpRes) setRsvps(rsvpRes);
       if (msgRes) setMessages(msgRes);
       if (evtRes) setEvents(evtRes);
-      if (blogRes) setBlogs(blogRes);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setLoadError(msg || 'Failed to sync with Supabase tables.');
@@ -111,17 +106,9 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     onLogout();
   };
 
-  const unapprovedBlogsCount = blogs.filter((b) => !b.published).length;
-
   const navItems = [
     { id: 'overview' as const, label: 'Overview', icon: LayoutDashboard, count: null },
     { id: 'events' as const, label: 'Events & Cyphers', icon: Calendar, count: events.length },
-    { 
-      id: 'blogs' as const, 
-      label: 'Blog Articles', 
-      icon: BookOpen, 
-      count: unapprovedBlogsCount > 0 ? `${unapprovedBlogsCount} Draft` : blogs.length 
-    },
     { id: 'gallery' as const, label: 'Gallery', icon: ImageIcon, count: gallery.length },
     { id: 'videos' as const, label: 'Videos', icon: VideoIcon, count: videos.length },
     { id: 'members' as const, label: 'Members', icon: Users, count: members.length },
@@ -307,7 +294,6 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
               <h1 className="font-['Anton'] text-3xl uppercase tracking-tight text-[#F4EFE4] mt-0.5">
                 {activeTab === 'overview' && 'System Overview & Activity'}
                 {activeTab === 'events' && 'Upcoming Events & Cyphers'}
-                {activeTab === 'blogs' && 'Blog Articles & Editorial Journal'}
                 {activeTab === 'gallery' && 'Gallery Media Management'}
                 {activeTab === 'videos' && 'Featured Video Drops'}
                 {activeTab === 'members' && 'Beatboxer Community Roster'}
@@ -345,13 +331,6 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
               {activeTab === 'events' && (
                 <EventsTab
                   items={events}
-                  onRefresh={() => loadAllData(true)}
-                />
-              )}
-
-              {activeTab === 'blogs' && (
-                <BlogsTab
-                  items={blogs}
                   onRefresh={() => loadAllData(true)}
                 />
               )}

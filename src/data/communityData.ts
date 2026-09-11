@@ -1,4 +1,4 @@
-import { EventItem, PillarCard, GalleryItem, VideoItem, PartnerLogo, BlogPost, CommunityMember } from '../types';
+import { EventItem, PillarCard, GalleryItem, VideoItem, PartnerLogo, CommunityMember } from '../types';
 
 export const COMMUNITY_STATS = [
   {
@@ -143,8 +143,6 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
   { id: 'p4', name: 'Collegiate Hip-Hop League', role: 'Youth Circuit' },
   { id: 'p5', name: 'Suburban Jam Series', role: 'Jam Supporter' },
 ];
-
-export const BLOG_POSTS: BlogPost[] = [];
 
 export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
   {

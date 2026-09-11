@@ -13,20 +13,6 @@ export interface EventItem {
   createdAt?: string;
 }
 
-export interface BlogPostRecord {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  content: string;
-  author: string;
-  category: string;
-  published: boolean;
-  published_at?: string | null;
-  created_at: string;
-  updated_at: string;
-}
-
 export interface PillarCard {
   id: string;
   number: string;
@@ -64,15 +50,6 @@ export interface PartnerLogo {
   id: string;
   name: string;
   role: string;
-}
-
-export interface BlogPost {
-  id: string;
-  title: string;
-  date: string;
-  category: string;
-  excerpt: string;
-  readTime: string;
 }
 
 export interface RsvpState {

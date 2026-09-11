@@ -15,7 +15,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
     { label: 'Gallery', href: '#gallery' },
     { label: 'Videos', href: '#videos' },
     { label: 'Members', href: '#members' },
-    { label: 'Blog', href: '#blog' },
     { label: 'Contact', href: '#contact' },
   ];
 

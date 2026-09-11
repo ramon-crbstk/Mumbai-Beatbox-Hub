@@ -9,7 +9,6 @@ import { GallerySection } from '../components/GallerySection';
 import { FeaturedVideosSection } from '../components/FeaturedVideosSection';
 import { MembersSection } from '../components/MembersSection';
 import { PartnersSection } from '../components/PartnersSection';
-import { BlogSection } from '../components/BlogSection';
 import { ContactSection } from '../components/ContactSection';
 import { Footer } from '../components/Footer';
 import { RsvpModal } from '../components/RsvpModal';
@@ -71,9 +70,6 @@ export function PublicHomePage() {
 
         {/* Collaborated With / Partners */}
         <PartnersSection />
-
-        {/* Blog Preview Section */}
-        <BlogSection />
 
         {/* Contact & Direct Community Channel Section */}
         <ContactSection />

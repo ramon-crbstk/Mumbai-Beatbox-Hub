@@ -50,7 +50,6 @@ export const Footer: React.FC = () => {
               <li><a href="#gallery" className="hover:text-[#FFC93C] transition-colors">Visual Archive</a></li>
               <li><a href="#videos" className="hover:text-[#FFC93C] transition-colors">Routine Drops</a></li>
               <li><a href="#members" className="hover:text-[#FFC93C] transition-colors">Community Members</a></li>
-              <li><a href="#blog" className="hover:text-[#FFC93C] transition-colors">Hub Journal</a></li>
               <li><a href="#contact" className="hover:text-[#FFC93C] transition-colors">Contact & Join</a></li>
             </ul>
           </div>
