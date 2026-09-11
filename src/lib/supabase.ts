@@ -54,10 +54,15 @@ export function getSupabase(): SupabaseClient | null {
 
 export interface RsvpRecord {
   id?: string;
+  eventId?: string;
+  event_id?: string;
   eventName: string;
+  event_name?: string;
   attendeeName: string;
+  attendee_name?: string;
   whatsapp: string;
   skillLevel: string;
+  skill_level?: string;
   createdAt?: string;
 }
 
@@ -776,44 +781,305 @@ export async function deleteCommunityMember(id: string): Promise<{ success: bool
 }
 
 /* =========================================================================
-   4. EVENT RSVPS & ATTENDEES CRUD
+   4. EVENT RSVPS & ATTENDEES CRUD WITH CAPACITY ENFORCEMENT
    ========================================================================= */
 
-export async function saveRsvp(rsvp: {
+const LOCAL_RSVPS_KEY = 'mbh_community_rsvps_cache';
+
+export function getLocalRsvps(): RsvpRecord[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_RSVPS_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+    }
+  } catch {
+    // fallback
+  }
+  return [];
+}
+
+export function saveLocalRsvp(rsvp: RsvpRecord): void {
+  try {
+    const current = getLocalRsvps();
+    // Avoid exact duplicate
+    const exists = current.some(
+      (r) => r.id === rsvp.id || (r.whatsapp === rsvp.whatsapp && r.eventId === rsvp.eventId)
+    );
+    if (!exists) {
+      localStorage.setItem(LOCAL_RSVPS_KEY, JSON.stringify([rsvp, ...current]));
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export async function fetchAllEventRsvpCounts(): Promise<Record<string, number>> {
+  const counts: Record<string, number> = {};
+
+  // 1. Initial count from local storage cache
+  const localRsvps = getLocalRsvps();
+  localRsvps.forEach((r) => {
+    if (r.eventId) counts[r.eventId] = (counts[r.eventId] || 0) + 1;
+    if (r.eventName) counts[r.eventName] = (counts[r.eventName] || 0) + 1;
+  });
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      // 2. Try database RPC if configured in Supabase
+      const { data: rpcData, error: rpcErr } = await supabase.rpc('get_event_rsvp_counts');
+      if (!rpcErr && rpcData && Array.isArray(rpcData)) {
+        rpcData.forEach((row: { event_id: string; rsvp_count: number | string }) => {
+          if (row.event_id) {
+            counts[row.event_id] = Number(row.rsvp_count);
+          }
+        });
+        return counts;
+      }
+
+      // 3. Fallback to direct query from rsvps table
+      const { data, error } = await supabase.from('rsvps').select('id, event_id, event_name');
+      if (!error && data && Array.isArray(data)) {
+        const dbCounts: Record<string, number> = {};
+        data.forEach((r) => {
+          if (r.event_id) dbCounts[r.event_id] = (dbCounts[r.event_id] || 0) + 1;
+          if (r.event_name) dbCounts[r.event_name] = (dbCounts[r.event_name] || 0) + 1;
+        });
+        // Merge with local submissions that may not have synced
+        localRsvps.forEach((r) => {
+          if (r.eventId && !data.some((d) => d.id === r.id)) {
+            dbCounts[r.eventId] = (dbCounts[r.eventId] || 0) + 1;
+          }
+        });
+        return dbCounts;
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  return counts;
+}
+
+export async function submitEventRsvp(rsvp: {
+  eventId?: string;
   eventName: string;
   attendeeName: string;
   whatsapp: string;
   skillLevel: string;
-}): Promise<{ success: boolean; error?: string; source: 'supabase' | 'local' }> {
+}): Promise<{
+  success: boolean;
+  error?: string;
+  source: 'supabase' | 'local';
+  isFull?: boolean;
+  currentCount?: number;
+  maxPeople?: number | null;
+}> {
   const supabase = getSupabase();
+  let eventId = rsvp.eventId;
 
-  if (supabase) {
+  // Locate the target event
+  let targetEvent: EventItem | undefined;
+  const currentEvents = getLocalEvents();
+
+  if (eventId) {
+    targetEvent = currentEvents.find((e) => e.id === eventId);
+  }
+  if (!targetEvent && rsvp.eventName) {
+    targetEvent = currentEvents.find(
+      (e) => (e.title || e.name || '').toLowerCase() === rsvp.eventName.toLowerCase()
+    );
+  }
+
+  // If not found in local cache, query Supabase
+  if (!targetEvent && supabase && eventId) {
     try {
-      const { error } = await supabase.from('rsvps').insert([
-        {
-          event_name: rsvp.eventName,
-          attendee_name: rsvp.attendeeName,
-          whatsapp: rsvp.whatsapp,
-          skill_level: rsvp.skillLevel,
-        },
-      ]);
-
-      if (!error) {
-        return { success: true, source: 'supabase' };
+      const { data } = await supabase.from('events').select('*').eq('id', eventId).maybeSingle();
+      if (data) {
+        targetEvent = {
+          id: data.id,
+          title: data.title || data.name,
+          name: data.title || data.name,
+          description: data.description || data.blurb || '',
+          blurb: data.description || data.blurb || '',
+          eventType: data.event_type || 'cypher',
+          date: data.date,
+          time: data.time || '5:30 PM',
+          venue: data.venue,
+          location: data.location || data.area || 'Mumbai',
+          area: data.location || data.area || 'Mumbai',
+          entry: data.entry || 'Free Entry / Open to all',
+          isPublished: data.is_published !== false,
+          maxPeople: data.max_people,
+          registrationStatus: data.registration_status || 'open',
+        };
       }
-      console.warn('Supabase RSVP insert error:', error.message);
-      return { success: false, error: error.message, source: 'supabase' };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase RSVP error:', msg);
-      return { success: false, error: msg, source: 'supabase' };
+    } catch {
+      // ignore
     }
   }
 
-  return { success: false, error: 'Supabase client not available', source: 'local' };
+  if (targetEvent) {
+    eventId = targetEvent.id;
+
+    // Verify event is published
+    if (targetEvent.isPublished === false || targetEvent.is_published === false) {
+      return {
+        success: false,
+        error: 'Registration is not available for this event.',
+        source: 'supabase',
+      };
+    }
+
+    // Verify registration status is not closed
+    const status = targetEvent.registrationStatus || targetEvent.registration_status;
+    if (status === 'closed') {
+      return {
+        success: false,
+        error: 'REGISTRATION CLOSED: This event is not currently accepting RSVPs.',
+        source: 'supabase',
+      };
+    }
+
+    // Check capacity: count existing RSVPs
+    const counts = await fetchAllEventRsvpCounts();
+    const currentCount = counts[targetEvent.id] ?? (targetEvent.name ? counts[targetEvent.name] : 0) ?? 0;
+    const maxPeople = targetEvent.maxPeople ?? targetEvent.max_people;
+
+    if (maxPeople !== null && maxPeople !== undefined && currentCount >= maxPeople) {
+      updateEventRegistrationStatus(targetEvent.id, 'full');
+      return {
+        success: false,
+        error: 'SLOTS FULL: Maximum capacity for this cypher has been reached.',
+        isFull: true,
+        currentCount,
+        maxPeople,
+        source: 'supabase',
+      };
+    }
+  }
+
+  // Attempt atomic database-side function/RPC for concurrency safety
+  if (supabase) {
+    try {
+      const { data: rpcRes, error: rpcErr } = await supabase.rpc('submit_event_rsvp', {
+        p_event_id: eventId || '',
+        p_event_name: rsvp.eventName,
+        p_attendee_name: rsvp.attendeeName,
+        p_whatsapp: rsvp.whatsapp,
+        p_skill_level: rsvp.skillLevel,
+      });
+
+      if (!rpcErr && rpcRes) {
+        if (rpcRes.success === false) {
+          return {
+            success: false,
+            error: rpcRes.error || 'Registration rejected',
+            isFull: Boolean(rpcRes.is_full),
+            source: 'supabase',
+          };
+        }
+
+        saveLocalRsvp({
+          id: rpcRes.id || `rsvp-${Date.now()}`,
+          eventId: rpcRes.event_id || eventId,
+          event_id: rpcRes.event_id || eventId,
+          eventName: rsvp.eventName,
+          attendeeName: rsvp.attendeeName,
+          whatsapp: rsvp.whatsapp,
+          skillLevel: rsvp.skillLevel,
+          createdAt: new Date().toISOString(),
+        });
+
+        return {
+          success: true,
+          source: 'supabase',
+          currentCount: rpcRes.current_count,
+          maxPeople: rpcRes.max_people,
+        };
+      }
+    } catch {
+      // RPC fallback to direct insert
+    }
+
+    // Direct insert to Supabase rsvps table
+    try {
+      const newId = `rsvp-${Date.now()}`;
+      const payload: Record<string, unknown> = {
+        id: newId,
+        event_name: rsvp.eventName,
+        attendee_name: rsvp.attendeeName,
+        whatsapp: rsvp.whatsapp,
+        skill_level: rsvp.skillLevel,
+      };
+      if (eventId) {
+        payload.event_id = eventId;
+      }
+
+      const { error: insertErr } = await supabase.from('rsvps').insert([payload]);
+
+      if (!insertErr) {
+        saveLocalRsvp({
+          id: newId,
+          eventId,
+          event_id: eventId,
+          eventName: rsvp.eventName,
+          attendeeName: rsvp.attendeeName,
+          whatsapp: rsvp.whatsapp,
+          skillLevel: rsvp.skillLevel,
+          createdAt: new Date().toISOString(),
+        });
+
+        if (targetEvent) {
+          const maxPeople = targetEvent.maxPeople ?? targetEvent.max_people;
+          if (maxPeople !== null && maxPeople !== undefined) {
+            const counts = await fetchAllEventRsvpCounts();
+            const newCount = (counts[targetEvent.id] || 0) + 1;
+            if (newCount >= maxPeople) {
+              updateEventRegistrationStatus(targetEvent.id, 'full');
+            }
+          }
+        }
+
+        return { success: true, source: 'supabase' };
+      }
+      console.warn('Supabase RSVP insert warning:', insertErr.message);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.warn('Supabase RSVP exception:', msg);
+    }
+  }
+
+  // Local fallback
+  const localId = `rsvp-${Date.now()}`;
+  saveLocalRsvp({
+    id: localId,
+    eventId,
+    event_id: eventId,
+    eventName: rsvp.eventName,
+    attendeeName: rsvp.attendeeName,
+    whatsapp: rsvp.whatsapp,
+    skillLevel: rsvp.skillLevel,
+    createdAt: new Date().toISOString(),
+  });
+
+  if (targetEvent) {
+    const maxPeople = targetEvent.maxPeople ?? targetEvent.max_people;
+    if (maxPeople !== null && maxPeople !== undefined) {
+      const counts = await fetchAllEventRsvpCounts();
+      const count = counts[targetEvent.id] || 0;
+      if (count >= maxPeople) {
+        updateEventRegistrationStatus(targetEvent.id, 'full');
+      }
+    }
+  }
+
+  return { success: true, source: 'local' };
 }
 
-export const saveEventRsvp = saveRsvp;
+export const saveRsvp = submitEventRsvp;
+export const saveEventRsvp = submitEventRsvp;
 
 export async function fetchRsvps(): Promise<RsvpRecord[]> {
   // Public users must NOT be able to read RSVPs
@@ -825,6 +1091,7 @@ export async function fetchRsvps(): Promise<RsvpRecord[]> {
   }
 
   const supabase = getSupabase();
+  const localItems = getLocalRsvps();
 
   if (supabase) {
     try {
@@ -834,14 +1101,29 @@ export async function fetchRsvps(): Promise<RsvpRecord[]> {
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        return data.map((r) => ({
+        const dbItems: RsvpRecord[] = data.map((r) => ({
           id: r.id,
+          eventId: r.event_id,
+          event_id: r.event_id,
           eventName: r.event_name,
+          event_name: r.event_name,
           attendeeName: r.attendee_name,
+          attendee_name: r.attendee_name,
           whatsapp: r.whatsapp,
           skillLevel: r.skill_level,
+          skill_level: r.skill_level,
           createdAt: r.created_at,
         }));
+
+        // Merge any local items not yet in DB
+        const merged = [...dbItems];
+        localItems.forEach((l) => {
+          if (!merged.some((m) => m.id === l.id)) {
+            merged.push(l);
+          }
+        });
+
+        return merged;
       }
       if (error) {
         console.warn('Supabase RSVP fetch error:', error.message);
@@ -851,7 +1133,7 @@ export async function fetchRsvps(): Promise<RsvpRecord[]> {
     }
   }
 
-  return [];
+  return localItems;
 }
 
 export async function deleteRsvp(id: string): Promise<boolean> {
@@ -987,29 +1269,131 @@ export async function deleteContactDispatch(id: string): Promise<boolean> {
 }
 
 /* =========================================================================
-   6. UPCOMING EVENTS & CYPHERS CRUD
+   6. UPCOMING EVENTS & CYPHERS CRUD WITH CAPACITY & REGISTRATION STATUS
    ========================================================================= */
 
 const LOCAL_EVENTS_KEY = 'mbh_community_events_cache';
 const DEMO_EVENT_IDS = new Set(['carter-road-cypher-48', 'dadar-acoustic-jam', 'evt-01', 'evt-02']);
+
+export function formatEventDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const trimmed = dateStr.trim();
+  // Check if date is in ISO format: YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [year, month, day] = trimmed.split('-').map(Number);
+    const d = new Date(year, month - 1, day);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+  }
+  return dateStr;
+}
+
+export function toIsoDate(dateStr: string): string {
+  if (!dateStr) return '';
+  const trimmed = dateStr.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+  const parsed = new Date(dateStr);
+  if (!isNaN(parsed.getTime())) {
+    return parsed.toISOString().split('T')[0];
+  }
+  return trimmed;
+}
+
+export function getDefaultEvents(): EventItem[] {
+  return [
+    {
+      id: 'evt-mumbai-59-cypher',
+      title: 'Mumbai 59 Cypher',
+      name: 'Mumbai 59 Cypher',
+      slug: 'mumbai-59-cypher',
+      description: 'Pure acoustic open circle & beatbox jam in Andheri Marol. Zero instruments, maximum vocal energy.',
+      blurb: 'Pure acoustic open circle & beatbox jam in Andheri Marol. Zero instruments, maximum vocal energy.',
+      eventType: 'cypher',
+      event_type: 'cypher',
+      date: '2026-10-01',
+      time: '5:30 PM - 7:30 PM',
+      venue: 'Andheri 59',
+      location: 'Marol',
+      area: 'Marol',
+      entry: 'Free Entry / Open to all',
+      isPublished: true,
+      is_published: true,
+      maxPeople: 3,
+      max_people: 3,
+      registrationStatus: 'open',
+      registration_status: 'open',
+      isBattleOrLive: false,
+      createdAt: '2026-09-10T12:00:00Z',
+      updatedAt: '2026-09-10T12:00:00Z',
+    },
+    {
+      id: 'evt-carter-road-50',
+      title: 'Carter Road Sunset Cypher #50',
+      name: 'Carter Road Sunset Cypher #50',
+      slug: 'carter-road-sunset-cypher-50',
+      description: 'Milestone 50th gathering on Bandra promenade steps. Open microphone circles, 7-to-smoke battle bracket.',
+      blurb: 'Milestone 50th gathering on Bandra promenade steps. Open microphone circles, 7-to-smoke battle bracket.',
+      eventType: 'battle',
+      event_type: 'battle',
+      date: '2026-10-18',
+      time: '5:30 PM – 8:00 PM IST',
+      venue: 'Carter Road Promenade Amphitheatre',
+      location: 'Bandra West, Mumbai',
+      area: 'Bandra West, Mumbai',
+      entry: 'Free Entry / Open Mic',
+      isPublished: true,
+      is_published: true,
+      maxPeople: 50,
+      max_people: 50,
+      registrationStatus: 'open',
+      registration_status: 'open',
+      isBattleOrLive: true,
+      createdAt: '2026-09-08T12:00:00Z',
+      updatedAt: '2026-09-08T12:00:00Z',
+    },
+  ];
+}
 
 export function getLocalEvents(): EventItem[] {
   try {
     const raw = localStorage.getItem(LOCAL_EVENTS_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
+      if (Array.isArray(parsed) && parsed.length > 0) {
         const cleaned = parsed.filter((item: EventItem) => !DEMO_EVENT_IDS.has(item.id));
-        if (cleaned.length !== parsed.length) {
-          localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(cleaned));
+        if (cleaned.length > 0) {
+          return cleaned.map((e) => ({
+            ...e,
+            title: e.title || e.name,
+            name: e.name || e.title,
+            description: e.description || e.blurb,
+            blurb: e.blurb || e.description,
+            location: e.location || e.area,
+            area: e.area || e.location,
+            date: toIsoDate(e.date) || e.date,
+            registrationStatus: (e.registrationStatus || e.registration_status || 'open') as 'open' | 'full' | 'closed',
+            registration_status: (e.registration_status || e.registrationStatus || 'open') as 'open' | 'full' | 'closed',
+            maxPeople: e.maxPeople !== undefined ? e.maxPeople : e.max_people,
+            max_people: e.max_people !== undefined ? e.max_people : e.maxPeople,
+          }));
         }
-        return cleaned;
       }
     }
   } catch {
     // fallback
   }
-  return [];
+
+  const defaults = getDefaultEvents();
+  setLocalEvents(defaults);
+  return defaults;
 }
 
 export function setLocalEvents(events: EventItem[]): void {
@@ -1020,41 +1404,143 @@ export function setLocalEvents(events: EventItem[]): void {
   }
 }
 
+export function updateLocalEventStatus(eventId: string, newStatus: 'open' | 'full' | 'closed'): void {
+  const current = getLocalEvents();
+  const updated = current.map((e) => {
+    if (e.id === eventId) {
+      return {
+        ...e,
+        registrationStatus: newStatus,
+        registration_status: newStatus,
+        updatedAt: new Date().toISOString(),
+      };
+    }
+    return e;
+  });
+  setLocalEvents(updated);
+}
+
+export async function updateEventRegistrationStatus(
+  eventId: string,
+  newStatus: 'open' | 'full' | 'closed'
+): Promise<boolean> {
+  // Update local cache immediately
+  updateLocalEventStatus(eventId, newStatus);
+
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update({
+          registration_status: newStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', eventId);
+
+      if (!error) return true;
+      console.warn('Supabase status update warning:', error.message);
+    } catch (err) {
+      console.warn('Supabase status update exception:', err);
+    }
+  }
+
+  return true;
+}
+
 export async function fetchUpcomingEvents(): Promise<EventItem[]> {
   const supabase = getSupabase();
+  let rsvpCounts: Record<string, number> = {};
+
+  try {
+    rsvpCounts = await fetchAllEventRsvpCounts();
+  } catch {
+    // ignore
+  }
 
   if (supabase) {
     try {
       const { data, error } = await supabase
         .from('events')
         .select('*')
-        .order('created_at', { ascending: false });
+        .order('date', { ascending: true });
 
       if (!error && data && data.length > 0) {
-        const mapped: EventItem[] = data.map((d) => ({
-          id: d.id,
-          name: d.name,
-          date: d.date,
-          time: d.time,
-          venue: d.venue,
-          area: d.area,
-          blurb: d.blurb,
-          entry: d.entry,
-          isBattleOrLive: Boolean(d.is_battle_or_live),
-          createdAt: d.created_at,
-        }));
+        const mapped: EventItem[] = data.map((d) => {
+          const title = d.title || d.name || 'Upcoming Cypher';
+          const desc = d.description || d.blurb || '';
+          const loc = d.location || d.area || 'Mumbai';
+          const dateIso = toIsoDate(d.date) || d.date;
+          const status = (d.registration_status || 'open') as 'open' | 'full' | 'closed';
+          const maxP = d.max_people !== undefined ? d.max_people : null;
+          const count = rsvpCounts[d.id] ?? (title ? rsvpCounts[title] : 0) ?? 0;
+
+          // Auto detect full if open but cap reached
+          let finalStatus = status;
+          if (status === 'open' && maxP !== null && maxP !== undefined && count >= maxP) {
+            finalStatus = 'full';
+          }
+
+          return {
+            id: d.id,
+            title,
+            name: title,
+            slug: d.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            description: desc,
+            blurb: desc,
+            eventType: d.event_type || 'cypher',
+            event_type: d.event_type || 'cypher',
+            date: dateIso,
+            time: d.time || '5:30 PM',
+            venue: d.venue,
+            location: loc,
+            area: loc,
+            entry: d.entry || 'Free Entry / Open to all',
+            coverImageUrl: d.cover_image_url,
+            cover_image_url: d.cover_image_url,
+            registrationUrl: d.registration_url,
+            registration_url: d.registration_url,
+            isPublished: d.is_published !== false,
+            is_published: d.is_published !== false,
+            maxPeople: maxP,
+            max_people: maxP,
+            registrationStatus: finalStatus,
+            registration_status: finalStatus,
+            rsvpCount: count,
+            isBattleOrLive: Boolean(d.is_battle_or_live),
+            createdAt: d.created_at,
+            updatedAt: d.updated_at,
+          };
+        });
+
         setLocalEvents(mapped);
         return mapped;
       }
       if (error) {
-        console.warn('Supabase events fetch error, using cache/fallback:', error.message);
+        console.warn('Supabase events fetch error, using local events:', error.message);
       }
     } catch (err) {
       console.warn('Supabase events fetch exception:', err);
     }
   }
 
-  return getLocalEvents();
+  // Local fallback with real RSVP counts attached
+  const localList = getLocalEvents().map((e) => {
+    const count = rsvpCounts[e.id] ?? (e.name ? rsvpCounts[e.name] : 0) ?? 0;
+    const maxP = e.maxPeople ?? e.max_people;
+    let status = e.registrationStatus || e.registration_status || 'open';
+    if (status === 'open' && maxP !== null && maxP !== undefined && count >= maxP) {
+      status = 'full';
+    }
+    return {
+      ...e,
+      rsvpCount: count,
+      registrationStatus: status,
+      registration_status: status,
+    };
+  });
+
+  return localList;
 }
 
 export async function saveUpcomingEvent(
@@ -1066,7 +1552,7 @@ export async function saveUpcomingEvent(
   if (!isAdminAuthenticated()) {
     return {
       success: false,
-      item: { ...item, id: item.id || `evt-${Date.now()}` },
+      item: { ...item, id: item.id || `evt-${Date.now()}` } as EventItem,
       error: 'Security constraint: Administrator authentication required.',
       source: 'local',
     };
@@ -1074,10 +1560,40 @@ export async function saveUpcomingEvent(
 
   const isEditing = Boolean(item.id);
   const eventId = item.id || `evt-${Date.now()}`;
+  const title = item.title || item.name || 'Community Cypher';
+  const desc = item.description || item.blurb || '';
+  const loc = item.location || item.area || 'Mumbai';
+  const isoDate = toIsoDate(item.date) || item.date;
+  const status = (item.registrationStatus || item.registration_status || 'open') as 'open' | 'full' | 'closed';
+  const maxP = item.maxPeople !== undefined ? item.maxPeople : item.max_people ?? null;
+  const slug = item.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+  const nowIso = new Date().toISOString();
+
   const newEvent: EventItem = {
     ...item,
     id: eventId,
-    createdAt: item.createdAt || new Date().toISOString(),
+    title,
+    name: title,
+    slug,
+    description: desc,
+    blurb: desc,
+    eventType: item.eventType || item.event_type || 'cypher',
+    event_type: item.eventType || item.event_type || 'cypher',
+    date: isoDate,
+    time: item.time || '5:30 PM',
+    venue: item.venue,
+    location: loc,
+    area: loc,
+    entry: item.entry || 'Free Entry / Open to all',
+    isPublished: item.isPublished !== false && item.is_published !== false,
+    is_published: item.isPublished !== false && item.is_published !== false,
+    maxPeople: maxP,
+    max_people: maxP,
+    registrationStatus: status,
+    registration_status: status,
+    isBattleOrLive: Boolean(item.isBattleOrLive),
+    createdAt: item.createdAt || nowIso,
+    updatedAt: nowIso,
   };
 
   // Always update local cache so admin changes reflect immediately in current session
@@ -1093,19 +1609,30 @@ export async function saveUpcomingEvent(
   const supabase = getSupabase();
   if (supabase) {
     try {
+      const payload = {
+        title: newEvent.title,
+        name: newEvent.title,
+        slug: newEvent.slug,
+        description: newEvent.description,
+        blurb: newEvent.description,
+        event_type: newEvent.eventType,
+        date: newEvent.date,
+        time: newEvent.time,
+        venue: newEvent.venue,
+        location: newEvent.location,
+        area: newEvent.location,
+        entry: newEvent.entry,
+        is_published: newEvent.isPublished,
+        max_people: newEvent.maxPeople,
+        registration_status: newEvent.registrationStatus,
+        is_battle_or_live: Boolean(newEvent.isBattleOrLive),
+        updated_at: newEvent.updatedAt,
+      };
+
       if (isEditing) {
         const { error } = await supabase
           .from('events')
-          .update({
-            name: newEvent.name,
-            date: newEvent.date,
-            time: newEvent.time,
-            venue: newEvent.venue,
-            area: newEvent.area,
-            blurb: newEvent.blurb,
-            entry: newEvent.entry,
-            is_battle_or_live: Boolean(newEvent.isBattleOrLive),
-          })
+          .update(payload)
           .eq('id', eventId);
 
         if (!error) {
@@ -1114,20 +1641,12 @@ export async function saveUpcomingEvent(
         console.warn('Supabase events update warning:', error.message);
         return { success: true, item: newEvent, error: error.message, source: 'local' };
       } else {
-        const { error } = await supabase.from('events').insert([
-          {
-            id: eventId,
-            name: newEvent.name,
-            date: newEvent.date,
-            time: newEvent.time,
-            venue: newEvent.venue,
-            area: newEvent.area,
-            blurb: newEvent.blurb,
-            entry: newEvent.entry,
-            is_battle_or_live: Boolean(newEvent.isBattleOrLive),
-            created_at: newEvent.createdAt,
-          },
-        ]);
+        const insertPayload = {
+          id: eventId,
+          ...payload,
+          created_at: newEvent.createdAt,
+        };
+        const { error } = await supabase.from('events').insert([insertPayload]);
 
         if (!error) {
           return { success: true, item: newEvent, source: 'supabase' };

@@ -10,10 +10,20 @@ import {
   Check, 
   X, 
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  Ban
 } from 'lucide-react';
-import { EventItem } from '../../types';
-import { saveUpcomingEvent, deleteUpcomingEvent } from '../../lib/supabase';
+import { EventItem, RegistrationStatus } from '../../types';
+import { 
+  saveUpcomingEvent, 
+  deleteUpcomingEvent, 
+  updateEventRegistrationStatus, 
+  formatEventDate, 
+  toIsoDate 
+} from '../../lib/supabase';
 
 interface EventsTabProps {
   items: EventItem[];
@@ -26,16 +36,19 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Form fields
   const [name, setName] = useState('');
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState(''); // ISO YYYY-MM-DD
   const [time, setTime] = useState('');
   const [venue, setVenue] = useState('');
   const [area, setArea] = useState('');
   const [blurb, setBlurb] = useState('');
   const [entry, setEntry] = useState('Free Entry / Open to all');
+  const [maxPeople, setMaxPeople] = useState<string>(''); // string for empty vs number
+  const [registrationStatus, setRegistrationStatus] = useState<RegistrationStatus>('open');
   const [isBattleOrLive, setIsBattleOrLive] = useState(false);
 
   const resetForm = () => {
@@ -46,24 +59,34 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
     setArea('');
     setBlurb('');
     setEntry('Free Entry / Open to all');
+    setMaxPeople('');
+    setRegistrationStatus('open');
     setIsBattleOrLive(false);
     setEditingItem(null);
   };
 
   const handleOpenAdd = () => {
     resetForm();
+    // Default date to upcoming Saturday if empty
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
+    const nextSat = new Date(now.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000);
+    setDate(nextSat.toISOString().split('T')[0]);
     setModalOpen(true);
   };
 
   const handleOpenEdit = (item: EventItem) => {
     setEditingItem(item);
-    setName(item.name);
-    setDate(item.date);
-    setTime(item.time);
+    setName(item.title || item.name);
+    setDate(toIsoDate(item.date));
+    setTime(item.time || '5:30 PM – 8:00 PM IST');
     setVenue(item.venue);
-    setArea(item.area);
-    setBlurb(item.blurb);
-    setEntry(item.entry);
+    setArea(item.location || item.area);
+    setBlurb(item.description || item.blurb);
+    setEntry(item.entry || 'Free Entry / Open to all');
+    setMaxPeople(item.maxPeople !== null && item.maxPeople !== undefined ? String(item.maxPeople) : '');
+    setRegistrationStatus((item.registrationStatus || item.registration_status || 'open') as RegistrationStatus);
     setIsBattleOrLive(Boolean(item.isBattleOrLive));
     setModalOpen(true);
   };
@@ -78,14 +101,27 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
     setSaving(true);
     setNotification(null);
 
+    const parsedMaxPeople = maxPeople.trim() === '' ? null : Math.max(1, parseInt(maxPeople, 10));
+
     const payload: Omit<EventItem, 'id'> & { id?: string } = {
+      title: name.trim(),
       name: name.trim(),
-      date: date.trim(),
+      eventType: isBattleOrLive ? 'battle' : 'cypher',
+      event_type: isBattleOrLive ? 'battle' : 'cypher',
+      date: date.trim(), // YYYY-MM-DD
       time: time.trim() || '5:30 PM – 8:00 PM IST',
       venue: venue.trim(),
+      location: area.trim() || 'Mumbai',
       area: area.trim() || 'Mumbai',
+      description: blurb.trim() || 'Open acoustic circle and vocal percussion cypher session.',
       blurb: blurb.trim() || 'Open acoustic circle and vocal percussion cypher session.',
       entry: entry.trim() || 'Free Entry / Open to all',
+      maxPeople: parsedMaxPeople,
+      max_people: parsedMaxPeople,
+      registrationStatus,
+      registration_status: registrationStatus,
+      isPublished: true,
+      is_published: true,
       isBattleOrLive,
       id: editingItem ? editingItem.id : undefined,
     };
@@ -111,6 +147,19 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
     }
   };
 
+  const handleQuickStatusChange = async (eventId: string, newStatus: RegistrationStatus) => {
+    setUpdatingStatusId(eventId);
+    const ok = await updateEventRegistrationStatus(eventId, newStatus);
+    setUpdatingStatusId(null);
+    if (ok) {
+      setNotification({
+        type: 'success',
+        message: `Registration status changed to "${newStatus.toUpperCase()}".`,
+      });
+      onRefresh();
+    }
+  };
+
   const handleDelete = async (id: string) => {
     setDeleting(id);
     const res = await deleteUpcomingEvent(id);
@@ -122,6 +171,32 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
       onRefresh();
     } else {
       setNotification({ type: 'error', message: res.error || 'Failed to delete event.' });
+    }
+  };
+
+  const getStatusBadge = (status: RegistrationStatus) => {
+    switch (status) {
+      case 'open':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+            Registration Open
+          </span>
+        );
+      case 'full':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-amber-950/60 text-amber-300 border border-amber-500/40 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <AlertTriangle className="w-3 h-3 text-amber-400" />
+            Slots Full
+          </span>
+        );
+      case 'closed':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-red-950/60 text-red-300 border border-red-500/40 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <Ban className="w-3 h-3 text-red-400" />
+            Registration Closed
+          </span>
+        );
     }
   };
 
@@ -138,7 +213,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
             Upcoming Events & Cyphers
           </h2>
           <p className="text-sm font-mono text-[#F4EFE4]/70 mt-1">
-            Add or remove public open circles, battle brackets, and street jams.
+            Manage public cypher dates, maximum attendee capacities, and live RSVP registration statuses.
           </p>
         </div>
 
@@ -201,109 +276,182 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {items.map((event, idx) => (
-            <div
-              key={event.id}
-              id={`admin-event-card-${event.id}`}
-              className="bg-[#1A1713] border-2 border-[#F4EFE4]/20 p-6 flex flex-col justify-between relative group hover:border-[#FFC93C]/50 transition-colors"
-            >
-              <div>
-                {/* Flyer Top Tag */}
-                <div className="flex items-center justify-between gap-2 border-b border-[#F4EFE4]/15 pb-3 mb-4">
-                  <div className="flex items-center gap-2 font-mono text-xs text-[#FFC93C]">
-                    <span className="w-2 h-2 bg-[#FFC93C]" />
-                    <span className="font-bold">EVENT #{idx + 1}</span>
+          {items.map((event, idx) => {
+            const status = (event.registrationStatus || event.registration_status || 'open') as RegistrationStatus;
+            const maxCap = event.maxPeople !== undefined ? event.maxPeople : event.max_people;
+            const rsvpCount = event.rsvpCount || 0;
+            const isFull = maxCap !== null && maxCap !== undefined && rsvpCount >= maxCap;
+
+            return (
+              <div
+                key={event.id}
+                id={`admin-event-card-${event.id}`}
+                className="bg-[#1A1713] border-2 border-[#F4EFE4]/20 p-6 flex flex-col justify-between relative group hover:border-[#FFC93C]/50 transition-colors"
+              >
+                <div>
+                  {/* Flyer Top Tag */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F4EFE4]/15 pb-3 mb-4">
+                    <div className="flex items-center gap-2 font-mono text-xs text-[#FFC93C]">
+                      <span className="w-2 h-2 bg-[#FFC93C]" />
+                      <span className="font-bold">EVENT #{idx + 1}</span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      {event.isBattleOrLive ? (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider">
+                          <Flame className="w-3 h-3" />
+                          Battle & Jam
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C]/40 text-[10px] font-mono font-bold uppercase tracking-wider">
+                          Open Cypher
+                        </span>
+                      )}
+
+                      {getStatusBadge(status)}
+                    </div>
                   </div>
 
-                  {event.isBattleOrLive ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider">
-                      <Flame className="w-3 h-3" />
-                      Battle & Jam
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C]/40 text-[10px] font-mono font-bold uppercase tracking-wider">
-                      Open Cypher
-                    </span>
-                  )}
+                  {/* Event Name */}
+                  <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4] mb-3 leading-snug">
+                    {event.title || event.name}
+                  </h3>
+
+                  {/* Event Meta Details */}
+                  <div className="space-y-2 mb-4 text-xs font-mono text-[#F4EFE4]/80 bg-[#14120F] p-3.5 border border-[#F4EFE4]/10">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
+                      <span className="font-bold text-[#F4EFE4]">
+                        {formatEventDate(event.date)}
+                      </span>
+                      <span className="text-[10px] text-[#F4EFE4]/40 font-sans ml-1">
+                        ({event.date})
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Clock className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+                      <span>{event.time}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <MapPin className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+                      <span>
+                        {event.venue} — <strong className="text-[#FFC93C]">{event.location || event.area}</strong>
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Capacity & Live RSVP Slot Tracking */}
+                  <div className="p-3.5 bg-[#14120F] border border-[#F4EFE4]/15 mb-4">
+                    <div className="flex items-center justify-between gap-2 mb-2">
+                      <div className="flex items-center gap-1.5 font-mono text-xs text-[#F4EFE4]">
+                        <Users className="w-3.5 h-3.5 text-[#FFC93C]" />
+                        <span className="font-bold">Capacity & RSVPs:</span>
+                      </div>
+
+                      <span className={`font-mono text-xs font-bold ${isFull ? 'text-amber-400' : 'text-[#FFC93C]'}`}>
+                        {maxCap !== null && maxCap !== undefined
+                          ? `${rsvpCount} / ${maxCap} RSVPs`
+                          : `${rsvpCount} RSVPs (No limit)`}
+                      </span>
+                    </div>
+
+                    {/* Progress bar if maxPeople set */}
+                    {maxCap !== null && maxCap !== undefined && (
+                      <div className="w-full bg-[#25211B] h-2 rounded-full overflow-hidden mb-3">
+                        <div 
+                          className={`h-full transition-all duration-300 ${
+                            rsvpCount >= maxCap ? 'bg-amber-400' : 'bg-[#FFC93C]'
+                          }`}
+                          style={{ width: `${Math.min(100, (rsvpCount / maxCap) * 100)}%` }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Quick Registration Status Switcher */}
+                    <div className="flex items-center justify-between pt-2 border-t border-[#F4EFE4]/10">
+                      <span className="text-[11px] font-mono text-[#F4EFE4]/60">
+                        Quick Status:
+                      </span>
+
+                      <div className="flex items-center gap-1">
+                        {(['open', 'full', 'closed'] as RegistrationStatus[]).map((st) => (
+                          <button
+                            key={st}
+                            type="button"
+                            disabled={updatingStatusId === event.id}
+                            onClick={() => handleQuickStatusChange(event.id, st)}
+                            className={`px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider transition-colors cursor-pointer border ${
+                              status === st
+                                ? st === 'open'
+                                  ? 'bg-emerald-600 text-white border-emerald-500 font-bold'
+                                  : st === 'full'
+                                  ? 'bg-amber-600 text-white border-amber-500 font-bold'
+                                  : 'bg-red-600 text-white border-red-500 font-bold'
+                                : 'bg-[#14120F] text-[#F4EFE4]/60 border-[#F4EFE4]/15 hover:text-[#F4EFE4]'
+                            }`}
+                          >
+                            {st}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Blurb */}
+                  <p className="text-xs text-[#F4EFE4]/70 line-clamp-2 mb-4 leading-relaxed">
+                    {event.description || event.blurb}
+                  </p>
+
+                  {/* Entry Badge */}
+                  <div className="text-[11px] font-mono text-[#F4EFE4]/60 mb-4">
+                    Entry: <span className="text-[#F4EFE4] font-bold">{event.entry}</span>
+                  </div>
                 </div>
 
-                {/* Event Name */}
-                <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4] mb-3 leading-snug">
-                  {event.name}
-                </h3>
-
-                {/* Event Meta Details */}
-                <div className="space-y-2 mb-4 text-xs font-mono text-[#F4EFE4]/80 bg-[#14120F] p-3.5 border border-[#F4EFE4]/10">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
-                    <span className="font-bold text-[#F4EFE4]">{event.date}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
-                    <span>{event.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
-                    <span>
-                      {event.venue} — <strong className="text-[#FFC93C]">{event.area}</strong>
-                    </span>
-                  </div>
-                </div>
-
-                {/* Blurb */}
-                <p className="text-xs text-[#F4EFE4]/70 line-clamp-2 mb-4 leading-relaxed">
-                  {event.blurb}
-                </p>
-
-                {/* Entry Badge */}
-                <div className="text-[11px] font-mono text-[#F4EFE4]/60 mb-4">
-                  Entry: <span className="text-[#F4EFE4] font-bold">{event.entry}</span>
-                </div>
-              </div>
-
-              {/* Bottom Actions */}
-              <div className="pt-4 border-t border-[#F4EFE4]/10 flex items-center justify-between gap-3">
-                <button
-                  type="button"
-                  onClick={() => handleOpenEdit(event)}
-                  className="px-3 py-1.5 bg-[#14120F] hover:bg-[#25211B] text-[#F4EFE4] border border-[#F4EFE4]/20 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-colors"
-                >
-                  <Edit3 className="w-3.5 h-3.5 text-[#FFC93C]" />
-                  <span>Edit</span>
-                </button>
-
-                {deleteConfirmId === event.id ? (
-                  <div className="flex items-center gap-2">
-                    <span className="text-[11px] font-mono text-red-400">Confirm?</span>
-                    <button
-                      type="button"
-                      onClick={() => handleDelete(event.id)}
-                      disabled={deleting === event.id}
-                      className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    >
-                      {deleting === event.id ? '...' : 'Yes, Delete'}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setDeleteConfirmId(null)}
-                      className="px-2 py-1 bg-[#14120F] text-[#F4EFE4]/70 text-xs font-mono cursor-pointer"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
+                {/* Bottom Actions */}
+                <div className="pt-4 border-t border-[#F4EFE4]/10 flex items-center justify-between gap-3">
                   <button
                     type="button"
-                    onClick={() => setDeleteConfirmId(event.id)}
-                    className="px-3 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-red-500/30 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-colors"
+                    onClick={() => handleOpenEdit(event)}
+                    className="px-3 py-1.5 bg-[#14120F] hover:bg-[#25211B] text-[#F4EFE4] border border-[#F4EFE4]/20 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Remove</span>
+                    <Edit3 className="w-3.5 h-3.5 text-[#FFC93C]" />
+                    <span>Edit</span>
                   </button>
-                )}
+
+                  {deleteConfirmId === event.id ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-[11px] font-mono text-red-400">Confirm?</span>
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(event.id)}
+                        disabled={deleting === event.id}
+                        className="px-2.5 py-1 bg-red-600 hover:bg-red-700 text-white font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
+                      >
+                        {deleting === event.id ? '...' : 'Yes, Delete'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setDeleteConfirmId(null)}
+                        className="px-2 py-1 bg-[#14120F] text-[#F4EFE4]/70 text-xs font-mono cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setDeleteConfirmId(event.id)}
+                      className="px-3 py-1.5 bg-red-950/30 hover:bg-red-900/50 text-red-400 hover:text-red-200 border border-red-500/30 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Remove</span>
+                    </button>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
 
@@ -349,20 +497,22 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                 />
               </div>
 
-              {/* Date & Time */}
+              {/* Date Picker & Time */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
-                    Date *
+                    Date (Calendar Picker) *
                   </label>
                   <input
-                    type="text"
+                    type="date"
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    placeholder="e.g., Saturday, April 4, 2026"
-                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#FFC93C] focus:outline-none [color-scheme:dark]"
                   />
+                  <span className="block text-[10px] font-mono text-[#F4EFE4]/50 mt-1">
+                    Stored as ISO date: {date || 'YYYY-MM-DD'}
+                  </span>
                 </div>
                 <div>
                   <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
@@ -404,6 +554,45 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     placeholder="e.g., Bandra West, Mumbai"
                     className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
                   />
+                </div>
+              </div>
+
+              {/* Capacity Limit & Registration Status */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#14120F] p-3.5 border border-[#F4EFE4]/15">
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                    Max Capacity / RSVP Limit
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    step="1"
+                    value={maxPeople}
+                    onChange={(e) => setMaxPeople(e.target.value)}
+                    placeholder="e.g., 30"
+                    className="w-full px-3.5 py-2.5 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#FFC93C] focus:outline-none"
+                  />
+                  <span className="block text-[10px] font-mono text-[#F4EFE4]/50 mt-1">
+                    Leave empty for unlimited capacity
+                  </span>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                    Registration Status
+                  </label>
+                  <select
+                    value={registrationStatus}
+                    onChange={(e) => setRegistrationStatus(e.target.value as RegistrationStatus)}
+                    className="w-full px-3.5 py-2.5 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#FFC93C] focus:outline-none cursor-pointer"
+                  >
+                    <option value="open">Open (Accepting RSVPs)</option>
+                    <option value="full">Full (Slots Filled)</option>
+                    <option value="closed">Closed (Registration Ended)</option>
+                  </select>
+                  <span className="block text-[10px] font-mono text-[#F4EFE4]/50 mt-1">
+                    Controls whether attendees can register
+                  </span>
                 </div>
               </div>
 
@@ -449,24 +638,24 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                 </label>
               </div>
 
-              {/* Form Action Buttons */}
-              <div className="pt-4 border-t border-[#F4EFE4]/15 flex items-center justify-end gap-3">
+              {/* Submit / Cancel Buttons */}
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F4EFE4]/15">
                 <button
                   type="button"
                   onClick={() => {
                     setModalOpen(false);
                     resetForm();
                   }}
-                  className="px-4 py-2 bg-transparent hover:bg-[#14120F] text-[#F4EFE4]/70 font-mono text-xs uppercase cursor-pointer"
+                  className="px-4 py-2.5 bg-[#14120F] hover:bg-[#25211B] text-[#F4EFE4] font-mono text-xs uppercase tracking-wider border border-[#F4EFE4]/20 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F] cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 bg-[#FFC93C] hover:bg-[#ffe082] disabled:opacity-50 text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] cursor-pointer"
                 >
-                  {saving ? 'Saving...' : editingItem ? 'Save Changes' : 'Publish Event'}
+                  {saving ? 'Saving...' : editingItem ? 'Update Event' : 'Add Event to Schedule'}
                 </button>
               </div>
             </form>

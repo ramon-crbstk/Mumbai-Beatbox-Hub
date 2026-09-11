@@ -200,16 +200,21 @@ CREATE POLICY "Allow admin members delete" ON public.members
     FOR DELETE TO authenticated USING (public.is_admin());
 
 -- ============================================================================
--- 5. RSVPS TABLE
+-- 5. RSVPS TABLE & SLOT CAPACITY
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.rsvps (
     id TEXT PRIMARY KEY DEFAULT ('rsvp-' || floor(extract(epoch from now()) * 1000)::text),
+    event_id TEXT,
     event_name TEXT NOT NULL,
     attendee_name TEXT NOT NULL,
     whatsapp TEXT NOT NULL,
     skill_level TEXT NOT NULL DEFAULT 'Beginner',
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Ensure event_id column exists
+ALTER TABLE public.rsvps ADD COLUMN IF NOT EXISTS event_id TEXT;
+CREATE INDEX IF NOT EXISTS idx_rsvps_event_id ON public.rsvps(event_id);
 
 ALTER TABLE public.rsvps ENABLE ROW LEVEL SECURITY;
 
@@ -220,7 +225,7 @@ DROP POLICY IF EXISTS "Allow public RSVP delete" ON public.rsvps;
 DROP POLICY IF EXISTS "Allow admin RSVP select" ON public.rsvps;
 DROP POLICY IF EXISTS "Allow admin RSVP delete" ON public.rsvps;
 
--- Public can ONLY insert RSVPs
+-- Public can insert RSVPs
 CREATE POLICY "Allow public RSVP insert" ON public.rsvps
     FOR INSERT TO public WITH CHECK (true);
 
@@ -269,16 +274,40 @@ CREATE POLICY "Allow admin contact dispatch delete" ON public.contact_dispatches
 -- ============================================================================
 CREATE TABLE IF NOT EXISTS public.events (
     id TEXT PRIMARY KEY DEFAULT ('evt-' || floor(extract(epoch from now()) * 1000)::text),
-    name TEXT NOT NULL,
-    date TEXT NOT NULL,
+    title TEXT,
+    name TEXT,
+    slug TEXT,
+    description TEXT,
+    blurb TEXT,
+    event_type TEXT DEFAULT 'cypher',
+    date TEXT NOT NULL, -- Stored as ISO YYYY-MM-DD
     time TEXT NOT NULL DEFAULT '5:30 PM – 8:00 PM IST',
     venue TEXT NOT NULL,
-    area TEXT NOT NULL DEFAULT 'Mumbai',
-    blurb TEXT NOT NULL DEFAULT '',
+    location TEXT DEFAULT 'Mumbai',
+    area TEXT DEFAULT 'Mumbai',
     entry TEXT NOT NULL DEFAULT 'Free Entry / Open to all',
+    cover_image_url TEXT,
+    registration_url TEXT,
+    is_published BOOLEAN NOT NULL DEFAULT true,
+    max_people INTEGER,
+    registration_status TEXT NOT NULL DEFAULT 'open' CHECK (registration_status IN ('open', 'full', 'closed')),
     is_battle_or_live BOOLEAN NOT NULL DEFAULT false,
-    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+-- Ensure all columns exist for existing deployments
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS slug TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS event_type TEXT DEFAULT 'cypher';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Mumbai';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS cover_image_url TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS registration_url TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_people INTEGER;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS registration_status TEXT NOT NULL DEFAULT 'open';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
 
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;
 
@@ -287,9 +316,9 @@ DROP POLICY IF EXISTS "Allow admin events insert" ON public.events;
 DROP POLICY IF EXISTS "Allow admin events update" ON public.events;
 DROP POLICY IF EXISTS "Allow admin events delete" ON public.events;
 
--- Everyone can view upcoming cyphers and events
+-- Everyone can view published events
 CREATE POLICY "Allow public events select" ON public.events
-    FOR SELECT TO public USING (true);
+    FOR SELECT TO public USING (is_published = true OR public.is_admin());
 
 -- Only admins can add, update, or remove events
 CREATE POLICY "Allow admin events insert" ON public.events
@@ -302,39 +331,114 @@ CREATE POLICY "Allow admin events delete" ON public.events
     FOR DELETE TO authenticated USING (public.is_admin());
 
 -- ============================================================================
--- 8. COMMUNITY BLOGS & EDITORIAL SUBMISSIONS TABLE
+-- 8. DATABASE RPC FUNCTIONS FOR CAPACITY & SLOT ENFORCEMENT
 -- ============================================================================
-CREATE TABLE IF NOT EXISTS public.blogs (
-    id TEXT PRIMARY KEY DEFAULT ('blog-' || floor(extract(epoch from now()) * 1000)::text),
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    publisher_name TEXT NOT NULL,
-    category TEXT NOT NULL DEFAULT 'Community Voice',
-    status TEXT NOT NULL DEFAULT 'pending', -- 'pending' | 'approved' | 'rejected'
-    created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
-);
 
-ALTER TABLE public.blogs ENABLE ROW LEVEL SECURITY;
+-- Atomic server-side RSVP submission with row-level concurrency lock
+CREATE OR REPLACE FUNCTION public.submit_event_rsvp(
+    p_event_id TEXT,
+    p_event_name TEXT,
+    p_attendee_name TEXT,
+    p_whatsapp TEXT,
+    p_skill_level TEXT DEFAULT 'Beginner'
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+    v_event RECORD;
+    v_rsvp_count INTEGER;
+    v_new_id TEXT;
+BEGIN
+    -- 1. Lock the event row to prevent concurrent race conditions
+    SELECT * INTO v_event
+    FROM public.events
+    WHERE id = p_event_id
+    FOR UPDATE;
 
-DROP POLICY IF EXISTS "Allow public blogs select approved" ON public.blogs;
-DROP POLICY IF EXISTS "Allow admin blogs select all" ON public.blogs;
-DROP POLICY IF EXISTS "Allow public blogs submit pending" ON public.blogs;
-DROP POLICY IF EXISTS "Allow admin blogs update status" ON public.blogs;
-DROP POLICY IF EXISTS "Allow admin blogs delete" ON public.blogs;
+    IF NOT FOUND THEN
+        SELECT * INTO v_event
+        FROM public.events
+        WHERE lower(COALESCE(title, name, '')) = lower(p_event_name)
+        LIMIT 1
+        FOR UPDATE;
 
--- Public can read approved blog posts
-CREATE POLICY "Allow public blogs select approved" ON public.blogs
-    FOR SELECT TO public USING (status = 'approved' OR public.is_admin());
+        IF NOT FOUND THEN
+            RETURN jsonb_build_object('success', false, 'error', 'Event not found');
+        END IF;
+    END IF;
 
--- Public can submit blogs (defaults to pending approval)
-CREATE POLICY "Allow public blogs submit pending" ON public.blogs
-    FOR INSERT TO public WITH CHECK (status = 'pending' OR public.is_admin());
+    -- 2. Verify publication
+    IF v_event.is_published IS FALSE THEN
+        RETURN jsonb_build_object('success', false, 'error', 'Registration not available for this event');
+    END IF;
 
--- Only admins can update status (approve/reject) or edit blogs
-CREATE POLICY "Allow admin blogs update status" ON public.blogs
-    FOR UPDATE TO authenticated USING (public.is_admin());
+    -- 3. Verify registration is open
+    IF v_event.registration_status = 'closed' THEN
+        RETURN jsonb_build_object('success', false, 'error', 'Registration is closed for this event');
+    END IF;
 
--- Only admins can delete blogs
-CREATE POLICY "Allow admin blogs delete" ON public.blogs
-    FOR DELETE TO authenticated USING (public.is_admin());
+    -- 4. Count existing RSVPs for this event
+    SELECT COUNT(*) INTO v_rsvp_count
+    FROM public.rsvps
+    WHERE event_id = v_event.id;
+
+    -- 5. Capacity check: if max_people is not NULL and count >= max_people
+    IF v_event.max_people IS NOT NULL AND v_rsvp_count >= v_event.max_people THEN
+        UPDATE public.events 
+        SET registration_status = 'full', updated_at = timezone('utc'::text, now())
+        WHERE id = v_event.id;
+
+        RETURN jsonb_build_object('success', false, 'error', 'Slots Full', 'is_full', true);
+    END IF;
+
+    -- 6. Insert the RSVP record
+    v_new_id := 'rsvp-' || floor(extract(epoch from now()) * 1000)::text;
+    INSERT INTO public.rsvps (id, event_id, event_name, attendee_name, whatsapp, skill_level, created_at)
+    VALUES (
+        v_new_id, 
+        v_event.id, 
+        COALESCE(v_event.title, v_event.name, p_event_name), 
+        p_attendee_name, 
+        p_whatsapp, 
+        p_skill_level, 
+        timezone('utc'::text, now())
+    );
+
+    -- 7. Update event status to 'full' if last spot was just taken
+    IF v_event.max_people IS NOT NULL AND (v_rsvp_count + 1) >= v_event.max_people THEN
+        UPDATE public.events 
+        SET registration_status = 'full', updated_at = timezone('utc'::text, now())
+        WHERE id = v_event.id;
+    END IF;
+
+    RETURN jsonb_build_object(
+        'success', true, 
+        'id', v_new_id, 
+        'event_id', v_event.id,
+        'current_count', v_rsvp_count + 1,
+        'max_people', v_event.max_people
+    );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.submit_event_rsvp(TEXT, TEXT, TEXT, TEXT, TEXT) TO authenticated, anon;
+
+-- Public helper to get live RSVP counts per event without exposing attendee details
+CREATE OR REPLACE FUNCTION public.get_event_rsvp_counts()
+RETURNS TABLE (event_id TEXT, rsvp_count BIGINT)
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+    SELECT event_id, COUNT(*) AS rsvp_count
+    FROM public.rsvps
+    WHERE event_id IS NOT NULL
+    GROUP BY event_id;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.get_event_rsvp_counts() TO authenticated, anon;
 

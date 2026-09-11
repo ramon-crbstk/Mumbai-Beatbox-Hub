@@ -16,15 +16,18 @@ import { EventItem } from '../types';
 
 export function PublicHomePage() {
   const [rsvpModalOpen, setRsvpModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | undefined>(undefined);
   const [selectedEventName, setSelectedEventName] = useState<string | undefined>(undefined);
 
   const handleOpenJoinModal = (purpose?: string) => {
+    setSelectedEvent(undefined);
     setSelectedEventName(purpose || 'Next Mumbai Cypher Session');
     setRsvpModalOpen(true);
   };
 
   const handleRsvpEvent = (event: EventItem) => {
-    setSelectedEventName(event.name);
+    setSelectedEvent(event);
+    setSelectedEventName(event.title || event.name);
     setRsvpModalOpen(true);
   };
 
@@ -81,9 +84,11 @@ export function PublicHomePage() {
       {/* Interactive Cypher RSVP Modal */}
       <RsvpModal
         isOpen={rsvpModalOpen}
+        event={selectedEvent}
         eventName={selectedEventName}
         onClose={() => {
           setRsvpModalOpen(false);
+          setSelectedEvent(undefined);
           setSelectedEventName(undefined);
         }}
       />

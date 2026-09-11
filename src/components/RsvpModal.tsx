@@ -1,39 +1,78 @@
 import React, { useState } from 'react';
-import { X, CheckCircle2, Ticket, MapPin, Calendar, Clock, MessageCircle, ArrowRight, Database, Loader2 } from 'lucide-react';
-import { saveEventRsvp, isSupabaseConfigured } from '../lib/supabase';
+import { 
+  X, 
+  CheckCircle2, 
+  Ticket, 
+  MapPin, 
+  Calendar, 
+  Clock, 
+  MessageCircle, 
+  ArrowRight, 
+  Database, 
+  Loader2,
+  AlertTriangle,
+  Ban,
+  Users
+} from 'lucide-react';
+import { EventItem, RegistrationStatus } from '../types';
+import { submitEventRsvp, formatEventDate } from '../lib/supabase';
 
 interface RsvpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  event?: EventItem;
   eventName?: string;
 }
 
-export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName }) => {
+export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, eventName }) => {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [skill, setSkill] = useState('Beginner');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isEventFull, setIsEventFull] = useState(false);
   const [saveSource, setSaveSource] = useState<'supabase' | 'local'>('local');
 
   if (!isOpen) return null;
 
+  const targetName = event?.title || event?.name || eventName || 'Next Community Cypher';
+  const status = (event?.registrationStatus || event?.registration_status || 'open') as RegistrationStatus;
+  const maxCap = event?.maxPeople !== undefined ? event?.maxPeople : event?.max_people;
+  const currentCount = event?.rsvpCount || 0;
+  const isPreFull = status === 'full' || (maxCap !== null && maxCap !== undefined && currentCount >= maxCap);
+  const isPreClosed = status === 'closed';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMessage(null);
     setIsSubmitting(true);
+
     try {
-      const res = await saveEventRsvp({
-        eventName: eventName || 'Next Community Cypher',
-        attendeeName: name,
-        whatsapp,
+      const res = await submitEventRsvp({
+        eventId: event?.id,
+        eventName: targetName,
+        attendeeName: name.trim(),
+        whatsapp: whatsapp.trim(),
         skillLevel: skill,
       });
+
+      if (!res.success) {
+        if (res.isFull) {
+          setIsEventFull(true);
+        }
+        setErrorMessage(res.error || 'Failed to submit RSVP. Please try again.');
+        setIsSubmitting(false);
+        return;
+      }
+
       setSaveSource(res.source);
-    } catch {
-      // fallback handled
+      setConfirmed(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setErrorMessage(msg || 'An unexpected error occurred. Please try again.');
     } finally {
       setIsSubmitting(false);
-      setConfirmed(true);
     }
   };
 
@@ -43,7 +82,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
       onClick={onClose}
     >
       <div 
-        className="bg-[#F4EFE4] text-[#14120F] border-4 border-[#14120F] p-6 sm:p-8 max-w-lg w-full shadow-[8px_8px_0px_0px_#FFC93C] relative"
+        className="bg-[#F4EFE4] text-[#14120F] border-4 border-[#14120F] p-6 sm:p-8 max-w-lg w-full shadow-[8px_8px_0px_0px_#FFC93C] relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
@@ -62,7 +101,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
             </div>
 
             <div className="inline-block px-3 py-1 bg-[#14120F] text-[#FFC93C] text-xs font-bold uppercase">
-              RSVP CONFIRMED // TICKET #MBH-2026
+              RSVP CONFIRMED // SPOT RESERVED
             </div>
 
             <h3 className="font-['Anton'] text-3xl uppercase tracking-tight text-[#14120F]">
@@ -70,18 +109,25 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
             </h3>
 
             <p className="text-xs sm:text-sm font-sans text-[#14120F]/85 max-w-sm mx-auto">
-              We saved your spot, <strong>{name}</strong>. Remember: zero instruments, no gatekeeping. Just show up with your vocal energy.
+              We saved your spot, <strong>{name}</strong>. Zero instruments, zero gatekeeping. Just show up ready to share vocal sound.
             </p>
 
-            <div className="p-3 bg-[#E5DFC8] border border-[#14120F]/30 text-xs text-left space-y-1">
-              <div><strong>Event:</strong> {eventName || 'Next Community Cypher'}</div>
-              <div><strong>Coordinates:</strong> Bandra Carter Rd Promenade</div>
-              <div><strong>Time:</strong> Sat 5:30 PM IST onwards</div>
+            <div className="p-3 bg-[#E5DFC8] border border-[#14120F]/30 text-xs text-left space-y-1.5">
+              <div><strong>Event:</strong> {targetName}</div>
+              {event?.date && (
+                <div><strong>Date:</strong> {formatEventDate(event.date)} ({event.date})</div>
+              )}
+              {event?.time && <div><strong>Time:</strong> {event.time}</div>}
+              {event?.venue && (
+                <div>
+                  <strong>Venue:</strong> {event.venue} — {event.location || event.area}
+                </div>
+              )}
               <div className="pt-1 flex items-center gap-1 text-[10px] text-[#14120F]/70">
                 <Database className="w-3 h-3 text-[#14120F]" />
                 <span>
                   {saveSource === 'supabase'
-                    ? 'Synced live to Supabase database (rsvps)'
+                    ? 'Synced live to Supabase database (events & rsvps with row-level capacity lock)'
                     : 'Saved to local cypher attendee registry'}
                 </span>
               </div>
@@ -108,22 +154,110 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
               Done & Close
             </button>
           </div>
+        ) : isPreClosed ? (
+          <div className="py-6 text-center space-y-4 font-mono">
+            <div className="w-14 h-14 bg-red-800 text-white border-2 border-[#14120F] flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_#14120F]">
+              <Ban className="w-8 h-8" />
+            </div>
+            <div className="inline-block px-3 py-1 bg-red-900 text-white text-xs font-bold uppercase">
+              REGISTRATION CLOSED
+            </div>
+            <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#14120F]">
+              Registration Has Ended
+            </h3>
+            <p className="text-xs font-sans text-[#14120F]/80 max-w-sm mx-auto">
+              Registration for <strong>{targetName}</strong> is currently closed. Join our WhatsApp group to get alerts for the next gathering!
+            </p>
+            <div className="pt-2">
+              <a
+                href="https://chat.whatsapp.com/placeholder-mumbai-beatbox"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Join Community WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        ) : isPreFull || isEventFull ? (
+          <div className="py-6 text-center space-y-4 font-mono">
+            <div className="w-14 h-14 bg-amber-600 text-white border-2 border-[#14120F] flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_#14120F]">
+              <AlertTriangle className="w-8 h-8" />
+            </div>
+            <div className="inline-block px-3 py-1 bg-amber-600 text-white text-xs font-bold uppercase">
+              CAPACITY REACHED // SLOTS FULL
+            </div>
+            <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#14120F]">
+              All RSVP Slots Filled
+            </h3>
+            <p className="text-xs font-sans text-[#14120F]/80 max-w-sm mx-auto">
+              Sorry, <strong>{targetName}</strong> has reached its maximum attendee capacity limit{maxCap ? ` (${maxCap} attendees)` : ''}.
+            </p>
+            <p className="text-xs font-mono text-[#14120F]/60">
+              Join our WhatsApp group to get notified if any attendee drops out or when the next session opens.
+            </p>
+            <div className="pt-2">
+              <a
+                href="https://chat.whatsapp.com/placeholder-mumbai-beatbox"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Join Waitlist via WhatsApp</span>
+              </a>
+            </div>
+          </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
             {/* Top Ticket Header */}
-            <div className="flex items-center gap-2 text-[#E4402A] font-bold uppercase border-b-2 border-[#14120F] pb-3 mb-2">
-              <Ticket className="w-4 h-4" />
-              <span>COMMUNITY CYPHER ENTRY PASS</span>
+            <div className="flex items-center justify-between border-b-2 border-[#14120F] pb-3 mb-2">
+              <div className="flex items-center gap-2 text-[#E4402A] font-bold uppercase">
+                <Ticket className="w-4 h-4" />
+                <span>COMMUNITY CYPHER ENTRY PASS</span>
+              </div>
+              {maxCap !== null && maxCap !== undefined && (
+                <span className="text-[10px] font-mono text-[#14120F]/80 font-bold bg-[#E5DFC8] px-2 py-0.5 border border-[#14120F]/20">
+                  {Math.max(0, maxCap - currentCount)} slots left
+                </span>
+              )}
             </div>
 
             <div>
               <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#14120F] leading-tight">
-                {eventName ? `RSVP: ${eventName}` : 'Join the Next Open Cypher'}
+                {targetName}
               </h3>
-              <p className="text-xs font-sans text-[#14120F]/70 mt-1">
-                Drop your details so we can send the live location pin on WhatsApp.
+              {event?.date && (
+                <div className="flex flex-wrap items-center gap-3 text-xs text-[#14120F]/80 mt-1 font-mono">
+                  <span className="inline-flex items-center gap-1">
+                    <Calendar className="w-3.5 h-3.5 text-[#E4402A]" />
+                    {formatEventDate(event.date)}
+                  </span>
+                  {event.time && (
+                    <span className="inline-flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      {event.time}
+                    </span>
+                  )}
+                  {event.venue && (
+                    <span className="inline-flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5" />
+                      {event.venue}
+                    </span>
+                  )}
+                </div>
+              )}
+              <p className="text-xs font-sans text-[#14120F]/70 mt-2">
+                Drop your details below to lock in your attendee pass and receive the coordinates.
               </p>
             </div>
+
+            {errorMessage && (
+              <div className="p-3 bg-red-100 border-2 border-red-500 text-red-800 text-xs font-mono">
+                {errorMessage}
+              </div>
+            )}
 
             <div className="space-y-3 pt-2">
               <div>
@@ -180,7 +314,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Confirming with Database...</span>
+                    <span>Verifying Capacity & Confirming...</span>
                   </>
                 ) : (
                   <span>Confirm Free RSVP</span>
@@ -198,3 +332,4 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, eventName
     </div>
   );
 };
+

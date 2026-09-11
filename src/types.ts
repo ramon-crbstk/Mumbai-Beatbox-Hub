@@ -1,15 +1,47 @@
+export type RegistrationStatus = 'open' | 'full' | 'closed';
+
 export interface EventItem {
   id: string;
-  name: string;
-  date: string;
+  title: string;
+  name: string; // alias for title for backward compatibility
+  slug?: string;
+  description: string;
+  blurb: string; // alias for description
+  eventType: string; // 'cypher' | 'battle' | etc.
+  event_type?: string;
+  date: string; // ISO format: YYYY-MM-DD
   time: string;
   venue: string;
-  area: string;
-  blurb: string;
+  location: string;
+  area: string; // alias for location
   entry: string;
   coverImageUrl?: string;
   cover_image_url?: string;
+  registrationUrl?: string;
+  registration_url?: string;
+  isPublished?: boolean;
+  is_published?: boolean;
+  maxPeople?: number | null;
+  max_people?: number | null;
+  registrationStatus: RegistrationStatus;
+  registration_status?: RegistrationStatus;
+  rsvpCount?: number;
   isBattleOrLive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface RsvpRecord {
+  id?: string;
+  eventId?: string;
+  event_id?: string;
+  eventName: string;
+  event_name?: string;
+  attendeeName: string;
+  attendee_name?: string;
+  whatsapp: string;
+  skillLevel: string;
+  skill_level?: string;
   createdAt?: string;
 }
 
