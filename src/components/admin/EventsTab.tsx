@@ -134,6 +134,8 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
         type: 'success',
         message: editingItem
           ? 'Event updated successfully!'
+          : res.error
+          ? `Event created! (${res.error})`
           : 'New upcoming event added to calendar!',
       });
       setModalOpen(false);

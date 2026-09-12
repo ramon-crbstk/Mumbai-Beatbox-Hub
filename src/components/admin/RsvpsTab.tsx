@@ -12,7 +12,7 @@ import {
   Loader2,
   ShieldAlert
 } from 'lucide-react';
-import { RsvpRecord, deleteRsvp } from '../../lib/supabase';
+import { RsvpRecord, deleteRsvp, deleteEventRsvps, purgeFakeRsvps } from '../../lib/supabase';
 
 interface RsvpsTabProps {
   items: RsvpRecord[];
@@ -26,28 +26,51 @@ export function RsvpsTab({ items, onRefresh }: RsvpsTabProps) {
   const [deleting, setDeleting] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [clearingEventRsvps, setClearingEventRsvps] = useState(false);
 
   const handleRefresh = async () => {
     setRefreshing(true);
+    purgeFakeRsvps();
     await onRefresh();
     setRefreshing(false);
   };
 
   const handleDelete = async () => {
-    if (!deleteModalItem?.id) return;
+    if (!deleteModalItem) return;
     setDeleting(true);
 
-    const ok = await deleteRsvp(deleteModalItem.id);
+    const id = deleteModalItem.id || '';
+    const res = await deleteRsvp(id, {
+      attendeeName: deleteModalItem.attendeeName || deleteModalItem.attendee_name,
+      whatsapp: deleteModalItem.whatsapp,
+      eventName: deleteModalItem.eventName || deleteModalItem.event_name,
+      eventId: deleteModalItem.eventId || deleteModalItem.event_id,
+    });
     setDeleting(false);
 
-    if (ok) {
+    if (res.success) {
       setDeleteModalItem(null);
-      setSuccessToast('RSVP record deleted from Supabase.');
+      setSuccessToast('RSVP record deleted successfully.');
       setTimeout(() => setSuccessToast(null), 3500);
       onRefresh();
     } else {
-      alert('Failed to delete RSVP record. Please check Supabase permissions.');
+      alert(res.error || 'Failed to delete RSVP record.');
     }
+  };
+
+  const handleClearFilteredEventRsvps = async () => {
+    if (selectedEventFilter === 'all') return;
+    const confirm = window.confirm(
+      `Are you sure you want to delete all RSVP registrations for "${selectedEventFilter}"? This cannot be undone.`
+    );
+    if (!confirm) return;
+
+    setClearingEventRsvps(true);
+    await deleteEventRsvps(undefined, selectedEventFilter);
+    setClearingEventRsvps(false);
+    setSuccessToast(`All RSVPs for "${selectedEventFilter}" have been deleted.`);
+    setTimeout(() => setSuccessToast(null), 3500);
+    onRefresh();
   };
 
   // Export to CSV
@@ -138,6 +161,19 @@ export function RsvpsTab({ items, onRefresh }: RsvpsTabProps) {
           >
             <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-[#2DD4BF]' : ''}`} />
           </button>
+
+          {selectedEventFilter !== 'all' && (
+            <button
+              type="button"
+              onClick={handleClearFilteredEventRsvps}
+              disabled={clearingEventRsvps}
+              className="px-3.5 py-2 bg-[#E4402A]/20 hover:bg-[#E4402A] text-[#E4402A] hover:text-white font-mono font-bold text-xs uppercase tracking-wider border border-[#E4402A]/50 flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+              title={`Delete all RSVPs for ${selectedEventFilter}`}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>{clearingEventRsvps ? 'Clearing...' : 'Clear Event RSVPs'}</span>
+            </button>
+          )}
 
           <button
             type="button"

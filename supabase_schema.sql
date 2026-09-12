@@ -51,6 +51,11 @@ BEGIN
         RETURN TRUE;
     END IF;
 
+    -- Check 4: Direct check for project owner account
+    IF lower(COALESCE(auth.jwt() ->> 'email', '')) = 'ramonrbakuri@gmail.com' THEN
+        RETURN TRUE;
+    END IF;
+
     RETURN FALSE;
 END;
 $$;
@@ -298,15 +303,23 @@ CREATE TABLE IF NOT EXISTS public.events (
 
 -- Ensure all columns exist for existing deployments
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS title TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS name TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS slug TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS description TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS blurb TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS event_type TEXT DEFAULT 'cypher';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS date TEXT;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS time TEXT DEFAULT '5:30 PM – 8:00 PM IST';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS venue TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Mumbai';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS area TEXT DEFAULT 'Mumbai';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS entry TEXT DEFAULT 'Free Entry / Open to all';
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS cover_image_url TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS registration_url TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_people INTEGER;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS registration_status TEXT NOT NULL DEFAULT 'open';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS is_battle_or_live BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
 
 ALTER TABLE public.events ENABLE ROW LEVEL SECURITY;

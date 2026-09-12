@@ -26,6 +26,8 @@ import {
   fetchRsvps, 
   fetchContactDispatches,
   fetchUpcomingEvents,
+  getLocalEvents,
+  setAdminAuthenticated,
   RsvpRecord,
   ContactDispatchRecord
 } from '../../lib/supabase';
@@ -55,8 +57,15 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
 
-  // Data collections
-  const [events, setEvents] = useState<EventItem[]>([]);
+  // Sync admin authentication state immediately
+  useEffect(() => {
+    if (adminUser) {
+      setAdminAuthenticated(true);
+    }
+  }, [adminUser]);
+
+  // Data collections initialized with cached events for instant zero-flicker render
+  const [events, setEvents] = useState<EventItem[]>(getLocalEvents);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [members, setMembers] = useState<(CommunityMember & { photoUrl: string })[]>([]);
