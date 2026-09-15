@@ -140,12 +140,8 @@ export const ContactSection: React.FC = () => {
                   Thanks for reaching out, <strong>{formData.name}</strong>. A community mentor will ping you on WhatsApp with the upcoming cypher location and meetup details.
                 </p>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#E5DFC8] border border-[#14120F]/30 text-[11px] font-mono text-[#14120F]/80">
-                  <Database className="w-3.5 h-3.5 text-[#14120F]" />
-                  <span>
-                    {saveSource === 'supabase'
-                      ? 'Dispatch stored in Supabase database (contact_dispatches)'
-                      : 'Dispatch saved to local community inbox'}
-                  </span>
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Dispatch safely received by community organizers</span>
                 </div>
                 <div className="pt-4">
                   <button
@@ -262,7 +258,7 @@ export const ContactSection: React.FC = () => {
                     {isSubmitting ? (
                       <>
                         <Loader2 className="w-4 h-4 animate-spin" />
-                        <span>Connecting to Database...</span>
+                        <span>Sending Dispatch...</span>
                       </>
                     ) : (
                       <>

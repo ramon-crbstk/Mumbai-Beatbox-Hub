@@ -103,6 +103,8 @@ export interface CommunityMember {
   avatarInitials: string;
   accentBg: string;
   photoUrl?: string;
+  audioUrl?: string;
+  audio_url?: string;
   createdAt?: string;
 }
 

@@ -115,6 +115,8 @@ export const FEATURED_VIDEOS: VideoItem[] = [
     duration: '04:18',
     category: 'Street Cypher',
     viewsEstimate: 'Drop #14',
+    videoUrl: 'https://www.youtube.com/watch?v=2Tku3aC334A',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'vid-2',
@@ -124,6 +126,8 @@ export const FEATURED_VIDEOS: VideoItem[] = [
     duration: '07:42',
     category: 'Battle Drop',
     viewsEstimate: 'Tournament',
+    videoUrl: 'https://www.youtube.com/watch?v=83lD_QvGz1A',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=800&q=80',
   },
   {
     id: 'vid-3',
@@ -133,6 +137,8 @@ export const FEATURED_VIDEOS: VideoItem[] = [
     duration: '05:30',
     category: 'Workshop Drill',
     viewsEstimate: 'Tutorial',
+    videoUrl: 'https://www.youtube.com/watch?v=3q-qT9U5j_8',
+    thumbnailUrl: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=800&q=80',
   },
 ];
 

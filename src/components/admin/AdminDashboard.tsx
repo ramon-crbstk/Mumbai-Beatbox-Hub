@@ -16,7 +16,8 @@ import {
   AlertCircle,
   Radio,
   Calendar,
-  BookOpen
+  BookOpen,
+  Clock
 } from 'lucide-react';
 import { AdminUser, signOutAdmin } from '../../lib/adminAuth';
 import { 
@@ -42,7 +43,7 @@ import { RsvpsTab } from './RsvpsTab';
 import { MessagesTab } from './MessagesTab';
 import { SessionDiagnosisBanner } from './SessionDiagnosisBanner';
 
-type AdminTab = 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages';
+type AdminTab = 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages' | 'security';
 
 interface AdminDashboardProps {
   adminUser: AdminUser;
@@ -56,6 +57,15 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [currentTime, setCurrentTime] = useState(() => new Date());
+
+  // Live Date & Time timer updating every second
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Sync admin authentication state immediately
   useEffect(() => {
@@ -123,7 +133,21 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     { id: 'members' as const, label: 'Members', icon: Users, count: members.length },
     { id: 'rsvps' as const, label: 'RSVPs', icon: Ticket, count: rsvps.length },
     { id: 'messages' as const, label: 'Dispatches', icon: Mail, count: messages.length },
+    { id: 'security' as const, label: 'Security & safe', icon: ShieldCheck, count: null },
   ];
+
+  const formattedDate = currentTime.toLocaleDateString('en-US', {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+  const formattedTime = currentTime.toLocaleTimeString('en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: true,
+  });
 
   return (
     <div className="min-h-screen bg-[#14120F] text-[#F4EFE4] flex flex-col font-sans selection:bg-[#FFC93C] selection:text-[#14120F]">
@@ -159,7 +183,19 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
         </div>
 
         {/* Right Header Actions */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
+          {/* Live Date & Time Display on top right corner beside Sync Tables */}
+          <div 
+            id="admin-header-datetime"
+            className="flex items-center gap-2 px-2.5 sm:px-3 py-1.5 bg-[#14120F] border border-[#FFC93C]/40 text-xs font-mono shadow-[2px_2px_0px_0px_#14120F]"
+            title="Real-time System Clock"
+          >
+            <Clock className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+            <span className="hidden sm:inline text-[#F4EFE4]/80">{formattedDate}</span>
+            <span className="hidden sm:inline text-[#FFC93C]/50">•</span>
+            <span className="text-[#FFC93C] font-bold tracking-wider">{formattedTime}</span>
+          </div>
+
           {/* Sync Button */}
           <button
             type="button"
@@ -273,9 +309,6 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
 
         {/* Main Content Area */}
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full overflow-x-hidden">
-          {/* Real-time Authentication Session & RLS Diagnosis */}
-          <SessionDiagnosisBanner />
-
           {/* Error Message if fetch failed */}
           {loadError && (
             <div className="mb-6 p-4 bg-[#E4402A]/15 border border-[#E4402A] text-[#F4EFE4] text-xs font-mono flex items-start gap-2.5">
@@ -308,6 +341,7 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
                 {activeTab === 'members' && 'Beatboxer Community Roster'}
                 {activeTab === 'rsvps' && 'Event Attendee RSVPs'}
                 {activeTab === 'messages' && 'Contact Inquiries & Dispatches'}
+                {activeTab === 'security' && 'Security & Safe Diagnostics'}
               </h1>
             </div>
 
@@ -377,6 +411,22 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
                   items={messages} 
                   onRefresh={() => loadAllData(true)} 
                 />
+              )}
+
+              {activeTab === 'security' && (
+                <div className="space-y-6">
+                  <div className="p-4 bg-[#1A1713] border border-[#FFC93C]/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+                    <div className="flex items-center gap-2 text-[#FFC93C]">
+                      <ShieldCheck className="w-4 h-4 text-[#FFC93C]" />
+                      <span className="font-bold uppercase tracking-wider">Security & Safe Control Center</span>
+                    </div>
+                    <span className="text-[#F4EFE4]/60">
+                      Evaluated live via client session & Postgres RLS
+                    </span>
+                  </div>
+
+                  <SessionDiagnosisBanner />
+                </div>
               )}
             </>
           )}

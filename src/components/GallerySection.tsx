@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GALLERY_ITEMS } from '../data/communityData';
 import { GalleryItem } from '../types';
-import { Image as ImageIcon, Plus, Upload, X, MapPin, Tag } from 'lucide-react';
+import { Image as ImageIcon, Plus, X, MapPin, Tag, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchGalleryItems } from '../lib/supabase';
 
 interface GallerySectionProps {
@@ -11,7 +11,7 @@ interface GallerySectionProps {
 export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger = 0 }) => {
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<GalleryItem | null>(null);
-  const [customPhotos, setCustomPhotos] = useState<Record<string, string>>({});
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -27,13 +27,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
     };
   }, [refreshTrigger]);
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>, id: string) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const url = URL.createObjectURL(file);
-      setCustomPhotos((prev) => ({ ...prev, [id]: url }));
-    }
-  };
+  const visibleGallery = expanded ? galleryList : galleryList.slice(0, 3);
 
   return (
     <section id="gallery" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative">
@@ -66,12 +60,12 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               <ImageIcon className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
               <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Visual Archive</h3>
               <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto">
-                Connected to Supabase <code className="text-[#FFC93C]">gallery</code> table. Photos added to the database will appear here.
+                Archived cypher photographs added by the community will appear here.
               </p>
             </div>
           ) : (
-            galleryList.map((item, idx) => {
-              const uploadedSrc = customPhotos[item.id] || item.photoUrl;
+            visibleGallery.map((item, idx) => {
+              const uploadedSrc = item.photoUrl;
 
               return (
                 <div
@@ -135,6 +129,19 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
           }))}
         </div>
 
+        {galleryList.length > 3 && (
+          <div className="mt-10 text-center">
+            <button
+              type="button"
+              onClick={() => setExpanded(!expanded)}
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#1A1713] hover:bg-[#FFC93C] text-[#FFC93C] hover:text-[#14120F] border-2 border-[#FFC93C] font-mono text-xs font-bold uppercase tracking-widest shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all cursor-pointer"
+            >
+              <span>{expanded ? 'Show Less Photos' : `View More (${galleryList.length - 3} More Moments)`}</span>
+              {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            </button>
+          </div>
+        )}
+
       </div>
 
       {/* Interactive Tile Modal */}
@@ -183,25 +190,11 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               <div><strong>Session:</strong> {selectedItem.dateStr}</div>
             </div>
 
-            <div className="space-y-3">
-              <label className="flex items-center justify-center gap-2 w-full py-3 bg-[#14120F] text-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer">
-                <Upload className="w-4 h-4" />
-                <span>Swap / Test Local Photo</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={(e) => {
-                    handleFileUpload(e, selectedItem.id);
-                    setSelectedItem(null);
-                  }}
-                />
-              </label>
-
+            <div className="pt-2">
               <button
                 type="button"
                 onClick={() => setSelectedItem(null)}
-                className="w-full py-2 bg-transparent text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F]/40 hover:bg-[#14120F]/10 transition-colors"
+                className="w-full py-2.5 bg-[#14120F] text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-colors cursor-pointer"
               >
                 Close Preview
               </button>

@@ -123,13 +123,9 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                   <strong>Venue:</strong> {event.venue} — {event.location || event.area}
                 </div>
               )}
-              <div className="pt-1 flex items-center gap-1 text-[10px] text-[#14120F]/70">
-                <Database className="w-3 h-3 text-[#14120F]" />
-                <span>
-                  {saveSource === 'supabase'
-                    ? 'Synced live to Supabase database (events & rsvps with row-level capacity lock)'
-                    : 'Saved to local cypher attendee registry'}
-                </span>
+              <div className="pt-1 flex items-center gap-1.5 text-[11px] text-emerald-800 font-mono font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <span>Confirmed & registered in official cypher attendee roster</span>
               </div>
             </div>
 

@@ -53,8 +53,11 @@ CREATE TABLE IF NOT EXISTS public.members (
     avatar_initials TEXT,
     accent_bg TEXT DEFAULT '#FFC93C',
     photo_url TEXT,
+    audio_url TEXT,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
 );
+
+ALTER TABLE public.members ADD COLUMN IF NOT EXISTS audio_url TEXT;
 
 ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow public members select" ON public.members FOR SELECT TO public USING (true);

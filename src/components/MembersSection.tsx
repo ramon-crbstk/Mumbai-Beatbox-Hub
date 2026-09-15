@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
-import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Volume2, Radio, Headphones, Sparkles, Filter, Database } from 'lucide-react';
-import { fetchCommunityMembers, isSupabaseConfigured } from '../lib/supabase';
+import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Volume2, Radio, Headphones, Filter } from 'lucide-react';
+import { fetchCommunityMembers } from '../lib/supabase';
 
 interface MembersSectionProps {
   refreshTrigger?: number;
@@ -10,7 +10,6 @@ interface MembersSectionProps {
 
 export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger = 0 }) => {
   const [membersList, setMembersList] = useState<(CommunityMember & { photoUrl: string })[]>([]);
-  const [isDbSynced, setIsDbSynced] = useState(false);
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [playbackProgress, setPlaybackProgress] = useState<{ [id: string]: number }>({});
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
@@ -22,7 +21,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
       const remote = await fetchCommunityMembers();
       if (isMounted) {
         setMembersList(remote);
-        setIsDbSynced(isSupabaseConfigured());
       }
     }
     loadMembers();
@@ -31,13 +29,25 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     };
   }, [refreshTrigger]);
   
-  // Audio state references
+  // Audio playback references
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const soundTimerRef = useRef<number | null>(null);
   const intervalTimerRef = useRef<number | null>(null);
 
-  // Stop any active audio synthesizers safely
+  // Stop any active audio safely
   const stopAllAudio = () => {
+    if (audioElementRef.current) {
+      try {
+        audioElementRef.current.pause();
+        audioElementRef.current.currentTime = 0;
+        audioElementRef.current.src = '';
+      } catch {
+        // audio element pause error
+      }
+      audioElementRef.current = null;
+    }
+
     if (audioContextRef.current) {
       try {
         audioContextRef.current.close();
@@ -63,7 +73,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     };
   }, []);
 
-  // Web Audio API custom beatbox generator for each member
+  // Play uploaded voice note file or fallback to Web Audio synthesizer
   const playVoiceNote = (member: CommunityMember & { photoUrl: string }) => {
     // If clicked on the already playing member, stop it
     if (activeMemberId === member.id) {
@@ -74,6 +84,45 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     // Stop current audio if playing
     stopAllAudio();
 
+    const voiceAudioUrl = member.audioUrl || member.audio_url;
+
+    // CASE 1: Member has an uploaded voice note audio file
+    if (voiceAudioUrl && voiceAudioUrl.trim() !== '') {
+      try {
+        const audio = new Audio(voiceAudioUrl);
+        audioElementRef.current = audio;
+        setActiveMemberId(member.id);
+        setPlaybackProgress((prev) => ({ ...prev, [member.id]: 0 }));
+
+        audio.ontimeupdate = () => {
+          if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+            const pct = Math.min(100, Math.round((audio.currentTime / audio.duration) * 100));
+            setPlaybackProgress((prev) => ({ ...prev, [member.id]: pct }));
+          }
+        };
+
+        audio.onended = () => {
+          stopAllAudio();
+        };
+
+        audio.onerror = (err) => {
+          console.warn('Could not play uploaded audio file directly:', err);
+          stopAllAudio();
+        };
+
+        audio.play().catch((playErr) => {
+          console.warn('Audio play request failed or blocked by autoplay policy:', playErr);
+          stopAllAudio();
+        });
+
+        return;
+      } catch (err) {
+        console.warn('Failed to initialize Audio for voice note:', err);
+        stopAllAudio();
+      }
+    }
+
+    // CASE 2: Fallback Web Audio API synthesizer for routine previews
     try {
       const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
       if (!AudioContextClass) return;
@@ -83,7 +132,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
       setActiveMemberId(member.id);
       setPlaybackProgress((prev) => ({ ...prev, [member.id]: 0 }));
 
-      // Duration in seconds (parsed from voiceNoteDuration e.g. "0:16" -> 16s or demo loop 8-12s)
+      // Duration in seconds
       const durationSeconds = parseInt(member.voiceNoteDuration.split(':')[1] || '14', 10);
       const totalSteps = durationSeconds;
       let currentStep = 0;
@@ -110,7 +159,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
           const time = now + i * stepDuration;
 
           if (member.soundType === 'bass-growl') {
-            // Low sub-bass kick + inward sawtooth rumble
             if (i % 4 === 0) {
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();
@@ -125,7 +173,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               osc.stop(time + 0.36);
             }
             if (i % 4 === 2) {
-              // Vocal snare / throat pop
               const osc2 = ctx.createOscillator();
               const gain2 = ctx.createGain();
               osc2.type = 'triangle';
@@ -139,7 +186,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               osc2.stop(time + 0.16);
             }
           } else if (member.soundType === 'liproll') {
-            // Deep hollow pop + wobble
             if (i % 2 === 0) {
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();
@@ -154,7 +200,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               osc.stop(time + 0.23);
             }
             if (i % 4 === 1 || i % 4 === 3) {
-              // Lip click roll
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();
               osc.type = 'square';
@@ -168,7 +213,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               osc.stop(time + 0.07);
             }
           } else if (member.soundType === 'fast-tech') {
-            // Rapid double-tongue hi-hats & sharp spit snares
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             const isSnare = i % 4 === 2;
@@ -182,7 +226,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
             osc.start(time);
             osc.stop(time + (isSnare ? 0.13 : 0.05));
           } else if (member.soundType === 'polyphonic') {
-            // Harmonics + bass fundamental
             const osc1 = ctx.createOscillator();
             const osc2 = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -200,7 +243,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
             osc1.stop(time + stepDuration * 0.95);
             osc2.stop(time + stepDuration * 0.95);
           } else if (member.soundType === 'scratch') {
-            // Vinyl frequency chirp scratch
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
             osc.type = 'sawtooth';
@@ -215,7 +257,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
             osc.start(time);
             osc.stop(time + 0.12);
           } else {
-            // Trap-click & 808
             if (i % 4 === 0) {
               const osc = ctx.createOscillator();
               const gain = ctx.createGain();
@@ -248,7 +289,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
 
       schedulePattern();
 
-      // Schedule another loop if audio still playing after 16 steps
       soundTimerRef.current = window.setTimeout(() => {
         if (activeMemberId === member.id) {
           schedulePattern();
@@ -372,7 +412,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               <Headphones className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
               <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Community Roster</h3>
               <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto">
-                Connected to Supabase <code className="text-[#FFC93C]">members</code> table. Beatboxer profiles added to the database will appear here.
+                Beatboxer profiles added by the crew will appear here.
               </p>
             </div>
           ) : (
@@ -462,9 +502,16 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                       <Mic className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
                       {member.voiceNoteTitle}
                     </span>
-                    <span className="text-[#FFC93C] font-mono font-bold shrink-0">
-                      {isPlaying ? `0:${String(Math.floor((progress / 100) * 16)).padStart(2, '0')}` : member.voiceNoteDuration}
-                    </span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      {(member.audioUrl || member.audio_url) && (
+                        <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] uppercase font-bold">
+                          AUDIO
+                        </span>
+                      )}
+                      <span className="text-[#FFC93C] font-mono font-bold">
+                        {isPlaying ? `0:${String(Math.floor((progress / 100) * 16)).padStart(2, '0')}` : member.voiceNoteDuration}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Equalizer Waveform Animation Bars */}
@@ -503,7 +550,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                     <button
                       id={`voice-btn-${member.id}`}
                       onClick={() => playVoiceNote(member)}
-                      className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md ${
+                      className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
                         isPlaying
                           ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
                           : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'
@@ -527,30 +574,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               </div>
             );
           }))}
-        </div>
-
-        {/* Directory Footer Info & Scroll Tip */}
-        <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#F4EFE4]/60 border-t border-[#FFC93C]/20 pt-4">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#FFC93C]" />
-            <span>Showing {filteredMembers.length} active vocalists across Western, Central, and Harbour zones</span>
-            {isDbSynced && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/40 text-[10px] uppercase">
-                <Database className="w-3 h-3" />
-                Live Supabase Sync
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-3">
-            <span className="text-[#FFC93C] font-semibold">Want your voice note featured here?</span>
-            <a
-              href="#contact"
-              className="underline hover:text-[#F4EFE4] transition-colors"
-            >
-              Submit Routine Drop →
-            </a>
-          </div>
         </div>
 
       </div>

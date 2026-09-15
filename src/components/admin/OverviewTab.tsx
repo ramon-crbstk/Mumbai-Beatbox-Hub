@@ -24,7 +24,7 @@ interface OverviewTabProps {
   members: (CommunityMember & { photoUrl: string })[];
   rsvps: RsvpRecord[];
   messages: ContactDispatchRecord[];
-  onSelectTab: (tab: 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages') => void;
+  onSelectTab: (tab: 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages' | 'security') => void;
   onOpenAddModal: (tab: 'gallery' | 'videos' | 'members') => void;
 }
 
@@ -261,7 +261,16 @@ export function OverviewTab({
             </ul>
           </div>
 
-          <div className="mt-6 pt-4 border-t border-[#F4EFE4]/10">
+          <div className="mt-6 pt-4 border-t border-[#F4EFE4]/10 space-y-2.5">
+            <button
+              type="button"
+              onClick={() => onSelectTab('security')}
+              className="w-full py-2.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Launch Security & Safe Audit</span>
+            </button>
+
             <a
               href="https://supabase.com/dashboard/project/tcsovxxhoypfpkbmowhd"
               target="_blank"

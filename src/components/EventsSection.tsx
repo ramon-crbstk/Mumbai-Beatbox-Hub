@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { EventItem, RegistrationStatus } from '../types';
-import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchUpcomingEvents, getLocalEvents, formatEventDate, fetchAllEventRsvpCounts } from '../lib/supabase';
 
 interface EventsSectionProps {
@@ -10,6 +10,7 @@ interface EventsSectionProps {
 export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => {
   const [events, setEvents] = useState<EventItem[]>(getLocalEvents);
   const [rsvpCounts, setRsvpCounts] = useState<Record<string, number>>({});
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -23,6 +24,8 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
       isMounted = false;
     };
   }, []);
+
+  const visibleEvents = expanded ? events : events.slice(0, 3);
 
   return (
     <section id="events" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative">
@@ -61,9 +64,10 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {events.map((evt, idx) => {
-              const maxCap = evt.maxPeople !== undefined ? evt.maxPeople : evt.max_people;
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+              {visibleEvents.map((evt, idx) => {
+                const maxCap = evt.maxPeople !== undefined ? evt.maxPeople : evt.max_people;
               const count = rsvpCounts[evt.id] || (evt.name ? rsvpCounts[evt.name] : 0) || evt.rsvpCount || 0;
               const rawStatus = (evt.registrationStatus || evt.registration_status || 'open') as RegistrationStatus;
               
@@ -212,6 +216,20 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
               );
             })}
           </div>
+
+          {events.length > 3 && (
+            <div className="mt-10 text-center">
+              <button
+                type="button"
+                onClick={() => setExpanded(!expanded)}
+                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] font-mono text-xs font-bold uppercase tracking-widest shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all cursor-pointer"
+              >
+                <span>{expanded ? 'Show Less Events' : `View More (${events.length - 3} More Events)`}</span>
+                {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              </button>
+            </div>
+          )}
+        </>
         )}
 
         {/* Street Note Banner */}

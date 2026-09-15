@@ -630,6 +630,26 @@ export async function deleteVideoItem(id: string): Promise<{ success: boolean; e
    3. COMMUNITY MEMBERS & VOICE NOTES CRUD
    ========================================================================= */
 
+export function getStoredMemberAudio(memberId: string): string | null {
+  try {
+    return localStorage.getItem(`mbh_voice_note_${memberId}`);
+  } catch {
+    return null;
+  }
+}
+
+export function setStoredMemberAudio(memberId: string, audioUrl: string): void {
+  try {
+    if (audioUrl) {
+      localStorage.setItem(`mbh_voice_note_${memberId}`, audioUrl);
+    } else {
+      localStorage.removeItem(`mbh_voice_note_${memberId}`);
+    }
+  } catch (err) {
+    console.warn('Could not persist voice note audio in storage:', err);
+  }
+}
+
 export async function fetchCommunityMembers(): Promise<(CommunityMember & { photoUrl: string })[]> {
   const supabase = getSupabase();
 
@@ -641,21 +661,32 @@ export async function fetchCommunityMembers(): Promise<(CommunityMember & { phot
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        return data.map((item) => ({
-          id: item.id,
-          name: item.name,
-          handle: item.handle,
-          specialty: item.specialty,
-          area: item.area,
-          experience: item.experience,
-          voiceNoteTitle: item.voice_note_title || 'Street Routine Freestyle',
-          voiceNoteDuration: item.voice_note_duration || '0:15',
-          soundType: (item.sound_type as CommunityMember['soundType']) || 'bass-growl',
-          avatarInitials: item.avatar_initials || item.name.slice(0, 2).toUpperCase(),
-          accentBg: item.accent_bg || '#FFC93C',
-          photoUrl: item.photo_url || '',
-          createdAt: item.created_at,
-        }));
+        return data.map((item) => {
+          const storedAudio = getStoredMemberAudio(item.id);
+          const audio = item.audio_url || item.audioUrl || storedAudio || '';
+          // Keep local cache synced if db has it
+          if (item.audio_url && !storedAudio) {
+            setStoredMemberAudio(item.id, item.audio_url);
+          }
+
+          return {
+            id: item.id,
+            name: item.name,
+            handle: item.handle,
+            specialty: item.specialty,
+            area: item.area,
+            experience: item.experience,
+            voiceNoteTitle: item.voice_note_title || 'Street Routine Freestyle',
+            voiceNoteDuration: item.voice_note_duration || '0:15',
+            soundType: (item.sound_type as CommunityMember['soundType']) || 'bass-growl',
+            avatarInitials: item.avatar_initials || item.name.slice(0, 2).toUpperCase(),
+            accentBg: item.accent_bg || '#FFC93C',
+            photoUrl: item.photo_url || '',
+            audioUrl: audio,
+            audio_url: audio,
+            createdAt: item.created_at,
+          };
+        });
       }
       if (error) {
         console.warn('Error fetching Supabase members:', error.message);
@@ -669,7 +700,7 @@ export async function fetchCommunityMembers(): Promise<(CommunityMember & { phot
 }
 
 export async function saveCommunityMember(
-  member: Omit<CommunityMember, 'id'> & { id?: string; photoUrl?: string }
+  member: Omit<CommunityMember, 'id'> & { id?: string; photoUrl?: string; audioUrl?: string }
 ): Promise<{ success: boolean; member?: CommunityMember & { photoUrl: string }; error?: string; source: 'supabase' | 'local' }> {
   if (!isAdminAuthenticated()) {
     await verifyAdminSessionLive();
@@ -685,48 +716,28 @@ export async function saveCommunityMember(
 
   const isEditing = Boolean(member.id && !member.id.startsWith('temp-') && !member.id.startsWith('mhb-demo'));
   const id = member.id || `mhb-${Date.now()}`;
+  const effectiveAudioUrl = member.audioUrl || member.audio_url || '';
+
   const newMember: CommunityMember & { photoUrl: string } = {
     ...member,
     id,
     photoUrl: member.photoUrl || '',
+    audioUrl: effectiveAudioUrl,
+    audio_url: effectiveAudioUrl,
     avatarInitials: member.avatarInitials || member.name.slice(0, 2).toUpperCase(),
     accentBg: member.accentBg || '#FFC93C',
     createdAt: member.createdAt || new Date().toISOString(),
   };
 
+  // Always keep local storage audio cache up to date
+  if (effectiveAudioUrl) {
+    setStoredMemberAudio(id, effectiveAudioUrl);
+  }
+
   try {
     if (isEditing) {
-      const { data, error } = await supabase
-        .from('members')
-        .update({
-          name: newMember.name,
-          handle: newMember.handle,
-          specialty: newMember.specialty,
-          area: newMember.area,
-          experience: newMember.experience,
-          voice_note_title: newMember.voiceNoteTitle,
-          voice_note_duration: newMember.voiceNoteDuration,
-          sound_type: newMember.soundType,
-          avatar_initials: newMember.avatarInitials,
-          accent_bg: newMember.accentBg,
-          photo_url: newMember.photoUrl,
-        })
-        .eq('id', newMember.id)
-        .select();
-
-      if (error) {
-        console.warn('Supabase member update error:', error.message);
-        return { success: false, member: newMember, error: error.message, source: 'supabase' };
-      }
-      if (data && data[0]) {
-        return { success: true, member: newMember, source: 'supabase' };
-      }
-    }
-
-    // Insert new member
-    const { data, error } = await supabase.from('members').insert([
-      {
-        id: newMember.id,
+      // First attempt with audio_url
+      const updatePayload: Record<string, unknown> = {
         name: newMember.name,
         handle: newMember.handle,
         specialty: newMember.specialty,
@@ -738,9 +749,69 @@ export async function saveCommunityMember(
         avatar_initials: newMember.avatarInitials,
         accent_bg: newMember.accentBg,
         photo_url: newMember.photoUrl,
-        created_at: newMember.createdAt,
-      },
-    ]).select();
+        audio_url: effectiveAudioUrl,
+      };
+
+      let { data, error } = await supabase
+        .from('members')
+        .update(updatePayload)
+        .eq('id', newMember.id)
+        .select();
+
+      // If audio_url column doesn't exist yet in Supabase, retry without it
+      if (error && error.message && error.message.includes('audio_url')) {
+        delete updatePayload.audio_url;
+        const retryResult = await supabase
+          .from('members')
+          .update(updatePayload)
+          .eq('id', newMember.id)
+          .select();
+        data = retryResult.data;
+        error = retryResult.error;
+      }
+
+      if (error) {
+        console.warn('Supabase member update error:', error.message);
+        return { success: false, member: newMember, error: error.message, source: 'supabase' };
+      }
+      if (data && data[0]) {
+        return { success: true, member: newMember, source: 'supabase' };
+      }
+    }
+
+    // Insert new member
+    const insertPayload: Record<string, unknown> = {
+      id: newMember.id,
+      name: newMember.name,
+      handle: newMember.handle,
+      specialty: newMember.specialty,
+      area: newMember.area,
+      experience: newMember.experience,
+      voice_note_title: newMember.voiceNoteTitle,
+      voice_note_duration: newMember.voiceNoteDuration,
+      sound_type: newMember.soundType,
+      avatar_initials: newMember.avatarInitials,
+      accent_bg: newMember.accentBg,
+      photo_url: newMember.photoUrl,
+      audio_url: effectiveAudioUrl,
+      created_at: newMember.createdAt,
+    };
+
+    let { data, error } = await supabase
+      .from('members')
+      .insert([insertPayload])
+      .select();
+
+    // If audio_url column doesn't exist yet in Supabase, retry without it
+    if (error && error.message && error.message.includes('audio_url')) {
+      delete insertPayload.audio_url;
+      const retryResult = await supabase
+        .from('members')
+        .insert([insertPayload])
+        .select();
+      data = retryResult.data;
+      error = retryResult.error;
+    }
 
     if (error) {
       console.warn('Supabase member insert error:', error.message);
