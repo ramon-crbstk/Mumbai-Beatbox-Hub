@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { EventItem, RegistrationStatus } from '../types';
 import { submitEventRsvp, formatEventDate } from '../lib/supabase';
+import { COMMUNITY_CONTACT } from '../data/communityData';
 
 interface RsvpModalProps {
   isOpen: boolean;
@@ -129,9 +130,9 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
               </div>
             </div>
 
-            <div className="pt-2">
+            <div className="pt-2 space-y-2">
               <a
-                href="https://chat.whatsapp.com/placeholder-mumbai-beatbox"
+                href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"
@@ -140,6 +141,17 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                 <span>Join WhatsApp Cypher Group</span>
                 <ArrowRight className="w-4 h-4" />
               </a>
+
+              <div className="text-center font-mono text-[11px] text-[#14120F]/70 flex flex-wrap items-center justify-center gap-x-2 gap-y-1">
+                <span>Organizer Contacts:</span>
+                <a href={COMMUNITY_CONTACT.phoneTel} className="font-bold underline text-[#14120F] hover:text-black">
+                  {COMMUNITY_CONTACT.phone}
+                </a>
+                <span>·</span>
+                <a href={COMMUNITY_CONTACT.secondaryPhoneTel} className="font-bold underline text-[#14120F] hover:text-black">
+                  {COMMUNITY_CONTACT.secondaryPhone}
+                </a>
+              </div>
             </div>
 
             <button
@@ -166,7 +178,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
             </p>
             <div className="pt-2">
               <a
-                href="https://chat.whatsapp.com/placeholder-mumbai-beatbox"
+                href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"
@@ -195,7 +207,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
             </p>
             <div className="pt-2">
               <a
-                href="https://chat.whatsapp.com/placeholder-mumbai-beatbox"
+                href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"

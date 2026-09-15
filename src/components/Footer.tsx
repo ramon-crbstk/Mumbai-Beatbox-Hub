@@ -1,5 +1,6 @@
 import React from 'react';
-import { Instagram, MessageCircle, Youtube, ArrowUp } from 'lucide-react';
+import { Instagram, MessageCircle, Youtube, ArrowUp, Phone, Headphones } from 'lucide-react';
+import { COMMUNITY_CONTACT } from '../data/communityData';
 
 export const Footer: React.FC = () => {
   const scrollToTop = () => {
@@ -60,42 +61,71 @@ export const Footer: React.FC = () => {
               CONNECT WITH MBH
             </span>
 
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2">
               <a
-                href="https://chat.whatsapp.com/placeholder-mumbai-beatbox"
+                href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-[#F4EFE4]/80 hover:text-[#FFC93C] transition-colors"
               >
-                <div className="w-7 h-7 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center">
+                <div className="w-7 h-7 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center shrink-0">
                   <MessageCircle className="w-3.5 h-3.5 text-[#FFC93C]" />
                 </div>
-                <span>WhatsApp Community</span>
+                <span>WhatsApp Group</span>
               </a>
 
               <a
-                href="https://instagram.com/mumbaibeatboxhub"
+                href={COMMUNITY_CONTACT.discord}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[#F4EFE4]/80 hover:text-[#FFC93C] transition-colors"
+                className="inline-flex items-center gap-2 text-[#F4EFE4]/80 hover:text-[#5865F2] transition-colors"
               >
-                <div className="w-7 h-7 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center">
+                <div className="w-7 h-7 bg-[#181512] border border-[#5865F2]/40 flex items-center justify-center shrink-0">
+                  <Headphones className="w-3.5 h-3.5 text-[#5865F2]" />
+                </div>
+                <span>Discord Community</span>
+              </a>
+
+              <a
+                href={COMMUNITY_CONTACT.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-[#F4EFE4]/80 hover:text-[#E4402A] transition-colors"
+              >
+                <div className="w-7 h-7 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center shrink-0">
                   <Instagram className="w-3.5 h-3.5 text-[#E4402A]" />
                 </div>
-                <span>Instagram (@mumbaibeatboxhub)</span>
+                <span>Instagram (@mumbai.beatbox.hub)</span>
               </a>
 
               <a
-                href="https://youtube.com/@mumbaibeatboxhub"
+                href={COMMUNITY_CONTACT.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-[#F4EFE4]/80 hover:text-[#FFC93C] transition-colors"
+                className="inline-flex items-center gap-2 text-[#F4EFE4]/80 hover:text-[#E4402A] transition-colors"
               >
-                <div className="w-7 h-7 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center">
+                <div className="w-7 h-7 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center shrink-0">
                   <Youtube className="w-3.5 h-3.5 text-[#E4402A]" />
                 </div>
                 <span>YouTube Channel</span>
               </a>
+
+              <div className="pt-1 border-t border-[#F4EFE4]/10 space-y-1.5">
+                <div className="text-[10px] text-[#FFC93C] uppercase font-bold tracking-wider">Helplines // Call or WA</div>
+                {COMMUNITY_CONTACT.phoneNumbers.map((p, idx) => (
+                  <a
+                    key={idx}
+                    href={p.tel}
+                    className="inline-flex items-center gap-2 text-[#F4EFE4]/80 hover:text-[#FFC93C] transition-colors"
+                  >
+                    <div className="w-6 h-6 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center shrink-0">
+                      <Phone className="w-3 h-3 text-[#FFC93C]" />
+                    </div>
+                    <span className="font-bold text-[#FFC93C]">{p.number}</span>
+                    <span className="text-[10px] text-[#F4EFE4]/40">({p.label})</span>
+                  </a>
+                ))}
+              </div>
             </div>
 
             <div className="pt-2 text-[11px] text-[#F4EFE4]/50">

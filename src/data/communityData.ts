@@ -461,3 +461,32 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
   },
 ];
 
+export const COMMUNITY_CONTACT = {
+  discord: 'https://discord.gg/9ftX9HzFKr',
+  whatsappGroup: 'https://chat.whatsapp.com/EkNK2AVQnQ6E1ZsgUtbULS',
+  youtube: 'https://www.youtube.com/@mumbaibeatboxhub',
+  instagram: 'https://www.instagram.com/mumbai.beatbox.hub?stkn=MWpoNmY4Nnhtb3lwNw==',
+  phone: '+91 72086 85628',
+  phoneRaw: '+917208685628',
+  phoneTel: 'tel:+917208685628',
+  phoneWaUrl: 'https://wa.me/917208685628',
+  secondaryPhone: '+91 84338 77879',
+  secondaryPhoneRaw: '+918433877879',
+  secondaryPhoneTel: 'tel:+918433877879',
+  secondaryPhoneWaUrl: 'https://wa.me/918433877879',
+  phoneNumbers: [
+    {
+      number: '+91 72086 85628',
+      tel: 'tel:+917208685628',
+      waUrl: 'https://wa.me/917208685628',
+      label: 'Lead Coordinator',
+    },
+    {
+      number: '+91 84338 77879',
+      tel: 'tel:+918433877879',
+      waUrl: 'https://wa.me/918433877879',
+      label: 'Cypher Help & RSVP',
+    },
+  ],
+};
+

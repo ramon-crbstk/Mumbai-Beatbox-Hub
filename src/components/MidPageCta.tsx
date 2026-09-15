@@ -1,5 +1,6 @@
 import React from 'react';
-import { ArrowRight, MessageSquare, Volume2 } from 'lucide-react';
+import { ArrowRight, MessageSquare, Volume2, MessageCircle, Phone } from 'lucide-react';
+import { COMMUNITY_CONTACT } from '../data/communityData';
 
 interface MidPageCtaProps {
   onOpenContactModal: () => void;
@@ -38,17 +39,27 @@ export const MidPageCta: React.FC<MidPageCtaProps> = ({ onOpenContactModal }) =>
           </div>
 
           {/* Right Button Action */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               type="button"
               id="mid-cta-contact-button"
               onClick={onOpenContactModal}
-              className="group inline-flex items-center gap-3 bg-[#14120F] text-[#F4EFE4] px-8 py-4 text-sm sm:text-base font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[6px_6px_0px_0px_#E4402A] hover:bg-[#F4EFE4] hover:text-[#14120F] hover:shadow-[3px_3px_0px_0px_#14120F] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+              className="group inline-flex items-center justify-center gap-3 bg-[#14120F] text-[#F4EFE4] px-6 py-4 text-sm font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[5px_5px_0px_0px_#E4402A] hover:bg-[#F4EFE4] hover:text-[#14120F] hover:shadow-[2px_2px_0px_0px_#14120F] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
             >
               <MessageSquare className="w-5 h-5 text-[#FFC93C] group-hover:text-[#14120F] transition-colors" />
               <span>Get in Touch</span>
-              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>
+
+            <a
+              href={COMMUNITY_CONTACT.whatsappGroup}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 bg-[#14120F] text-[#FFC93C] hover:bg-[#14120F]/90 px-5 py-4 text-sm font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[5px_5px_0px_0px_#14120F] hover:translate-x-0.5 hover:translate-y-0.5 transition-all"
+            >
+              <MessageCircle className="w-5 h-5 text-emerald-400" />
+              <span>WhatsApp</span>
+            </a>
           </div>
 
         </div>

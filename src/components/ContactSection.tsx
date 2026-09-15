@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Send, CheckCircle2, MessageCircle, Instagram, Youtube, MapPin, Mail, ArrowUpRight, Database, Loader2 } from 'lucide-react';
+import { Send, CheckCircle2, MessageCircle, Instagram, Youtube, MapPin, Mail, ArrowUpRight, Database, Loader2, Phone, Headphones, MessageSquare } from 'lucide-react';
 import { saveContactDispatch } from '../lib/supabase';
+import { COMMUNITY_CONTACT } from '../data/communityData';
 
 export const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -49,10 +50,10 @@ export const ContactSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
           {/* Left Column: Direct Action & Community Channels */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-5">
             
             {/* WhatsApp Community Box (High priority for Indian grassroots cyphers) */}
-            <div className="bg-[#181512] border-2 border-[#FFC93C] p-6 shadow-[6px_6px_0px_0px_#FFC93C] relative">
+            <div className="bg-[#181512] border-2 border-[#FFC93C] p-5 sm:p-6 shadow-[6px_6px_0px_0px_#FFC93C] relative">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-[#FFC93C] text-[#14120F] flex items-center justify-center font-bold">
                   <MessageCircle className="w-5 h-5 text-[#14120F]" />
@@ -62,58 +63,142 @@ export const ContactSection: React.FC = () => {
                     Official WhatsApp Hub
                   </h3>
                   <span className="text-[11px] font-mono text-[#FFC93C]">
-                    Instant Live Location Pings
+                    Active Mumbai Cypher Circles
                   </span>
                 </div>
               </div>
 
-              <p className="text-xs sm:text-sm font-sans text-[#F4EFE4]/80 mb-5 leading-relaxed">
-                Our main active chat where weekend meetups are called, pin drops are shared, and sound exchanges happen daily.
+              <p className="text-xs sm:text-sm font-sans text-[#F4EFE4]/80 mb-4 leading-relaxed">
+                Our main active WhatsApp group where weekend meetups are called, live pin drops are shared, and vocal sound exchanges happen daily.
               </p>
 
               <a
-                href="https://chat.whatsapp.com/placeholder-mumbai-beatbox"
+                href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] py-3 px-4 text-xs font-mono font-bold uppercase tracking-widest border border-[#14120F] transition-all shadow-[2px_2px_0px_0px_#14120F]"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span>Join Community WhatsApp</span>
+                <span>Join WhatsApp Group</span>
                 <ArrowUpRight className="w-3.5 h-3.5" />
               </a>
             </div>
 
-            {/* Social Channels Strip */}
-            <div className="bg-[#181512] border border-[#F4EFE4]/20 p-6 space-y-4">
+            {/* Direct Phone & WhatsApp Helpline Card */}
+            <div className="bg-[#181512] border border-[#F4EFE4]/20 p-5 space-y-3 font-mono">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase text-[#FFC93C] flex items-center gap-1.5">
+                  <Phone className="w-3.5 h-3.5 text-[#FFC93C]" />
+                  <span>DIRECT HELPLINES // CALL OR WA</span>
+                </span>
+                <span className="px-2 py-0.5 bg-emerald-950 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold uppercase">
+                  ACTIVE
+                </span>
+              </div>
+
+              <div className="space-y-2.5">
+                {COMMUNITY_CONTACT.phoneNumbers.map((p, idx) => (
+                  <div key={idx} className="p-3 bg-[#14120F] border border-[#F4EFE4]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div>
+                      <div className="text-[10px] text-[#FFC93C] uppercase font-bold tracking-wider">{p.label}</div>
+                      <a 
+                        href={p.tel} 
+                        className="font-['Anton'] text-lg sm:text-xl tracking-wider text-[#F4EFE4] hover:text-[#FFC93C] transition-colors"
+                      >
+                        {p.number}
+                      </a>
+                    </div>
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href={p.tel}
+                        className="px-3 py-1.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-bold text-xs uppercase flex items-center gap-1.5 border border-[#14120F]"
+                        title={`Call ${p.number}`}
+                      >
+                        <Phone className="w-3 h-3" />
+                        <span>Call</span>
+                      </a>
+                      <a
+                        href={p.waUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] font-bold text-xs uppercase flex items-center gap-1.5 border border-[#14120F]"
+                        title={`Chat with ${p.number} on WhatsApp`}
+                      >
+                        <MessageCircle className="w-3 h-3" />
+                        <span>WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Social & Broadcast Channels Strip */}
+            <div className="bg-[#181512] border border-[#F4EFE4]/20 p-5 space-y-3">
               <span className="text-xs font-mono font-bold uppercase text-[#FFC93C] block">
-                BROADCAST CHANNELS
+                COMMUNITY CHANNELS & SOCIALS
               </span>
 
-              <div className="space-y-3 font-mono text-xs">
+              <div className="space-y-2.5 font-mono text-xs">
+                {/* Discord */}
                 <a
-                  href="https://instagram.com/mumbaibeatboxhub"
+                  href={COMMUNITY_CONTACT.discord}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-[#14120F] border border-[#F4EFE4]/10 hover:border-[#FFC93C] text-[#F4EFE4] transition-colors group"
+                  className="flex items-center justify-between p-3 bg-[#14120F] border border-[#F4EFE4]/10 hover:border-[#5865F2] hover:bg-[#5865F2]/10 text-[#F4EFE4] transition-colors group"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Headphones className="w-4 h-4 text-[#5865F2]" />
+                    <div className="truncate">
+                      <div className="font-bold group-hover:text-[#5865F2] transition-colors">Discord Community</div>
+                      <div className="text-[10px] text-[#F4EFE4]/50">Online audio cyphers & sound exchange</div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-[#5865F2] uppercase font-bold flex items-center gap-0.5 shrink-0">
+                    <span>Join Server</span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </span>
+                </a>
+
+                {/* Instagram */}
+                <a
+                  href={COMMUNITY_CONTACT.instagram}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-[#14120F] border border-[#F4EFE4]/10 hover:border-[#E4402A] text-[#F4EFE4] transition-colors group"
                 >
                   <div className="flex items-center gap-2.5">
                     <Instagram className="w-4 h-4 text-[#E4402A]" />
-                    <span>@mumbaibeatboxhub</span>
+                    <div>
+                      <div className="font-bold">@mumbai.beatbox.hub</div>
+                      <div className="text-[10px] text-[#F4EFE4]/50">Reels, stories & jam updates</div>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-[#FFC93C] uppercase group-hover:underline">Instagram</span>
+                  <span className="text-[10px] text-[#FFC93C] uppercase group-hover:underline flex items-center gap-0.5 shrink-0">
+                    <span>Follow</span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </span>
                 </a>
 
+                {/* YouTube */}
                 <a
-                  href="https://youtube.com/@mumbaibeatboxhub"
+                  href={COMMUNITY_CONTACT.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center justify-between p-3 bg-[#14120F] border border-[#F4EFE4]/10 hover:border-[#FFC93C] text-[#F4EFE4] transition-colors group"
+                  className="flex items-center justify-between p-3 bg-[#14120F] border border-[#F4EFE4]/10 hover:border-[#E4402A] text-[#F4EFE4] transition-colors group"
                 >
                   <div className="flex items-center gap-2.5">
                     <Youtube className="w-4 h-4 text-[#E4402A]" />
-                    <span>Mumbai Beatbox Hub (Official Drops)</span>
+                    <div>
+                      <div className="font-bold">Mumbai Beatbox Hub</div>
+                      <div className="text-[10px] text-[#F4EFE4]/50">Official 4K routine drops & battles</div>
+                    </div>
                   </div>
-                  <span className="text-[10px] text-[#FFC93C] uppercase group-hover:underline">YouTube</span>
+                  <span className="text-[10px] text-[#FFC93C] uppercase group-hover:underline flex items-center gap-0.5 shrink-0">
+                    <span>Subscribe</span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </span>
                 </a>
               </div>
 
