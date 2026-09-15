@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { EventItem, RegistrationStatus } from '../types';
-import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2, ChevronDown, ChevronUp } from 'lucide-react';
+import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2, ChevronDown, ChevronUp, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { fetchUpcomingEvents, getLocalEvents, formatEventDate, fetchAllEventRsvpCounts } from '../lib/supabase';
+import { COMMUNITY_CONTACT } from '../data/communityData';
 
 interface EventsSectionProps {
   onRsvpClick: (event: EventItem) => void;
@@ -233,14 +234,21 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
         )}
 
         {/* Street Note Banner */}
-        <div className="mt-10 p-4 bg-[#181512] border border-[#FFC93C]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#F4EFE4]/70">
-          <div className="flex items-center gap-2">
-            <span className="text-[#FFC93C]">⚡ WEATHER / PERMIT NOTE:</span>
+        <div className="mt-10 p-4 bg-[#181512] border border-[#FFC93C]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#F4EFE4]/80">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <span className="text-[#FFC93C] font-bold">⚡ WEATHER / PERMIT NOTE:</span>
             <span>All sessions are acoustic. In case of unexpected rains, jams shift to nearby covered walkways.</span>
           </div>
-          <span className="text-[#FFC93C] underline uppercase tracking-wider cursor-pointer">
-            WhatsApp group gets instant live pin
-          </span>
+          <a
+            href={COMMUNITY_CONTACT.whatsappGroup}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-[#FFC93C] hover:text-[#ffe082] underline uppercase tracking-wider font-bold shrink-0 transition-colors"
+          >
+            <MessageCircle className="w-3.5 h-3.5 text-[#FFC93C]" />
+            <span>WhatsApp group gets instant live pin</span>
+            <ArrowUpRight className="w-3 h-3" />
+          </a>
         </div>
 
       </div>

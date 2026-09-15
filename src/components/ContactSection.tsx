@@ -100,10 +100,9 @@ export const ContactSection: React.FC = () => {
                 {COMMUNITY_CONTACT.phoneNumbers.map((p, idx) => (
                   <div key={idx} className="p-3 bg-[#14120F] border border-[#F4EFE4]/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                      <div className="text-[10px] text-[#FFC93C] uppercase font-bold tracking-wider">{p.label}</div>
                       <a 
                         href={p.tel} 
-                        className="font-['Anton'] text-lg sm:text-xl tracking-wider text-[#F4EFE4] hover:text-[#FFC93C] transition-colors"
+                        className="font-['Anton'] text-lg sm:text-xl tracking-wider text-[#F4EFE4] hover:text-[#FFC93C] transition-colors block"
                       >
                         {p.number}
                       </a>

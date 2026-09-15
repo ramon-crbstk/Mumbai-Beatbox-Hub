@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
-import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Volume2, Radio, Headphones, Filter } from 'lucide-react';
+import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind } from 'lucide-react';
 import { fetchCommunityMembers } from '../lib/supabase';
 
 interface MembersSectionProps {
@@ -11,6 +11,7 @@ interface MembersSectionProps {
 export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger = 0 }) => {
   const [membersList, setMembersList] = useState<(CommunityMember & { photoUrl: string })[]>([]);
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
+  const [completedMemberId, setCompletedMemberId] = useState<string | null>(null);
   const [playbackProgress, setPlaybackProgress] = useState<{ [id: string]: number }>({});
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -83,6 +84,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
 
     // Stop current audio if playing
     stopAllAudio();
+    setCompletedMemberId(null);
 
     const voiceAudioUrl = member.audioUrl || member.audio_url;
 
@@ -102,6 +104,8 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
         };
 
         audio.onended = () => {
+          setCompletedMemberId(member.id);
+          setPlaybackProgress((prev) => ({ ...prev, [member.id]: 100 }));
           stopAllAudio();
         };
 
@@ -144,6 +148,8 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
           [member.id]: Math.min(100, Math.round((currentStep / totalSteps) * 100)),
         }));
         if (currentStep >= totalSteps) {
+          setCompletedMemberId(member.id);
+          setPlaybackProgress((prev) => ({ ...prev, [member.id]: 100 }));
           stopAllAudio();
         }
       }, 1000);
@@ -299,6 +305,34 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
       console.warn('Audio playback error:', err);
       stopAllAudio();
     }
+  };
+
+  // Rewind current playback by 10 seconds or play from start
+  const rewind10Seconds = (member: CommunityMember & { photoUrl: string }) => {
+    if (activeMemberId === member.id && audioElementRef.current) {
+      const audio = audioElementRef.current;
+      audio.currentTime = Math.max(0, audio.currentTime - 10);
+      if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+        const pct = Math.min(100, Math.round((audio.currentTime / audio.duration) * 100));
+        setPlaybackProgress((prev) => ({ ...prev, [member.id]: pct }));
+      }
+    } else {
+      // If not currently playing or audio context mode, restart playback
+      stopAllAudio();
+      setTimeout(() => {
+        playVoiceNote(member);
+      }, 50);
+    }
+  };
+
+  // Replay voice note from 0:00
+  const replayVoiceNote = (member: CommunityMember & { photoUrl: string }) => {
+    stopAllAudio();
+    setCompletedMemberId(null);
+    setPlaybackProgress((prev) => ({ ...prev, [member.id]: 0 }));
+    setTimeout(() => {
+      playVoiceNote(member);
+    }, 60);
   };
 
   const handleScrollLeft = () => {
@@ -481,19 +515,33 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                 {/* Middle Section: Member Name & Bio */}
                 <div className="p-4 border-b border-[#FFC93C]/15 bg-[#171410] flex-grow">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
+                    <div className="w-full">
                       <h3 className="font-['Anton'] text-xl uppercase tracking-wide text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-tight">
                         {member.name}
                       </h3>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-xs font-mono text-[#FFC93C] font-semibold">{member.handle}</span>
-                        <span className="text-[10px] font-mono text-[#F4EFE4]/50">• {member.experience}</span>
+                      
+                      {/* Mention Instagram then the username under the name */}
+                      <div className="flex items-center gap-1.5 mt-1.5 text-xs font-mono">
+                        <span className="text-[#F4EFE4]/60 font-medium">Instagram:</span>
+                        <a
+                          href={`https://instagram.com/${(member.handle || '').replace('@', '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#FFC93C] font-semibold hover:underline inline-flex items-center gap-1 truncate"
+                        >
+                          <Instagram className="w-3 h-3 text-[#FFC93C] shrink-0" />
+                          <span>{member.handle.startsWith('@') ? member.handle : `@${member.handle}`}</span>
+                        </a>
+                      </div>
+
+                      <div className="mt-1 text-[10px] font-mono text-[#F4EFE4]/50">
+                        <span>{member.experience}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Bottom Section: Voice Note Player with START / STOP button */}
+                {/* Bottom Section: Voice Note Player with Sound Controls */}
                 <div className="p-4 bg-[#14120F] space-y-3">
                   
                   {/* Voice Note Info Header */}
@@ -514,61 +562,76 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                     </div>
                   </div>
 
-                  {/* Equalizer Waveform Animation Bars */}
-                  <div className="h-8 bg-[#1A1713] border border-[#FFC93C]/20 px-2 flex items-center justify-between gap-1 overflow-hidden">
-                    {[35, 75, 45, 90, 60, 100, 40, 80, 50, 95, 65, 30, 85, 55, 70, 40, 90, 60, 45, 80].map((baseHeight, barIdx) => {
-                      return (
-                        <div
-                          key={barIdx}
-                          className={`w-1 transition-all duration-150 ${
-                            isPlaying
-                              ? 'bg-[#FFC93C]'
-                              : barIdx < (progress / 5)
-                              ? 'bg-[#FFC93C]/60'
-                              : 'bg-[#F4EFE4]/20'
-                          }`}
-                          style={{
-                            height: isPlaying
-                              ? `${Math.max(15, Math.sin(barIdx + Date.now() / 150) * 40 + baseHeight * 0.5)}%`
-                              : `${Math.max(12, baseHeight * 0.4)}%`,
-                          }}
-                        />
-                      );
-                    })}
-                  </div>
-
                   {/* Playback Progress Bar */}
-                  <div className="w-full bg-[#231F19] h-1.5 overflow-hidden">
+                  <div className="w-full bg-[#231F19] h-2 overflow-hidden border border-[#FFC93C]/20">
                     <div
                       className="bg-[#FFC93C] h-full transition-all duration-200"
                       style={{ width: `${progress}%` }}
                     />
                   </div>
 
-                  {/* Sound Player Button: START / STOP */}
-                  <div className="pt-1 flex items-center justify-between gap-2">
-                    <button
-                      id={`voice-btn-${member.id}`}
-                      onClick={() => playVoiceNote(member)}
-                      className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
-                        isPlaying
-                          ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
-                          : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'
-                      }`}
-                      aria-label={isPlaying ? `Stop voice note of ${member.name}` : `Start voice note of ${member.name}`}
-                    >
-                      {isPlaying ? (
-                        <>
-                          <Square className="w-3.5 h-3.5 fill-current" />
-                          <span>STOP VOICE NOTE</span>
-                        </>
-                      ) : (
-                        <>
-                          <Play className="w-3.5 h-3.5 fill-current" />
-                          <span>START VOICE NOTE</span>
-                        </>
-                      )}
-                    </button>
+                  {/* Sound Control Buttons: Play/Stop, Replay Once Completed & Play Back 10 Secs */}
+                  <div className="pt-1 flex flex-col gap-2">
+                    {/* Primary Button: Replay once completed OR Start/Stop */}
+                    {completedMemberId === member.id && !isPlaying ? (
+                      <button
+                        id={`voice-replay-btn-${member.id}`}
+                        onClick={() => replayVoiceNote(member)}
+                        className="w-full py-2.5 px-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] border border-emerald-400 transition-all active:scale-95 shadow cursor-pointer"
+                        aria-label={`Replay voice note of ${member.name}`}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>REPLAY ROUTINE</span>
+                      </button>
+                    ) : (
+                      <button
+                        id={`voice-btn-${member.id}`}
+                        onClick={() => playVoiceNote(member)}
+                        className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
+                          isPlaying
+                            ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
+                            : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'
+                        }`}
+                        aria-label={isPlaying ? `Stop voice note of ${member.name}` : `Start voice note of ${member.name}`}
+                      >
+                        {isPlaying ? (
+                          <>
+                            <Square className="w-3.5 h-3.5 fill-current" />
+                            <span>STOP VOICE NOTE</span>
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3.5 h-3.5 fill-current" />
+                            <span>START VOICE NOTE</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* Additional Sound Control Buttons: Play Back 10 Secs & Replay Button */}
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => rewind10Seconds(member)}
+                        className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        title="Play back 10 seconds"
+                        aria-label="Play back 10 seconds"
+                      >
+                        <Rewind className="w-3.5 h-3.5 text-[#FFC93C]" />
+                        <span>BACK 10s</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => replayVoiceNote(member)}
+                        className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        title="Replay from start"
+                        aria-label="Replay routine"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-[#FFC93C]" />
+                        <span>REPLAY</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

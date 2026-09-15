@@ -122,7 +122,6 @@ export const Footer: React.FC = () => {
                       <Phone className="w-3 h-3 text-[#FFC93C]" />
                     </div>
                     <span className="font-bold text-[#FFC93C]">{p.number}</span>
-                    <span className="text-[10px] text-[#F4EFE4]/40">({p.label})</span>
                   </a>
                 ))}
               </div>

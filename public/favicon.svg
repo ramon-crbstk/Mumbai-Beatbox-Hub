@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <rect width="512" height="512" fill="#000000" rx="40"/>
+  
+  <!-- Wave 1 (Top) -->
+  <polygon points="120,165 205,108 260,175 365,72 432,130 350,148 290,120 220,185" fill="#FFFFFF"/>
+  
+  <!-- Wave 2 (Middle) -->
+  <polygon points="110,210 185,168 238,228 340,132 468,172 385,212 328,178 245,248" fill="#FFFFFF"/>
+  
+  <!-- Wave 3 (Bottom) -->
+  <polygon points="135,258 200,225 240,270 365,198 412,275 352,242 278,290" fill="#FFFFFF"/>
+
+  <!-- Typography -->
+  <text x="45" y="325" fill="#FFFFFF" font-family="'Anton', Impact, 'Arial Black', sans-serif" font-size="54" font-weight="900" letter-spacing="4">MUMBAI</text>
+  <text x="40" y="435" fill="#FFFFFF" font-family="'Times New Roman', 'Playfair Display', serif" font-size="118" font-weight="900" letter-spacing="1">BEATBOX</text>
+  <text x="390" y="490" fill="#FFFFFF" font-family="'Anton', Impact, 'Arial Black', sans-serif" font-size="62" font-weight="900" letter-spacing="2">HUB</text>
+</svg>

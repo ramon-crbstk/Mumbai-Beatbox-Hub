@@ -90,7 +90,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
               Featured Videos & Routine Drops
             </h2>
             <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-1 max-w-xl">
-              Recorded cypher battles, solo routine drops, and technical breakdown sessions.
+              Recorded cypher battles, routine drops, and technical breakdown sessions.
             </p>
           </div>
 
@@ -111,7 +111,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
             </div>
           ) : (
             videosList.map((vid, idx) => {
-              const videoParsed = parseVideoSource(vid.videoUrl);
+              const displayCategory = vid.category?.replace(/solo/gi, '').trim();
 
               return (
                 <div
@@ -137,15 +137,12 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                     </div>
                   )}
 
-                  {/* Duration Badge */}
-                  <div className="absolute bottom-2 right-2 px-2 py-0.5 bg-[#14120F] text-[#FFC93C] text-[11px] font-mono font-bold border border-[#FFC93C]/40 z-10">
-                    {vid.duration}
-                  </div>
-
-                  {/* Category Badge */}
-                  <div className="absolute top-2 left-2 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider z-10">
-                    {vid.category}
-                  </div>
+                  {/* Category Badge (without solo text) */}
+                  {displayCategory && (
+                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider z-10">
+                      {displayCategory}
+                    </div>
+                  )}
 
                   {/* Big Center Play Button Overlay */}
                   <div className="w-14 h-14 bg-[#FFC93C] text-[#14120F] rounded-full flex items-center justify-center border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] group-hover:scale-110 group-hover:bg-[#F4EFE4] transition-all z-10">
@@ -325,7 +322,6 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
             {/* Video Metadata Footer */}
             <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-[#F4EFE4]/70 border-t border-[#F4EFE4]/15 pt-3">
               <span>Location: <strong className="text-[#F4EFE4]">{activeVideo.venue}</strong></span>
-              <span>Length: <strong className="text-[#F4EFE4]">{activeVideo.duration}</strong></span>
               <span>Performer: <strong className="text-[#FFC93C]">{activeVideo.performer}</strong></span>
             </div>
 

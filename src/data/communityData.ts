@@ -2,9 +2,9 @@ import { EventItem, PillarCard, GalleryItem, VideoItem, PartnerLogo, CommunityMe
 
 export const COMMUNITY_STATS = [
   {
-    number: '40+',
+    number: '10+',
     label: 'Active Beatboxers',
-    subtext: 'From school prodigies to veterans',
+    subtext: 'From newcomers to OGs',
   },
   {
     number: 'Weekly',
@@ -479,13 +479,11 @@ export const COMMUNITY_CONTACT = {
       number: '+91 72086 85628',
       tel: 'tel:+917208685628',
       waUrl: 'https://wa.me/917208685628',
-      label: 'Lead Coordinator',
     },
     {
       number: '+91 84338 77879',
       tel: 'tel:+918433877879',
       waUrl: 'https://wa.me/918433877879',
-      label: 'Cypher Help & RSVP',
     },
   ],
 };
