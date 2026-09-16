@@ -361,17 +361,21 @@ export async function fetchGalleryItems(): Promise<GalleryItem[]> {
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (!error && data) {
-        return data.map((item) => ({
-          id: item.id,
-          title: item.title,
-          caption: item.caption,
-          location: item.location,
-          dateStr: item.date_str || 'Cypher Session',
-          aspect: (item.aspect as GalleryItem['aspect']) || 'square',
-          photoUrl: item.photo_url || '',
-          createdAt: item.created_at,
-        }));
+      if (!error && data && data.length > 0) {
+        return data.map((item, idx) => {
+          const fallback = GALLERY_ITEMS.find((g) => g.id === item.id) || GALLERY_ITEMS[idx % GALLERY_ITEMS.length];
+          const hasPhoto = item.photo_url && item.photo_url.trim().length > 0 && item.photo_url !== 'null';
+          return {
+            id: item.id,
+            title: item.title || fallback?.title || 'Cypher Session',
+            caption: item.caption || fallback?.caption || '',
+            location: item.location || fallback?.location || 'Mumbai',
+            dateStr: item.date_str || fallback?.dateStr || 'Cypher Session',
+            aspect: (item.aspect as GalleryItem['aspect']) || fallback?.aspect || 'square',
+            photoUrl: hasPhoto ? item.photo_url : (fallback?.photoUrl || ''),
+            createdAt: item.created_at,
+          };
+        });
       }
       if (error) {
         console.warn('Supabase fetch gallery error:', error.message);
@@ -381,7 +385,7 @@ export async function fetchGalleryItems(): Promise<GalleryItem[]> {
     }
   }
 
-  return [];
+  return GALLERY_ITEMS;
 }
 
 export async function saveGalleryItem(
