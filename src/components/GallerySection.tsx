@@ -31,7 +31,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
-  const [viewMode, setViewMode] = useState<ViewMode>('masonry');
+  const [viewMode, setViewMode] = useState<ViewMode>('bento');
   const [visibleLimit, setVisibleLimit] = useState(16);
 
   useEffect(() => {
@@ -140,19 +140,6 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               <div className="inline-flex p-1 bg-[#181512] border border-[#F4EFE4]/20">
                 <button
                   type="button"
-                  onClick={() => setViewMode('masonry')}
-                  title="Masonry Wall View"
-                  className={`px-3 py-1.5 text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer ${
-                    viewMode === 'masonry'
-                      ? 'bg-[#FFC93C] text-[#14120F]'
-                      : 'text-[#F4EFE4]/70 hover:text-[#F4EFE4]'
-                  }`}
-                >
-                  <Columns className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Wall</span>
-                </button>
-                <button
-                  type="button"
                   onClick={() => setViewMode('bento')}
                   title="Bento Mosaic Grid"
                   className={`px-3 py-1.5 text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer ${
@@ -163,6 +150,19 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
                   <span className="hidden sm:inline">Mosaic</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode('masonry')}
+                  title="Masonry Wall View"
+                  className={`px-3 py-1.5 text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer ${
+                    viewMode === 'masonry'
+                      ? 'bg-[#FFC93C] text-[#14120F]'
+                      : 'text-[#F4EFE4]/70 hover:text-[#F4EFE4]'
+                  }`}
+                >
+                  <Columns className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Wall</span>
                 </button>
               </div>
             </div>
@@ -315,8 +315,11 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                 <div
                   key={item.id}
                   onClick={() => setSelectedIdx(idx)}
-                  className={`group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer ${spanClass}`}
+                  className={`group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer hover:-translate-y-0.5 ${spanClass}`}
                 >
+                  {/* Corner Paper Tape Accent */}
+                  <div className={`absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 ${idx % 2 === 0 ? '-rotate-2' : 'rotate-2'} border border-[#14120F]/40 z-20 pointer-events-none shadow-xs`} />
+
                   <img
                     src={photoSrc}
                     alt={item.title}
@@ -326,15 +329,21 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                   />
 
                   {/* Corner Badge */}
-                  <div className="absolute top-3 right-3 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 z-10">
+                  <div className="absolute top-3 right-3 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 z-10 backdrop-blur-xs">
                     {item.dateStr}
                   </div>
 
                   {/* Gradient Info Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#14120F] via-[#14120F]/40 to-transparent opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-4 z-10">
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-[#FFC93C] mb-1">
-                      <MapPin className="w-3.5 h-3.5" />
-                      <span>{item.location}</span>
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#14120F] via-[#14120F]/50 to-transparent opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-4 z-10">
+                    <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <MapPin className="w-3.5 h-3.5" />
+                        <span className="truncate max-w-[160px]">{item.location}</span>
+                      </span>
+                      <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-bold text-[#FFC93C] bg-[#14120F]/80 px-2 py-0.5 border border-[#FFC93C]/40">
+                        <Maximize2 className="w-3 h-3" />
+                        <span>Expand</span>
+                      </span>
                     </div>
                     <h3 className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] leading-tight mb-1">
                       {item.title}
