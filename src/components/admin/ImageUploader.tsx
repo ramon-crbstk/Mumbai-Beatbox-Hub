@@ -15,6 +15,7 @@ interface ImageUploaderProps {
   value: string;
   onChange: (url: string) => void;
   folder?: string;
+  uploadPreset?: string;
   recommendedAspect?: string;
   placeholder?: string;
   disabled?: boolean;
@@ -25,6 +26,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   value,
   onChange,
   folder = 'mbh_media',
+  uploadPreset,
   recommendedAspect = '1:1',
   placeholder = 'https://res.cloudinary.com/... or upload image',
   disabled = false,
@@ -50,6 +52,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
     const result = await uploadImageToCloudinary(file, {
       folder,
+      uploadPreset,
       onProgress: (percent) => setUploadProgress(percent),
       onAbortRef: abortRef,
     });

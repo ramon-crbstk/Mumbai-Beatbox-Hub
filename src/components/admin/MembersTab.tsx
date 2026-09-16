@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { CommunityMember } from '../../types';
 import { saveCommunityMember, deleteCommunityMember } from '../../lib/supabase';
-import { uploadAudioToCloudinary, validateAudioFile, CLOUDINARY_FOLDERS } from '../../lib/cloudinary';
+import { uploadAudioToCloudinary, validateAudioFile, CLOUDINARY_FOLDERS, CLOUDINARY_CONFIG } from '../../lib/cloudinary';
 import { ImageUploader } from './ImageUploader';
 
 interface MembersTabProps {
@@ -169,6 +169,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     try {
       const res = await uploadAudioToCloudinary(file, {
         folder: CLOUDINARY_FOLDERS.memberVoiceNotes,
+        uploadPreset: CLOUDINARY_CONFIG.memberVoiceNotePreset,
         onProgress: (pct) => setUploadAudioProgress(pct),
       });
 
@@ -192,9 +193,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
           // ignore
         }
       } else {
+        // Do not overwrite existing audioUrl unless a new upload succeeds
         setErrorMessage(res.error || 'Failed to upload audio to Cloudinary.');
-        setAudioUrl('');
-        setAudioFileName('');
       }
     } catch {
       setIsUploadingAudio(false);
@@ -228,6 +228,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
         try {
           const res = await uploadAudioToCloudinary(recordedFile, {
             folder: CLOUDINARY_FOLDERS.memberVoiceNotes,
+            uploadPreset: CLOUDINARY_CONFIG.memberVoiceNotePreset,
             onProgress: (pct) => setUploadAudioProgress(pct),
           });
 
@@ -790,6 +791,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   value={photoUrl}
                   onChange={setPhotoUrl}
                   folder={CLOUDINARY_FOLDERS.memberPhotos}
+                  uploadPreset={CLOUDINARY_CONFIG.memberPhotoPreset}
                   recommendedAspect="1:1 Square Avatar"
                   placeholder="https://res.cloudinary.com/... or upload photo"
                 />
