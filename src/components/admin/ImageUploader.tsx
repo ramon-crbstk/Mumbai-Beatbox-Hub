@@ -245,15 +245,26 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               </p>
             </div>
           </div>
-          <a
-            href={value}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="p-1 text-[#F4EFE4]/60 hover:text-[#FFC93C] shrink-0"
-            title="Open in new tab"
-          >
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href={value}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-1 text-[#F4EFE4]/60 hover:text-[#FFC93C]"
+              title="Open in new tab"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+            <button
+              type="button"
+              onClick={handleClearUrl}
+              className="px-2 py-1 bg-[#E4402A]/20 hover:bg-[#E4402A] text-[#E4402A] hover:text-white border border-[#E4402A]/40 font-mono text-[10px] font-bold uppercase transition-colors flex items-center gap-1 cursor-pointer"
+              title="Remove photo"
+            >
+              <X className="w-3 h-3" />
+              <span>REMOVE PHOTO</span>
+            </button>
+          </div>
         </div>
       )}
     </div>

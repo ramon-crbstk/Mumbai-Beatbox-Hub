@@ -88,7 +88,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
 
   // Play uploaded member voice note file exclusively from member.voice_note_url
   const playVoiceNote = (member: CommunityMember & { photoUrl: string }) => {
-    const rawAudioUrl = member.voice_note_url || member.voiceNoteUrl || member.audio_url || member.audioUrl;
+    const rawAudioUrl = member.voice_note_url !== undefined ? member.voice_note_url : member.voiceNoteUrl;
     
     // Strict requirement: Only play if voice_note_url exists and is a valid URL
     if (!isValidAudioUrl(rawAudioUrl)) {
@@ -146,7 +146,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
 
   // Rewind current playback by 10 seconds (only active if member has a valid voice_note_url)
   const rewind10Seconds = (member: CommunityMember & { photoUrl: string }) => {
-    const rawAudioUrl = member.voice_note_url || member.voiceNoteUrl || member.audio_url || member.audioUrl;
+    const rawAudioUrl = member.voice_note_url !== undefined ? member.voice_note_url : member.voiceNoteUrl;
     if (!isValidAudioUrl(rawAudioUrl)) return;
 
     if (activeMemberId === member.id && audioElementRef.current) {
@@ -308,19 +308,21 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               >
                 {/* Top Section: Photo of the Member */}
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#242019]">
-                  <img
-                    src={member.photoUrl}
-                    alt={`${member.name} - Mumbai Beatboxer`}
-                    className="w-full h-full object-cover object-center filter grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
-                    loading="lazy"
-                    onError={(e) => {
-                      // Fallback if network blocks unsplash
-                      (e.target as HTMLElement).style.display = 'none';
-                    }}
-                  />
+                  {(member.photo_url || member.photoUrl) ? (
+                    <img
+                      src={member.photo_url || member.photoUrl}
+                      alt={`${member.name} - Mumbai Beatboxer`}
+                      className="w-full h-full object-cover object-center filter grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
+                      loading="lazy"
+                      onError={(e) => {
+                        // Fallback if image fails to load
+                        (e.target as HTMLElement).style.display = 'none';
+                      }}
+                    />
+                  ) : null}
 
-                  {/* Fallback Initials Avatar Box in case image is missing */}
-                  <div className="absolute inset-0 -z-10 flex flex-col items-center justify-center bg-gradient-to-br from-[#1E1B16] to-[#2B261F] text-[#FFC93C]">
+                  {/* Fallback Initials Avatar Box in case image is missing or empty */}
+                  <div className={`absolute inset-0 ${(member.photo_url || member.photoUrl) ? '-z-10' : 'z-0'} flex flex-col items-center justify-center bg-gradient-to-br from-[#1E1B16] to-[#2B261F] text-[#FFC93C]`}>
                     <span className="font-['Anton'] text-4xl">{member.avatarInitials}</span>
                     <span className="font-mono text-[10px] text-[#F4EFE4]/60 mt-1 uppercase tracking-widest">
                       MBH ARTIST #{index + 1}
@@ -385,7 +387,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
 
                 {/* Bottom Section: Voice Note Player with Sound Controls */}
                 {(() => {
-                  const rawAudio = member.voice_note_url || member.voiceNoteUrl || member.audio_url || member.audioUrl;
+                  const rawAudio = member.voice_note_url !== undefined ? member.voice_note_url : member.voiceNoteUrl;
                   const hasValidAudio = isValidAudioUrl(rawAudio);
 
                   if (!hasValidAudio) {

@@ -630,6 +630,63 @@ export async function deleteVideoItem(id: string): Promise<{ success: boolean; e
    3. COMMUNITY MEMBERS & VOICE NOTES CRUD
    ========================================================================= */
 
+/**
+ * Maps raw Supabase public.members record into CommunityMember.
+ * Preserves photo_url and voice_note_url as the single sources of truth.
+ */
+export function mapMemberRecord(item: Record<string, unknown>): CommunityMember & { photoUrl: string } {
+  // photo_url from Supabase is the single source of truth for member profile photo
+  const rawPhoto = item.photo_url !== undefined ? item.photo_url : item.photoUrl;
+  const photo_url =
+    typeof rawPhoto === 'string' &&
+    rawPhoto.trim() !== '' &&
+    rawPhoto !== 'null' &&
+    rawPhoto !== 'undefined'
+      ? rawPhoto.trim()
+      : null;
+
+  // voice_note_url from Supabase is the single source of truth for member voice notes
+  const rawVoiceNoteUrl =
+    item.voice_note_url !== undefined
+      ? item.voice_note_url
+      : item.voiceNoteUrl !== undefined
+      ? item.voiceNoteUrl
+      : item.audio_url !== undefined
+      ? item.audio_url
+      : item.audioUrl || null;
+
+  const voice_note_url =
+    typeof rawVoiceNoteUrl === 'string' &&
+    rawVoiceNoteUrl.trim() !== '' &&
+    rawVoiceNoteUrl !== 'null' &&
+    rawVoiceNoteUrl !== 'undefined'
+      ? rawVoiceNoteUrl.trim()
+      : null;
+
+  return {
+    id: String(item.id || ''),
+    name: String(item.name || ''),
+    handle: String(item.handle || ''),
+    specialty: String(item.specialty || ''),
+    area: String(item.area || ''),
+    experience: String(item.experience || ''),
+    voiceNoteTitle: String(item.voice_note_title || item.voiceNoteTitle || 'Street Routine Freestyle'),
+    voiceNoteDuration: String(item.voice_note_duration || item.voiceNoteDuration || '0:15'),
+    soundType: (item.sound_type || item.soundType || 'bass-growl') as CommunityMember['soundType'],
+    avatarInitials: String(
+      item.avatar_initials || item.avatarInitials || (item.name ? String(item.name).slice(0, 2).toUpperCase() : 'MB')
+    ),
+    accentBg: String(item.accent_bg || item.accentBg || '#FFC93C'),
+    photoUrl: photo_url || '',
+    photo_url: photo_url,
+    voiceNoteUrl: voice_note_url,
+    voice_note_url: voice_note_url,
+    audioUrl: voice_note_url || '',
+    audio_url: voice_note_url || '',
+    createdAt: item.created_at ? String(item.created_at) : undefined,
+  };
+}
+
 export async function fetchCommunityMembers(): Promise<(CommunityMember & { photoUrl: string })[]> {
   const supabase = getSupabase();
 
@@ -641,38 +698,7 @@ export async function fetchCommunityMembers(): Promise<(CommunityMember & { phot
         .order('created_at', { ascending: false });
 
       if (!error && data) {
-        return data.map((item) => {
-          // voice_note_url from Supabase is the single source of truth for member voice notes
-          const rawVoiceNoteUrl = item.voice_note_url || item.voiceNoteUrl || item.audio_url || item.audioUrl || null;
-          const voiceNoteUrl =
-            typeof rawVoiceNoteUrl === 'string' &&
-            rawVoiceNoteUrl.trim() !== '' &&
-            rawVoiceNoteUrl !== 'null' &&
-            rawVoiceNoteUrl !== 'undefined'
-              ? rawVoiceNoteUrl.trim()
-              : null;
-
-          return {
-            id: item.id,
-            name: item.name,
-            handle: item.handle,
-            specialty: item.specialty,
-            area: item.area,
-            experience: item.experience,
-            voiceNoteTitle: item.voice_note_title || 'Street Routine Freestyle',
-            voiceNoteDuration: item.voice_note_duration || '0:15',
-            soundType: (item.sound_type as CommunityMember['soundType']) || 'bass-growl',
-            avatarInitials: item.avatar_initials || item.name.slice(0, 2).toUpperCase(),
-            accentBg: item.accent_bg || '#FFC93C',
-            photoUrl: item.photo_url || item.photoUrl || '',
-            photo_url: item.photo_url || item.photoUrl || '',
-            voiceNoteUrl: voiceNoteUrl,
-            voice_note_url: voiceNoteUrl,
-            audioUrl: voiceNoteUrl || '',
-            audio_url: voiceNoteUrl || '',
-            createdAt: item.created_at,
-          };
-        });
+        return data.map((item) => mapMemberRecord(item as Record<string, unknown>));
       }
       if (error) {
         console.warn('Error fetching Supabase members:', error.message);
@@ -685,10 +711,26 @@ export async function fetchCommunityMembers(): Promise<(CommunityMember & { phot
   return [];
 }
 
+export async function fetchCommunityMemberById(id: string): Promise<(CommunityMember & { photoUrl: string }) | null> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from('members').select('*').eq('id', id).maybeSingle();
+      if (!error && data) {
+        return mapMemberRecord(data as Record<string, unknown>);
+      }
+    } catch (err) {
+      console.warn('Error fetching member by ID:', err);
+    }
+  }
+  return null;
+}
+
 export async function saveCommunityMember(
   member: Omit<CommunityMember, 'id'> & {
     id?: string;
     photoUrl?: string;
+    photo_url?: string | null;
     voice_note_url?: string | null;
     voiceNoteUrl?: string | null;
     audioUrl?: string | null;
@@ -710,6 +752,20 @@ export async function saveCommunityMember(
   const isEditing = Boolean(member.id && !member.id.startsWith('temp-') && !member.id.startsWith('mhb-demo'));
   const id = member.id || `mhb-${Date.now()}`;
 
+  // Clean and normalize photo_url. If empty or null, persist as null.
+  const rawPhoto =
+    member.photo_url !== undefined
+      ? member.photo_url
+      : member.photoUrl;
+
+  const persistentPhotoUrl =
+    typeof rawPhoto === 'string' &&
+    rawPhoto.trim() !== '' &&
+    rawPhoto !== 'null' &&
+    rawPhoto !== 'undefined'
+      ? rawPhoto.trim()
+      : null;
+
   // Clean and normalize voice_note_url. If empty or null, persist as null.
   const rawAudio =
     member.voice_note_url !== undefined
@@ -729,8 +785,8 @@ export async function saveCommunityMember(
   const newMember: CommunityMember & { photoUrl: string } = {
     ...member,
     id,
-    photoUrl: member.photoUrl || member.photo_url || '',
-    photo_url: member.photoUrl || member.photo_url || '',
+    photoUrl: persistentPhotoUrl || '',
+    photo_url: persistentPhotoUrl,
     voiceNoteUrl: persistentAudioUrl,
     voice_note_url: persistentAudioUrl,
     audioUrl: persistentAudioUrl || '',
@@ -753,7 +809,7 @@ export async function saveCommunityMember(
         sound_type: newMember.soundType,
         avatar_initials: newMember.avatarInitials,
         accent_bg: newMember.accentBg,
-        photo_url: newMember.photoUrl,
+        photo_url: persistentPhotoUrl,
         voice_note_url: persistentAudioUrl,
       };
 
@@ -792,7 +848,7 @@ export async function saveCommunityMember(
         return { success: false, member: newMember, error: error.message, source: 'supabase' };
       }
       if (data && data[0]) {
-        return { success: true, member: newMember, source: 'supabase' };
+        return { success: true, member: mapMemberRecord(data[0] as Record<string, unknown>), source: 'supabase' };
       }
     }
 
@@ -809,7 +865,7 @@ export async function saveCommunityMember(
       sound_type: newMember.soundType,
       avatar_initials: newMember.avatarInitials,
       accent_bg: newMember.accentBg,
-      photo_url: newMember.photoUrl,
+      photo_url: persistentPhotoUrl,
       voice_note_url: persistentAudioUrl,
       created_at: newMember.createdAt,
     };
@@ -844,6 +900,9 @@ export async function saveCommunityMember(
       return { success: false, member: newMember, error: error.message, source: 'supabase' };
     }
 
+    if (data && data[0]) {
+      return { success: true, member: mapMemberRecord(data[0] as Record<string, unknown>), source: 'supabase' };
+    }
     return { success: true, member: newMember, source: 'supabase' };
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : String(err);

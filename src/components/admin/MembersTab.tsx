@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { CommunityMember } from '../../types';
 import { saveCommunityMember, deleteCommunityMember } from '../../lib/supabase';
-import { uploadAudioToCloudinary, validateAudioFile } from '../../lib/cloudinary';
+import { uploadAudioToCloudinary, validateAudioFile, CLOUDINARY_FOLDERS } from '../../lib/cloudinary';
 import { ImageUploader } from './ImageUploader';
 
 interface MembersTabProps {
@@ -136,10 +136,11 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     setSoundType(item.soundType || 'bass-growl');
     setAvatarInitials(item.avatarInitials || item.name.slice(0, 2).toUpperCase());
     setAccentBg(item.accentBg || '#FFC93C');
-    setPhotoUrl(item.photoUrl || '');
+    const rawPhoto = item.photo_url !== undefined ? item.photo_url : item.photoUrl;
+    setPhotoUrl(rawPhoto || '');
     
-    const existingAudio = item.voice_note_url || item.voiceNoteUrl || item.audioUrl || item.audio_url || '';
-    setAudioUrl(existingAudio);
+    const existingAudio = item.voice_note_url !== undefined ? item.voice_note_url : item.voiceNoteUrl;
+    setAudioUrl(existingAudio || '');
     setAudioFileName(existingAudio ? 'Cloudinary Voice Note Attached' : '');
     setIsUploadingAudio(false);
     setUploadAudioProgress(0);
@@ -167,7 +168,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
 
     try {
       const res = await uploadAudioToCloudinary(file, {
-        folder: 'mumbai-beatbox-hub/members/audio',
+        folder: CLOUDINARY_FOLDERS.memberVoiceNotes,
         onProgress: (pct) => setUploadAudioProgress(pct),
       });
 
@@ -226,7 +227,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
         const recordedFile = new File([blob], `voice_drop_${Date.now()}.webm`, { type: mimeType });
         try {
           const res = await uploadAudioToCloudinary(recordedFile, {
-            folder: 'mumbai-beatbox-hub/members/audio',
+            folder: CLOUDINARY_FOLDERS.memberVoiceNotes,
             onProgress: (pct) => setUploadAudioProgress(pct),
           });
 
@@ -293,7 +294,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
   };
 
   const handleSoundTest = (item: CommunityMember & { photoUrl: string }) => {
-    const memberAudio = item.voice_note_url || item.voiceNoteUrl || item.audioUrl || item.audio_url;
+    const memberAudio = item.voice_note_url !== undefined ? item.voice_note_url : item.voiceNoteUrl;
 
     if (activeSoundId === item.id) {
       if (tableAudioRef.current) {
@@ -333,13 +334,19 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     }
 
     if (isUploadingAudio) {
-      setErrorMessage('Please wait until the audio file finishes uploading to Cloudinary.');
+      setErrorMessage('Please wait until the voice note finishes uploading to Cloudinary.');
+      return;
+    }
+
+    const trimmedPhoto = photoUrl.trim();
+    if (trimmedPhoto.startsWith('data:') || trimmedPhoto.startsWith('blob:')) {
+      setErrorMessage('Photo is in a temporary local format. Please re-upload so it is saved to Cloudinary.');
       return;
     }
 
     const trimmedAudio = audioUrl.trim();
     if (trimmedAudio.startsWith('data:') || trimmedAudio.startsWith('blob:')) {
-      setErrorMessage('Audio is in a temporary local format. Please re-upload so it is saved to Cloudinary.');
+      setErrorMessage('Voice note is in a temporary local format. Please re-upload so it is saved to Cloudinary.');
       return;
     }
 
@@ -347,6 +354,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     setErrorMessage(null);
 
     const initials = avatarInitials.trim() || name.trim().slice(0, 2).toUpperCase();
+    const finalPhotoUrl = trimmedPhoto !== '' ? trimmedPhoto : null;
     const finalVoiceNoteUrl = trimmedAudio !== '' ? trimmedAudio : null;
 
     const payload = {
@@ -361,7 +369,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       soundType,
       avatarInitials: initials,
       accentBg: accentBg || '#FFC93C',
-      photoUrl: photoUrl.trim(),
+      photo_url: finalPhotoUrl,
+      photoUrl: finalPhotoUrl || '',
       voice_note_url: finalVoiceNoteUrl,
       voiceNoteUrl: finalVoiceNoteUrl,
       audioUrl: finalVoiceNoteUrl,
@@ -374,7 +383,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     if (res.success) {
       stopAllPreviewAudio();
       setModalOpen(false);
-      setSuccessToast(editingItem ? 'Beatboxer profile & voice note updated!' : 'New member profile & voice note saved!');
+      setSuccessToast(editingItem ? 'Beatboxer profile & media updated in Supabase!' : 'New member profile & media saved in Supabase!');
       setTimeout(() => setSuccessToast(null), 3500);
       onRefresh();
     } else {
@@ -487,21 +496,26 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
               {filteredItems.map((item) => (
                 <tr key={item.id} className="hover:bg-[#14120F]/60 transition-colors">
                   <td className="p-3.5">
-                    <div 
-                      className="w-10 h-10 border border-[#F4EFE4]/20 flex items-center justify-center font-['Anton'] text-base overflow-hidden"
-                      style={{ backgroundColor: item.photoUrl ? 'transparent' : (item.accentBg || '#FFC93C'), color: '#14120F' }}
-                    >
-                      {item.photoUrl ? (
-                        <img 
-                          src={item.photoUrl} 
-                          alt={item.name} 
-                          className="w-full h-full object-cover" 
-                          referrerPolicy="no-referrer"
-                        />
-                      ) : (
-                        item.avatarInitials || item.name.slice(0, 2).toUpperCase()
-                      )}
-                    </div>
+                    {(() => {
+                      const displayPhoto = item.photo_url || item.photoUrl;
+                      return (
+                        <div 
+                          className="w-10 h-10 border border-[#F4EFE4]/20 flex items-center justify-center font-['Anton'] text-base overflow-hidden"
+                          style={{ backgroundColor: displayPhoto ? 'transparent' : (item.accentBg || '#FFC93C'), color: '#14120F' }}
+                        >
+                          {displayPhoto ? (
+                            <img 
+                              src={displayPhoto} 
+                              alt={item.name} 
+                              className="w-full h-full object-cover" 
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            item.avatarInitials || item.name.slice(0, 2).toUpperCase()
+                          )}
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="p-3.5">
                     <div className="font-bold text-[#F4EFE4] text-sm">{item.name}</div>
@@ -522,7 +536,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   </td>
                   <td className="p-3.5 whitespace-nowrap">
                     {(() => {
-                      const rawAudio = item.voice_note_url || item.voiceNoteUrl || item.audioUrl || item.audio_url;
+                      const rawAudio = item.voice_note_url !== undefined ? item.voice_note_url : item.voiceNoteUrl;
                       const hasAudio = Boolean(rawAudio && rawAudio.trim() !== '' && !rawAudio.startsWith('data:') && !rawAudio.startsWith('blob:'));
                       if (!hasAudio) {
                         return (
@@ -718,22 +732,95 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                 </div>
               </div>
 
-              {/* AUTHENTIC VOICE NOTE UPLOAD & AUDIO RECORDER */}
-              <div className="p-4 bg-[#14120F] border border-[#FFC93C]/40 space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#FFC93C] uppercase">
-                    <Mic className="w-4 h-4 text-[#FFC93C]" />
-                    <span>Member Voice Note (Audio File)</span>
-                  </div>
-                  {audioUrl && (
-                    <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 font-bold">
-                      <Check className="w-3 h-3" /> Audio Attached
-                    </span>
-                  )}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-[#F4EFE4]/80 uppercase mb-1">Avatar Initials (e.g. KS)</label>
+                  <input
+                    type="text"
+                    maxLength={3}
+                    value={avatarInitials}
+                    onChange={(e) => setAvatarInitials(e.target.value.toUpperCase())}
+                    placeholder="KS"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                  />
                 </div>
 
-                <p className="text-[11px] text-[#F4EFE4]/70">
-                  Upload an audio file (MP3, WAV, M4A, OGG, WebM) or record live via your microphone. The file is uploaded directly to Cloudinary and saved to <code className="text-[#FFC93C] font-mono">members.voice_note_url</code>. Only genuine uploaded audio plays on the frontend.
+                <div>
+                  <label className="block text-[#F4EFE4]/80 uppercase mb-1">Accent Background Color</label>
+                  <input
+                    type="text"
+                    value={accentBg}
+                    onChange={(e) => setAccentBg(e.target.value)}
+                    placeholder="#FFC93C or #E4402A"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* =========================================================================
+                  UPLOAD SECTION 1: MEMBER PROFILE PHOTO (Cloudinary mumbai-beatbox-hub/members/photos/)
+                  ========================================================================= */}
+              <div className="p-4 bg-[#14120F] border border-[#FFC93C]/40 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#FFC93C] uppercase">
+                    <Upload className="w-4 h-4 text-[#FFC93C]" />
+                    <span>1. Member Profile Photo</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/30 text-[9px] font-mono uppercase font-bold">
+                      Folder: mumbai-beatbox-hub/members/photos/
+                    </span>
+                    <span className="px-2 py-0.5 bg-[#F4EFE4]/10 text-[#F4EFE4]/70 border border-[#F4EFE4]/20 text-[9px] font-mono uppercase font-bold">
+                      Column: members.photo_url
+                    </span>
+                    {photoUrl && (
+                      <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 font-bold">
+                        <Check className="w-3 h-3" /> Photo Attached
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-[#F4EFE4]/70 leading-relaxed">
+                  Upload an artist photo (JPG, PNG, WEBP, AVIF). Uploads directly to Cloudinary folder <code className="text-[#FFC93C] font-mono">mumbai-beatbox-hub/members/photos/</code> and writes the secure HTTPS URL to <code className="text-[#FFC93C] font-mono">members.photo_url</code>. If cleared, sets photo_url to NULL and displays initials avatar on public card.
+                </p>
+
+                <ImageUploader
+                  label="Member Photo File / URL"
+                  value={photoUrl}
+                  onChange={setPhotoUrl}
+                  folder={CLOUDINARY_FOLDERS.memberPhotos}
+                  recommendedAspect="1:1 Square Avatar"
+                  placeholder="https://res.cloudinary.com/... or upload photo"
+                />
+              </div>
+
+              {/* =========================================================================
+                  UPLOAD SECTION 2: MEMBER VOICE NOTE (Cloudinary mumbai-beatbox-hub/members/voice-notes/)
+                  ========================================================================= */}
+              <div className="p-4 bg-[#14120F] border border-[#FFC93C]/40 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#FFC93C] uppercase">
+                    <Mic className="w-4 h-4 text-[#FFC93C]" />
+                    <span>2. Member Voice Note / Audio</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/30 text-[9px] font-mono uppercase font-bold">
+                      Folder: mumbai-beatbox-hub/members/voice-notes/
+                    </span>
+                    <span className="px-2 py-0.5 bg-[#F4EFE4]/10 text-[#F4EFE4]/70 border border-[#F4EFE4]/20 text-[9px] font-mono uppercase font-bold">
+                      Column: members.voice_note_url
+                    </span>
+                    {audioUrl && (
+                      <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1 font-bold">
+                        <Check className="w-3 h-3" /> Audio Attached
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-[#F4EFE4]/70 leading-relaxed">
+                  Upload an audio file (MP3, WAV, M4A, OGG, WebM) or record live via your microphone. Uploads directly to Cloudinary folder <code className="text-[#FFC93C] font-mono">mumbai-beatbox-hub/members/voice-notes/</code> and writes the secure HTTPS URL to <code className="text-[#FFC93C] font-mono">members.voice_note_url</code>. If removed, sets voice_note_url to NULL and public card will show &quot;NO VOICE NOTE&quot; with zero audio played.
                 </p>
 
                 {/* Upload & Record Buttons */}
@@ -748,7 +835,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     ) : (
                       <Upload className="w-3.5 h-3.5" />
                     )}
-                    <span>{isUploadingAudio ? 'Uploading...' : 'Upload Audio File'}</span>
+                    <span>{isUploadingAudio ? 'Uploading to Cloudinary...' : 'Upload Voice Note'}</span>
                     <input
                       type="file"
                       disabled={isUploadingAudio}
@@ -786,7 +873,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C]">
                       <span className="flex items-center gap-1.5 font-bold">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        Uploading Audio to Cloudinary...
+                        Uploading Voice Note to Cloudinary...
                       </span>
                       <span>{uploadAudioProgress}%</span>
                     </div>
@@ -797,7 +884,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                       />
                     </div>
                     <div className="text-[10px] text-[#F4EFE4]/50 font-mono">
-                      Destination: mumbai-beatbox-hub/members/audio/
+                      Destination: mumbai-beatbox-hub/members/voice-notes/
                     </div>
                   </div>
                 )}
@@ -805,7 +892,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                 {/* Audio URL Input */}
                 <div>
                   <label className="block text-[10px] uppercase text-[#F4EFE4]/60 mb-1">
-                    Or paste direct Cloudinary / hosted Audio URL:
+                    Or paste direct Cloudinary Voice Note URL:
                   </label>
                   <input
                     type="url"
@@ -814,13 +901,13 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                       setAudioUrl(e.target.value);
                       setAudioFileName(e.target.value ? 'Custom Hosted Audio URL' : '');
                     }}
-                    placeholder="https://res.cloudinary.com/.../voice_note.mp3"
+                    placeholder="https://res.cloudinary.com/.../voice_notes/...mp3"
                     className="w-full px-3 py-1.5 bg-[#1A1713] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] text-[11px] focus:outline-none font-mono"
                   />
                 </div>
 
                 {/* Attached Audio Player Preview with REMOVE AUDIO button */}
-                {audioUrl && (
+                {audioUrl ? (
                   <div className="p-3 bg-[#1A1713] border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2 overflow-hidden">
                       <FileAudio className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -869,43 +956,13 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                       </button>
                     </div>
                   </div>
+                ) : (
+                  <div className="p-2.5 bg-[#1A1713] border border-dashed border-[#F4EFE4]/15 text-[11px] text-[#F4EFE4]/50 flex items-center gap-2 font-mono">
+                    <MicOff className="w-3.5 h-3.5 text-[#F4EFE4]/30" />
+                    <span>No Voice Note attached. Public card will show &quot;NO VOICE NOTE&quot; and disable playback.</span>
+                  </div>
                 )}
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#F4EFE4]/80 uppercase mb-1">Avatar Initials (e.g. KS)</label>
-                  <input
-                    type="text"
-                    maxLength={3}
-                    value={avatarInitials}
-                    onChange={(e) => setAvatarInitials(e.target.value.toUpperCase())}
-                    placeholder="KS"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[#F4EFE4]/80 uppercase mb-1">Accent Background Color</label>
-                  <input
-                    type="text"
-                    value={accentBg}
-                    onChange={(e) => setAccentBg(e.target.value)}
-                    placeholder="#FFC93C or #E4402A"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Cloudinary Profile Photo Uploader (stores secure_url in members.photo_url) */}
-              <ImageUploader
-                label="Member Profile Photo (Upload or URL)"
-                value={photoUrl}
-                onChange={setPhotoUrl}
-                folder="mbh_media/members"
-                recommendedAspect="1:1 Square Avatar"
-                placeholder="https://res.cloudinary.com/... or upload photo"
-              />
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#F4EFE4]/15">
                 <button

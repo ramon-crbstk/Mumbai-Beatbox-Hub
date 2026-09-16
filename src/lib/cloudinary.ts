@@ -22,9 +22,19 @@ export interface UploadProgressCallback {
 
 export interface CloudinaryUploadOptions {
   folder?: string;
+  uploadPreset?: string;
+  preset?: string;
+  resourceType?: 'image' | 'video' | 'raw' | 'auto';
   onProgress?: UploadProgressCallback;
   onAbortRef?: { current: (() => void) | null };
 }
+
+export const CLOUDINARY_FOLDERS = {
+  memberPhotos: 'mumbai-beatbox-hub/members/photos',
+  memberVoiceNotes: 'mumbai-beatbox-hub/members/voice-notes',
+  gallery: 'mumbai-beatbox-hub/gallery',
+  events: 'mumbai-beatbox-hub/events',
+} as const;
 
 // Configuration from client environment variables (configured in Vercel or .env)
 export const CLOUDINARY_CONFIG = {
@@ -39,6 +49,31 @@ export const CLOUDINARY_CONFIG = {
       (import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string | undefined)?.trim() ||
       'mbh_unsigned'
     );
+  },
+  // Dedicated unsigned upload preset for member photos
+  get memberPhotoPreset(): string {
+    return (
+      (import.meta.env.VITE_CLOUDINARY_PHOTO_PRESET as string | undefined)?.trim() ||
+      (import.meta.env.VITE_CLOUDINARY_IMAGE_PRESET as string | undefined)?.trim() ||
+      (import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string | undefined)?.trim() ||
+      'mbh_member_photos'
+    );
+  },
+  // Dedicated unsigned upload preset for member voice-notes (supports audio)
+  get memberVoiceNotePreset(): string {
+    return (
+      (import.meta.env.VITE_CLOUDINARY_AUDIO_PRESET as string | undefined)?.trim() ||
+      (import.meta.env.VITE_CLOUDINARY_VOICE_NOTE_PRESET as string | undefined)?.trim() ||
+      (import.meta.env.VITE_CLOUDINARY_AUDIO_UPLOAD_PRESET as string | undefined)?.trim() ||
+      (import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET as string | undefined)?.trim() ||
+      'mbh_member_audio'
+    );
+  },
+  get imageUploadPreset(): string {
+    return this.memberPhotoPreset;
+  },
+  get audioUploadPreset(): string {
+    return this.memberVoiceNotePreset;
   },
   get defaultFolder(): string {
     return (
@@ -97,8 +132,9 @@ export function uploadImageToCloudinary(
 
     // 2. Validate Cloudinary configuration
     const cloudName = CLOUDINARY_CONFIG.cloudName;
-    const uploadPreset = CLOUDINARY_CONFIG.uploadPreset;
-    const folder = options.folder || CLOUDINARY_CONFIG.defaultFolder;
+    const uploadPreset = options.uploadPreset || options.preset || CLOUDINARY_CONFIG.imageUploadPreset || CLOUDINARY_CONFIG.uploadPreset;
+    const rawFolder = options.folder || CLOUDINARY_CONFIG.defaultFolder;
+    const folder = rawFolder ? rawFolder.replace(/\/+$/, '') : '';
 
     if (!cloudName) {
       return resolve({
@@ -108,7 +144,8 @@ export function uploadImageToCloudinary(
       });
     }
 
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/image/upload`;
+    const resourceType = options.resourceType || 'image';
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/${resourceType}/upload`;
 
     const formData = new FormData();
     formData.append('file', file);
@@ -272,8 +309,9 @@ export function uploadAudioToCloudinary(
 
     // 2. Validate Cloudinary configuration
     const cloudName = CLOUDINARY_CONFIG.cloudName;
-    const uploadPreset = CLOUDINARY_CONFIG.uploadPreset;
-    const folder = options.folder || 'mumbai-beatbox-hub/members/audio';
+    const uploadPreset = options.uploadPreset || options.preset || CLOUDINARY_CONFIG.audioUploadPreset || CLOUDINARY_CONFIG.uploadPreset;
+    const rawFolder = options.folder || CLOUDINARY_FOLDERS.memberVoiceNotes;
+    const folder = rawFolder ? rawFolder.replace(/\/+$/, '') : '';
 
     if (!cloudName) {
       return resolve({
@@ -284,7 +322,8 @@ export function uploadAudioToCloudinary(
     }
 
     // 'auto/upload' detects audio files (mp3, wav, m4a, webm) automatically
-    const uploadUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/auto/upload`;
+    const resourceType = options.resourceType || 'auto';
+    const uploadUrl = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/${resourceType}/upload`;
 
     const formData = new FormData();
     formData.append('file', file);

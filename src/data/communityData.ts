@@ -150,7 +150,7 @@ export const PARTNER_LOGOS: PartnerLogo[] = [
   { id: 'p5', name: 'Suburban Jam Series', role: 'Jam Supporter' },
 ];
 
-export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
+const RAW_COMMUNITY_MEMBERS: Array<Omit<CommunityMember, 'photo_url' | 'voice_note_url'> & { photoUrl: string }> = [
   {
     id: 'mhb-01',
     name: 'Rohan "Sub-Zero" Sharma',
@@ -460,6 +460,15 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
     photoUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=80',
   },
 ];
+
+export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = RAW_COMMUNITY_MEMBERS.map((m) => ({
+  ...m,
+  photo_url: m.photoUrl,
+  voice_note_url: null,
+  voiceNoteUrl: null,
+  audioUrl: null,
+  audio_url: null,
+}));
 
 export const COMMUNITY_CONTACT = {
   discord: 'https://discord.gg/9ftX9HzFKr',

@@ -103,9 +103,9 @@ export interface CommunityMember {
   avatarInitials: string;
   accentBg: string;
   photoUrl?: string;
-  photo_url?: string;
+  photo_url: string | null;
   voiceNoteUrl?: string | null;
-  voice_note_url?: string | null;
+  voice_note_url: string | null;
   audioUrl?: string | null;
   audio_url?: string | null;
   createdAt?: string;
