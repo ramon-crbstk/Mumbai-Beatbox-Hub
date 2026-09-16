@@ -17,6 +17,8 @@ import {
 import { VideoItem } from '../../types';
 import { saveVideoItem, deleteVideoItem } from '../../lib/supabase';
 import { ImageUploader } from './ImageUploader';
+import { VideoUploader } from './VideoUploader';
+import { CLOUDINARY_CONFIG, CLOUDINARY_FOLDERS, getCloudinaryVideoThumbnailUrl } from '../../lib/cloudinary';
 
 interface VideosTabProps {
   items: VideoItem[];
@@ -79,6 +81,18 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
       return;
     }
 
+    const trimmedVideoUrl = videoUrl.trim();
+    const trimmedThumbnailUrl = thumbnailUrl.trim();
+
+    if (trimmedVideoUrl.startsWith('data:') || trimmedVideoUrl.startsWith('blob:')) {
+      setErrorMessage('Local base64 or temporary blob video URLs cannot be saved. Please upload directly to Cloudinary.');
+      return;
+    }
+    if (trimmedThumbnailUrl.startsWith('data:') || trimmedThumbnailUrl.startsWith('blob:')) {
+      setErrorMessage('Local base64 or temporary blob thumbnails cannot be saved. Please upload directly to Cloudinary.');
+      return;
+    }
+
     setSaving(true);
     setErrorMessage(null);
 
@@ -88,10 +102,10 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
       performer: performer.trim(),
       venue: venue.trim(),
       duration: duration.trim() || '03:30',
-      category: category.trim() || 'Street Cypher',
+      category: category.trim() || 'Routine Drop',
       viewsEstimate: viewsEstimate.trim() || 'Community Drop',
-      videoUrl: videoUrl.trim(),
-      thumbnailUrl: thumbnailUrl.trim(),
+      videoUrl: trimmedVideoUrl,
+      thumbnailUrl: trimmedThumbnailUrl,
       createdAt: editingItem?.createdAt || new Date().toISOString(),
     };
 
@@ -218,10 +232,11 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
                     >
                       {item.thumbnailUrl ? (
                         <img 
-                          src={item.thumbnailUrl} 
+                          src={getCloudinaryVideoThumbnailUrl(item.thumbnailUrl, { width: 240, format: 'auto', quality: 'auto' })} 
                           alt={item.title} 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
                           referrerPolicy="no-referrer"
+                          loading="lazy"
                         />
                       ) : (
                         <VideoIcon className="w-4 h-4 text-[#F4EFE4]/30" />
@@ -365,7 +380,7 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
                     type="text"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    placeholder="Street Cypher, Battle Routine, Masterclass"
+                    placeholder="Street Cypher, Battle Routine, Routine Drop"
                     className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
@@ -382,23 +397,23 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-[#F4EFE4]/80 uppercase mb-1">Video Stream / Embed URL (video_url)</label>
-                <input
-                  type="url"
-                  value={videoUrl}
-                  onChange={(e) => setVideoUrl(e.target.value)}
-                  placeholder="https://commondatastorage.googleapis.com/... or YouTube embed"
-                  className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
-                />
-              </div>
+              {/* Cloudinary Video Upload (/video/upload) */}
+              <VideoUploader
+                label="Featured Video File (Cloudinary /video/upload or Video URL)"
+                value={videoUrl}
+                onChange={setVideoUrl}
+                folder={CLOUDINARY_FOLDERS.videos}
+                uploadPreset={CLOUDINARY_CONFIG.videoPreset}
+                placeholder="https://res.cloudinary.com/... or upload MP4/WebM"
+              />
 
-              {/* Cloudinary Video Thumbnail Uploader (stores secure_url in videos.thumbnail_url) */}
+              {/* Cloudinary Video Thumbnail Uploader (/image/upload) */}
               <ImageUploader
                 label="Video Thumbnail (Upload or URL)"
                 value={thumbnailUrl}
                 onChange={setThumbnailUrl}
-                folder="mbh_media/videos"
+                folder={CLOUDINARY_FOLDERS.videoThumbnails}
+                uploadPreset={CLOUDINARY_CONFIG.videoThumbnailPreset}
                 recommendedAspect="16:9 Landscape"
                 placeholder="https://res.cloudinary.com/... or upload thumbnail"
               />
@@ -507,7 +522,7 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
                   controls 
                   autoPlay 
                   src={previewVideo.videoUrl} 
-                  poster={previewVideo.thumbnailUrl}
+                  poster={previewVideo.thumbnailUrl ? getCloudinaryVideoThumbnailUrl(previewVideo.thumbnailUrl, { width: 800, format: 'auto', quality: 'auto' }) : undefined}
                   className="w-full h-full object-contain"
                 />
               ) : (

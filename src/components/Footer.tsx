@@ -1,6 +1,7 @@
 import React from 'react';
 import { Instagram, MessageCircle, Youtube, ArrowUp, Phone, Headphones } from 'lucide-react';
 import { COMMUNITY_CONTACT } from '../data/communityData';
+import { ScrollReveal } from './animations/MotionComponents';
 
 export const Footer: React.FC = () => {
   const scrollToTop = () => {
@@ -16,7 +17,7 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#F4EFE4]/15">
+        <ScrollReveal direction="up" delay={0.05} className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#F4EFE4]/15">
           
           {/* Brand Mark & Tagline */}
           <div className="md:col-span-6 space-y-4">
@@ -132,7 +133,7 @@ export const Footer: React.FC = () => {
             </div>
           </div>
 
-        </div>
+        </ScrollReveal>
 
         {/* Bottom Bar: Copyright & Back to Top */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[#F4EFE4]/60">

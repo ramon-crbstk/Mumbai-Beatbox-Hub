@@ -3,6 +3,7 @@ import { GALLERY_ITEMS } from '../data/communityData';
 import { GalleryItem } from '../types';
 import { Image as ImageIcon, Plus, X, MapPin, Tag, ChevronDown, ChevronUp } from 'lucide-react';
 import { fetchGalleryItems } from '../lib/supabase';
+import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
 
 interface GallerySectionProps {
   refreshTrigger?: number;
@@ -34,7 +35,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <ScrollReveal direction="up" delay={0.05} className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 border border-[#14120F] rotate-1 shadow-sm">
               <ImageIcon className="w-3.5 h-3.5" />
@@ -51,11 +52,11 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
           <div className="text-xs font-mono text-[#F4EFE4]/60">
             <span>{galleryList.length} ARCHIVED MOMENTS</span>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Asymmetric Gallery Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {galleryList.length === 0 ? (
+        {galleryList.length === 0 ? (
+          <div className="grid grid-cols-1 gap-6">
             <div className="col-span-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
               <ImageIcon className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
               <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Visual Archive</h3>
@@ -63,71 +64,81 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                 Archived cypher photographs added by the community will appear here.
               </p>
             </div>
-          ) : (
-            visibleGallery.map((item, idx) => {
-              const uploadedSrc = item.photoUrl;
+          </div>
+        ) : (
+          <StaggerContainer staggerDelay={0.09} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {visibleGallery.map((item, idx) => {
+              const rawSrc = item.photoUrl;
+              const uploadedSrc = rawSrc && !rawSrc.startsWith('data:') && !rawSrc.startsWith('blob:') ? rawSrc : null;
 
               return (
-                <div
+                <StaggerItem
                   key={item.id}
-                  id={`gallery-tile-${item.id}`}
-                  onClick={() => setSelectedItem(item)}
-                  className="group relative bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:-translate-y-1"
+                  direction="scale"
+                  scale={0.94}
+                  className="h-full flex flex-col"
                 >
-                {/* Paper Tape Corner Accent */}
-                <div className="absolute -top-2 left-6 w-12 h-3.5 bg-[#FFC93C]/80 -rotate-3 border border-[#14120F]/30 pointer-events-none" />
+                  <div
+                    id={`gallery-tile-${item.id}`}
+                    onClick={() => setSelectedItem(item)}
+                    className="group relative bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] p-4 flex flex-col justify-between transition-all duration-200 cursor-pointer shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:-translate-y-1 h-full"
+                  >
+                    {/* Paper Tape Corner Accent */}
+                    <div className="absolute -top-2 left-6 w-12 h-3.5 bg-[#FFC93C]/80 -rotate-3 border border-[#14120F]/30 pointer-events-none" />
 
-                {/* Main Tile Frame / Image Area */}
-                <div className="relative w-full aspect-[4/3] bg-[#14120F] border border-dashed border-[#F4EFE4]/30 flex flex-col items-center justify-center p-4 text-center overflow-hidden">
-                  {uploadedSrc ? (
-                    <img
-                      src={uploadedSrc}
-                      alt={item.caption || item.title}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="space-y-3">
-                      <div className="w-12 h-12 mx-auto rounded-none border-2 border-[#FFC93C] flex items-center justify-center bg-[#181512] group-hover:scale-105 transition-transform">
-                        <Plus className="w-6 h-6 text-[#FFC93C]" />
-                      </div>
-                      <div>
-                        <span className="font-['Anton'] text-lg text-[#F4EFE4] tracking-wide block uppercase group-hover:text-[#FFC93C] transition-colors">
-                          {item.title}
-                        </span>
-                        <span className="text-[11px] font-mono text-[#F4EFE4]/50 block mt-1">
-                          [Placeholder Frame #{idx + 1}]
-                        </span>
+                    {/* Main Tile Frame / Image Area */}
+                    <div className="relative w-full aspect-[4/3] bg-[#14120F] border border-dashed border-[#F4EFE4]/30 flex flex-col items-center justify-center p-4 text-center overflow-hidden">
+                      {uploadedSrc ? (
+                        <img
+                          src={uploadedSrc}
+                          alt={item.caption || item.title}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                        />
+                      ) : (
+                        <div className="space-y-3">
+                          <div className="w-12 h-12 mx-auto rounded-none border-2 border-[#FFC93C] flex items-center justify-center bg-[#181512] group-hover:scale-105 transition-transform">
+                            <Plus className="w-6 h-6 text-[#FFC93C]" />
+                          </div>
+                          <div>
+                            <span className="font-['Anton'] text-lg text-[#F4EFE4] tracking-wide block uppercase group-hover:text-[#FFC93C] transition-colors">
+                              {item.title}
+                            </span>
+                            <span className="text-[11px] font-mono text-[#F4EFE4]/50 block mt-1">
+                              [Placeholder Frame #{idx + 1}]
+                            </span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Corner Badge */}
+                      <div className="absolute top-2 right-2 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase border border-[#FFC93C]/40">
+                        {item.dateStr}
                       </div>
                     </div>
-                  )}
 
-                  {/* Corner Badge */}
-                  <div className="absolute top-2 right-2 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase border border-[#FFC93C]/40">
-                    {item.dateStr}
+                    {/* Caption and Location */}
+                    <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 space-y-1.5">
+                      <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C]">
+                        <span className="flex items-center gap-1 truncate max-w-[180px]">
+                          <MapPin className="w-3 h-3 flex-shrink-0" />
+                          <span className="truncate">{item.location}</span>
+                        </span>
+                        <span className="text-[10px] text-[#F4EFE4]/50 uppercase flex-shrink-0">
+                          Tile #{idx + 1}
+                        </span>
+                      </div>
+                      <p className="text-xs font-sans text-[#F4EFE4]/80 line-clamp-2">
+                        {item.caption}
+                      </p>
+                    </div>
+
                   </div>
-                </div>
-
-                {/* Caption and Location */}
-                <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C]">
-                    <span className="flex items-center gap-1 truncate max-w-[180px]">
-                      <MapPin className="w-3 h-3 flex-shrink-0" />
-                      <span className="truncate">{item.location}</span>
-                    </span>
-                    <span className="text-[10px] text-[#F4EFE4]/50 uppercase flex-shrink-0">
-                      Tile #{idx + 1}
-                    </span>
-                  </div>
-                  <p className="text-xs font-sans text-[#F4EFE4]/80 line-clamp-2">
-                    {item.caption}
-                  </p>
-                </div>
-
-              </div>
-            );
-          }))}
-        </div>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
+        )}
 
         {galleryList.length > 3 && (
           <div className="mt-10 text-center">
@@ -171,11 +182,12 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               {selectedItem.title}
             </h3>
 
-            {selectedItem.photoUrl && (
+            {selectedItem.photoUrl && !selectedItem.photoUrl.startsWith('data:') && !selectedItem.photoUrl.startsWith('blob:') && (
               <div className="mb-4 aspect-video overflow-hidden border-2 border-[#14120F]">
                 <img
                   src={selectedItem.photoUrl}
                   alt={selectedItem.title}
+                  referrerPolicy="no-referrer"
                   className="w-full h-full object-cover"
                 />
               </div>

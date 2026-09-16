@@ -1,6 +1,7 @@
 import React from 'react';
 import { ArrowRight, MessageSquare, Volume2, MessageCircle, Phone } from 'lucide-react';
 import { COMMUNITY_CONTACT } from '../data/communityData';
+import { ScrollReveal } from './animations/MotionComponents';
 
 interface MidPageCtaProps {
   onOpenContactModal: () => void;
@@ -23,7 +24,7 @@ export const MidPageCta: React.FC<MidPageCtaProps> = ({ onOpenContactModal }) =>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-8">
           
           {/* Left Text Block */}
-          <div className="space-y-3 max-w-3xl">
+          <ScrollReveal direction="left" delay={0.05} className="space-y-3 max-w-3xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest -rotate-1">
               <Volume2 className="w-3.5 h-3.5" />
               <span>COMMUNITY CALLOUT // NO AUDITIONS</span>
@@ -36,10 +37,10 @@ export const MidPageCta: React.FC<MidPageCtaProps> = ({ onOpenContactModal }) =>
             <p className="text-base sm:text-lg font-sans text-[#14120F]/90 font-medium max-w-2xl leading-relaxed">
               All beatboxers, mouth drummers, and vocal artists in Mumbai are welcome. Whether you just learned how to kick or you&apos;ve got a 3-minute battle routine locked, our circles are ready for your sound.
             </p>
-          </div>
+          </ScrollReveal>
 
           {/* Right Button Action */}
-          <div className="flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <ScrollReveal direction="right" delay={0.1} className="flex-shrink-0 flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
             <button
               type="button"
               id="mid-cta-contact-button"
@@ -60,7 +61,7 @@ export const MidPageCta: React.FC<MidPageCtaProps> = ({ onOpenContactModal }) =>
               <MessageCircle className="w-5 h-5 text-emerald-400" />
               <span>WhatsApp</span>
             </a>
-          </div>
+          </ScrollReveal>
 
         </div>
       </div>

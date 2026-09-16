@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { FEATURED_VIDEOS } from '../data/communityData';
 import { VideoItem } from '../types';
 import { Play, Video, X, Flame, ExternalLink, Link2, Copy, Check } from 'lucide-react';
 import { fetchVideos } from '../lib/supabase';
+import { getCloudinaryVideoThumbnailUrl } from '../lib/cloudinary';
+import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
 
 interface FeaturedVideosSectionProps {
   refreshTrigger?: number;
@@ -16,7 +17,7 @@ function parseVideoSource(rawUrl?: string): {
 } | null {
   if (!rawUrl || typeof rawUrl !== 'string') return null;
   const trimmed = rawUrl.trim();
-  if (!trimmed) return null;
+  if (!trimmed || trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return null;
 
   // YouTube formats: watch?v=, youtu.be/, embed/, shorts/, live/
   const ytMatch = trimmed.match(
@@ -58,7 +59,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
     async function loadVideos() {
       const items = await fetchVideos();
       if (active) {
-        setVideosList(items.length > 0 ? items : FEATURED_VIDEOS);
+        setVideosList(items);
       }
     }
     loadVideos();
@@ -80,7 +81,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <ScrollReveal direction="up" delay={0.05} className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
               <Video className="w-3.5 h-3.5" />
@@ -97,11 +98,11 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
           <div className="text-xs font-mono text-[#FFC93C]">
             COMMUNITY STREAM // STREET FOOTAGE
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Video Thumbnail Row */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {videosList.length === 0 ? (
+        {videosList.length === 0 ? (
+          <div className="grid grid-cols-1 gap-8">
             <div className="col-span-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
               <Video className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
               <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Routine Drops Archive</h3>
@@ -109,115 +110,111 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                 Video drops added by the community will appear here.
               </p>
             </div>
-          ) : (
-            videosList.map((vid, idx) => {
+          </div>
+        ) : (
+          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {videosList.map((vid, idx) => {
               const displayCategory = vid.category?.replace(/solo/gi, '').trim();
 
               return (
-                <div
+                <StaggerItem
                   key={vid.id}
-                  id={`video-card-${vid.id}`}
-                  className="bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-all p-4 flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C]"
+                  direction="up"
+                  className="h-full flex flex-col"
                 >
-                
-                {/* Thumbnail Container with Play-Button Overlay */}
-                <div 
-                  className="relative aspect-video bg-[#14120F] border border-[#FFC93C]/30 flex items-center justify-center cursor-pointer overflow-hidden"
-                  onClick={() => setActiveVideo(vid)}
-                >
-                  {vid.thumbnailUrl ? (
-                    <img
-                      src={vid.thumbnailUrl}
-                      alt={vid.title}
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-[#1A1713] flex items-center justify-center">
-                      <Video className="w-12 h-12 text-[#FFC93C]/30" />
-                    </div>
-                  )}
-
-                  {/* Category Badge (without solo text) */}
-                  {displayCategory && (
-                    <div className="absolute top-2 left-2 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider z-10">
-                      {displayCategory}
-                    </div>
-                  )}
-
-                  {/* Big Center Play Button Overlay */}
-                  <div className="w-14 h-14 bg-[#FFC93C] text-[#14120F] rounded-full flex items-center justify-center border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] group-hover:scale-110 group-hover:bg-[#F4EFE4] transition-all z-10">
-                    <Play className="w-6 h-6 fill-current translate-x-0.5" />
-                  </div>
-
-                  {/* Drop Label */}
-                  <span className="absolute bottom-2 left-2 text-[10px] font-mono text-[#F4EFE4]/60 z-10 bg-[#14120F]/90 px-1.5 py-0.5">
-                    DROP #{idx + 1}
-                  </span>
-                </div>
-
-                {/* Video Info */}
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C]">
-                    <span>{vid.venue}</span>
-                    <span className="text-[#F4EFE4]/60">{vid.viewsEstimate}</span>
-                  </div>
-
-                  <h3 className="font-['Anton'] text-xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-snug">
-                    {vid.title}
-                  </h3>
-
-                  <p className="text-xs font-mono text-[#F4EFE4]/70">
-                    Featuring: <span className="text-[#F4EFE4] font-medium">{vid.performer}</span>
-                  </p>
-
-                  {/* Video Link Display on Card */}
-                  {vid.videoUrl && (
-                    <div className="pt-2">
-                      <a
-                        href={vid.videoUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1.5 text-[11px] font-mono text-[#FFC93C] hover:underline hover:text-[#ffe082] transition-colors break-all"
-                      >
-                        <Link2 className="w-3.5 h-3.5 shrink-0 text-[#FFC93C]" />
-                        <span className="truncate max-w-[240px] sm:max-w-[280px]">
-                          {vid.videoUrl}
-                        </span>
-                        <ExternalLink className="w-3 h-3 shrink-0" />
-                      </a>
-                    </div>
-                  )}
-                </div>
-
-                {/* Watch CTA Button */}
-                <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 flex items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setActiveVideo(vid)}
-                    className="flex-1 py-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#F4EFE4] text-xs font-mono font-bold uppercase tracking-wider border border-[#F4EFE4]/30 hover:border-[#14120F] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                  <div
+                    id={`video-card-${vid.id}`}
+                    className="relative overflow-hidden bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-all min-h-[420px] sm:min-h-[460px] flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] h-full"
                   >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Play Video</span>
-                  </button>
+                    {/* Full-bleed Thumbnail Image using 100% of the card space with auto Cloudinary transformations (w: 640, f: auto, q: auto) */}
+                    {vid.thumbnailUrl && !vid.thumbnailUrl.startsWith('data:') && !vid.thumbnailUrl.startsWith('blob:') ? (
+                      <img
+                        src={getCloudinaryVideoThumbnailUrl(vid.thumbnailUrl, { width: 640, format: 'auto', quality: 'auto' })}
+                        alt={vid.title}
+                        referrerPolicy="no-referrer"
+                        loading="lazy"
+                        decoding="async"
+                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                    ) : (
+                      <div className="absolute inset-0 bg-[#1A1713] flex flex-col items-center justify-center text-[#FFC93C]/30">
+                        <Video className="w-16 h-16 mb-2" />
+                        <span className="font-mono text-xs uppercase tracking-widest text-[#F4EFE4]/40">Community Video Drop</span>
+                      </div>
+                    )}
 
-                  {vid.videoUrl && (
-                    <a
-                      href={vid.videoUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2.5 py-2 bg-[#1A1713] hover:bg-[#FFC93C] text-[#FFC93C] hover:text-[#14120F] border border-[#FFC93C]/40 transition-colors"
-                      title="Open video URL in new tab"
+                    {/* Dark Gradient Overlays for Readability */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#14120F] via-[#14120F]/70 to-[#14120F]/40 pointer-events-none" />
+                    <div className="absolute inset-0 bg-[#14120F]/20 group-hover:bg-transparent transition-colors pointer-events-none" />
+
+                    {/* Top Bar Header */}
+                    <div className="relative z-10 p-4 sm:p-5 flex items-start justify-between gap-2">
+                      {/* Category Badge */}
+                      {displayCategory && (
+                        <div className="px-2.5 py-1 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
+                          {displayCategory}
+                        </div>
+                      )}
+
+                      {/* Drop # & Duration Indicator */}
+                      <div className="flex items-center gap-1.5 ml-auto">
+                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#FFC93C] bg-[#14120F]/90 border border-[#FFC93C]/50 backdrop-blur-xs">
+                          DROP #{idx + 1}
+                        </span>
+                        {vid.duration && (
+                          <span className="px-2 py-0.5 text-[10px] font-mono text-[#F4EFE4] bg-[#14120F]/90 border border-[#F4EFE4]/30 backdrop-blur-xs">
+                            {vid.duration}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Center Play Button Overlay */}
+                    <div 
+                      onClick={() => setActiveVideo(vid)}
+                      className="relative z-10 self-center my-auto w-16 h-16 bg-[#FFC93C] text-[#14120F] rounded-full flex items-center justify-center border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#F4EFE4] group-hover:scale-115 group-hover:bg-[#F4EFE4] transition-all cursor-pointer"
+                      title="Play Video"
+                      aria-label={`Play ${vid.title}`}
                     >
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  )}
-                </div>
+                      <Play className="w-7 h-7 fill-current translate-x-0.5" />
+                    </div>
 
-              </div>
-            );
-          }))}
-        </div>
+                    {/* Bottom Info & Play CTA */}
+                    <div className="relative z-10 p-4 sm:p-5 pt-0">
+                      <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1 drop-shadow-sm">
+                        <span className="truncate pr-2">{vid.venue}</span>
+                        <span className="text-[#F4EFE4]/80 shrink-0">{vid.viewsEstimate}</span>
+                      </div>
+
+                      <h3 
+                        onClick={() => setActiveVideo(vid)}
+                        className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-snug cursor-pointer drop-shadow-md"
+                      >
+                        {vid.title}
+                      </h3>
+
+                      <p className="text-xs font-mono text-[#F4EFE4]/90 mt-1 drop-shadow-sm">
+                        Featuring: <span className="text-[#FFC93C] font-semibold">{vid.performer}</span>
+                      </p>
+
+                      {/* Single Full-Width Play Button (No arrow button) */}
+                      <div className="mt-4 pt-3 border-t border-[#F4EFE4]/20">
+                        <button
+                          type="button"
+                          onClick={() => setActiveVideo(vid)}
+                          className="w-full py-2.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-current" />
+                          <span>Play Video</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </StaggerItem>
+              );
+            })}
+          </StaggerContainer>
+        )}
 
       </div>
 
@@ -262,6 +259,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
               ) : parsedActiveVideo?.type === 'direct' && parsedActiveVideo.embedUrl ? (
                 <video
                   src={parsedActiveVideo.embedUrl}
+                  poster={activeVideo.thumbnailUrl && !activeVideo.thumbnailUrl.startsWith('data:') && !activeVideo.thumbnailUrl.startsWith('blob:') ? getCloudinaryVideoThumbnailUrl(activeVideo.thumbnailUrl, { width: 1280, format: 'auto', quality: 'auto' }) : undefined}
                   controls
                   autoPlay
                   playsInline

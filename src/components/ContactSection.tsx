@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Send, CheckCircle2, MessageCircle, Instagram, Youtube, MapPin, Mail, ArrowUpRight, Database, Loader2, Phone, Headphones, MessageSquare } from 'lucide-react';
 import { saveContactDispatch } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
+import { ScrollReveal } from './animations/MotionComponents';
 
 export const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -34,7 +35,7 @@ export const ContactSection: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="max-w-3xl mb-12">
+        <ScrollReveal direction="up" delay={0.05} className="max-w-3xl mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 border border-[#14120F] -rotate-1 shadow-sm">
             <Mail className="w-3.5 h-3.5" />
             <span>CONTACT & JOIN</span>
@@ -45,12 +46,12 @@ export const ContactSection: React.FC = () => {
           <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-1">
             Looking to join the weekend circle, book a workshop, or suggest a new spot? Send a dispatch.
           </p>
-        </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
           
           {/* Left Column: Direct Action & Community Channels */}
-          <div className="lg:col-span-5 space-y-5">
+          <ScrollReveal direction="left" delay={0.05} className="lg:col-span-5 space-y-5">
             
             {/* WhatsApp Community Box (High priority for Indian grassroots cyphers) */}
             <div className="bg-[#181512] border-2 border-[#FFC93C] p-5 sm:p-6 shadow-[6px_6px_0px_0px_#FFC93C] relative">
@@ -207,10 +208,11 @@ export const ContactSection: React.FC = () => {
               </div>
             </div>
 
-          </div>
+          </ScrollReveal>
 
-          {/* Right Column: Contact & Cypher RSVP Form */}
-          <div className="lg:col-span-7 bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] p-6 sm:p-8 shadow-[8px_8px_0px_0px_#FFC93C]">
+          {/* Right Column: Contact & Cypher Inquiry Form */}
+          <ScrollReveal direction="right" delay={0.1} className="lg:col-span-7">
+            <div id="inquiry-form-card" className="bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] p-6 sm:p-8 shadow-[8px_8px_0px_0px_#FFC93C] scroll-mt-24">
             
             {submitted ? (
               <div className="py-10 text-center space-y-4">
@@ -238,7 +240,7 @@ export const ContactSection: React.FC = () => {
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
+              <form id="inquiry-form" onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
                 
                 <div className="flex items-center justify-between border-b-2 border-[#14120F] pb-3 mb-4">
                   <span className="font-['Anton'] text-xl uppercase tracking-wider text-[#14120F]">
@@ -360,7 +362,8 @@ export const ContactSection: React.FC = () => {
               </form>
             )}
 
-          </div>
+            </div>
+          </ScrollReveal>
 
         </div>
 

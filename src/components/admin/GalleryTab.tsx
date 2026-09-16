@@ -15,6 +15,7 @@ import {
 import { GalleryItem } from '../../types';
 import { saveGalleryItem, deleteGalleryItem } from '../../lib/supabase';
 import { ImageUploader } from './ImageUploader';
+import { CLOUDINARY_CONFIG, CLOUDINARY_FOLDERS } from '../../lib/cloudinary';
 
 interface GalleryTabProps {
   items: GalleryItem[];
@@ -70,6 +71,12 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
       return;
     }
 
+    const trimmedPhoto = photoUrl.trim();
+    if (trimmedPhoto.startsWith('data:') || trimmedPhoto.startsWith('blob:')) {
+      setErrorMessage('Local base64 or temporary blob images cannot be saved. Please upload directly to Cloudinary.');
+      return;
+    }
+
     setSaving(true);
     setErrorMessage(null);
 
@@ -80,7 +87,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
       location: location.trim(),
       dateStr: dateStr.trim() || 'Cypher Session',
       aspect,
-      photoUrl: photoUrl.trim(),
+      photoUrl: trimmedPhoto,
       createdAt: editingItem?.createdAt || new Date().toISOString(),
     };
 
@@ -353,7 +360,8 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                 label="Gallery Photo Image (Upload or URL)"
                 value={photoUrl}
                 onChange={setPhotoUrl}
-                folder="mbh_media/gallery"
+                folder={CLOUDINARY_FOLDERS.gallery}
+                uploadPreset={CLOUDINARY_CONFIG.galleryPreset}
                 recommendedAspect={`Format: ${aspect.toUpperCase()}`}
                 placeholder="https://res.cloudinary.com/... or upload image"
               />

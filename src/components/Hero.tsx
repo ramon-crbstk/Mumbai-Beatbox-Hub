@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowRight, Volume2, Sparkles, MapPin } from 'lucide-react';
+import { ScrollReveal, FloatingElement } from './animations/MotionComponents';
 
 interface HeroProps {
   onOpenJoinModal: () => void;
@@ -82,77 +83,88 @@ export const Hero: React.FC<HeroProps> = ({ onOpenJoinModal }) => {
           <div className="lg:col-span-7 space-y-6">
             
             {/* Poster Headline */}
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-[#FFC93C]">
-                <span className="w-2 h-2 bg-[#FFC93C]" />
-                <span>MBH Official Grassroots Movement</span>
+            <ScrollReveal direction="up" delay={0.05} duration={0.65}>
+              <div className="space-y-2">
+                <div className="flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-[#FFC93C]">
+                  <span className="w-2 h-2 bg-[#FFC93C]" />
+                  <span>MBH Official Grassroots Movement</span>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                  <h1 className="font-['Anton'] text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#F4EFE4] uppercase leading-[0.92]">
+                    Mumbai <br />
+                    <span className="text-[#FFC93C] inline-block relative">
+                      Beatbox
+                      {/* Subtle underline hazard bar */}
+                      <span className="absolute left-0 -bottom-2 w-full h-2 bg-[#FFC93C] -skew-x-12 opacity-80" />
+                    </span>{' '}
+                    <span className="text-[#F4EFE4]">Hub</span>
+                  </h1>
+                </div>
               </div>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-                <h1 className="font-['Anton'] text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-[#F4EFE4] uppercase leading-[0.92]">
-                  Mumbai <br />
-                  <span className="text-[#FFC93C] inline-block relative">
-                    Beatbox
-                    {/* Subtle underline hazard bar */}
-                    <span className="absolute left-0 -bottom-2 w-full h-2 bg-[#FFC93C] -skew-x-12 opacity-80" />
-                  </span>{' '}
-                  <span className="text-[#F4EFE4]">Hub</span>
-                </h1>
-              </div>
-            </div>
+            </ScrollReveal>
 
             {/* Subhead and Supporting Line */}
-            <div className="space-y-3 pt-2">
-              <p className="font-['Anton'] text-2xl sm:text-3xl text-[#FFC93C] tracking-wide uppercase">
-                &ldquo;One mic. One breath. A city of rhythm.&rdquo;
-              </p>
-              <p className="text-base sm:text-lg text-[#F4EFE4]/85 max-w-2xl leading-relaxed font-sans">
-                A grassroots, instrument-free community uniting beatboxers, vocal bassists, and mouth percussionists across Mumbai. From first-time clickers to tournament battlers — the circle is open to all.
-              </p>
-            </div>
+            <ScrollReveal direction="up" delay={0.15} duration={0.6}>
+              <div className="space-y-3 pt-2">
+                <p className="font-['Anton'] text-2xl sm:text-3xl text-[#FFC93C] tracking-wide uppercase">
+                  &ldquo;One mic. One breath. A city of rhythm.&rdquo;
+                </p>
+                <p className="text-base sm:text-lg text-[#F4EFE4]/85 max-w-2xl leading-relaxed font-sans">
+                  A grassroots, instrument-free community uniting beatboxers, vocal bassists, and mouth percussionists across Mumbai. From first-time clickers to tournament battlers — the circle is open to all.
+                </p>
+              </div>
+            </ScrollReveal>
 
             {/* Action Group */}
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <button
-                type="button"
-                id="hero-cta-join"
-                onClick={onOpenJoinModal}
-                className="group inline-flex items-center gap-3 bg-[#FFC93C] text-[#14120F] px-7 py-3.5 text-sm sm:text-base font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[5px_5px_0px_0px_#E4402A] hover:bg-[#F4EFE4] hover:shadow-[2px_2px_0px_0px_#E4402A] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
-              >
-                <span>Join a Cypher</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-[#14120F]" />
-              </button>
+            <ScrollReveal direction="up" delay={0.25} duration={0.55}>
+              <div className="pt-2 flex flex-wrap items-center gap-4">
+                <button
+                  type="button"
+                  id="hero-cta-join"
+                  onClick={onOpenJoinModal}
+                  className="group inline-flex items-center gap-3 bg-[#FFC93C] text-[#14120F] px-7 py-3.5 text-sm sm:text-base font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[5px_5px_0px_0px_#E4402A] hover:bg-[#F4EFE4] hover:shadow-[2px_2px_0px_0px_#E4402A] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                >
+                  <span>Join a Cypher</span>
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform text-[#14120F]" />
+                </button>
 
-              <a
-                href="#about"
-                id="hero-cta-explore"
-                className="inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold uppercase tracking-wider font-mono text-[#F4EFE4] bg-[#14120F] border-2 border-[#F4EFE4]/30 hover:border-[#FFC93C] hover:text-[#FFC93C] transition-colors"
-              >
-                <span>Explore Scene</span>
-                <span className="text-[#FFC93C]">↓</span>
-              </a>
-            </div>
+                <a
+                  href="#about"
+                  id="hero-cta-explore"
+                  className="inline-flex items-center gap-2 px-5 py-3.5 text-xs sm:text-sm font-bold uppercase tracking-wider font-mono text-[#F4EFE4] bg-[#14120F] border-2 border-[#F4EFE4]/30 hover:border-[#FFC93C] hover:text-[#FFC93C] transition-colors"
+                >
+                  <span>Explore Scene</span>
+                  <span className="text-[#FFC93C]">↓</span>
+                </a>
+              </div>
+            </ScrollReveal>
 
             {/* Location indicator badges */}
-            <div className="flex flex-wrap items-center gap-2 pt-2 text-xs font-mono text-[#F4EFE4]/70">
-              <span className="text-[#FFC93C] flex items-center gap-1 font-semibold">
-                <MapPin className="w-3.5 h-3.5" /> Cypher Spots:
-              </span>
-              <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Bandra Carter Rd</span>
-              <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Bandstand Steps</span>
-              <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Shivaji Park</span>
-              <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Marine Drive</span>
-            </div>
+            <ScrollReveal direction="up" delay={0.35} duration={0.5}>
+              <div className="flex flex-wrap items-center gap-2 pt-2 text-xs font-mono text-[#F4EFE4]/70">
+                <span className="text-[#FFC93C] flex items-center gap-1 font-semibold">
+                  <MapPin className="w-3.5 h-3.5" /> Cypher Spots:
+                </span>
+                <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Bandra Carter Rd</span>
+                <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Bandstand Steps</span>
+                <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Shivaji Park</span>
+                <span className="px-2 py-0.5 bg-[#F4EFE4]/10 border border-[#F4EFE4]/15">Marine Drive</span>
+              </div>
+            </ScrollReveal>
 
           </div>
 
           {/* Right Column: Signature Equalizer Visual Anchor & Vocal Sample Pad */}
           <div className="lg:col-span-5">
-            <div className="relative bg-[#14120F] border-2 border-[#FFC93C] p-6 sm:p-7 shadow-[8px_8px_0px_0px_#FFC93C] rotate-1 hover:rotate-0 transition-transform">
-              
-              {/* Card Corner Stamp */}
-              <div className="absolute -top-3 -right-3 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase px-2.5 py-1 tracking-widest border border-[#14120F] rotate-3 shadow-sm">
-                Acoustic Frequency
-              </div>
+            <ScrollReveal direction="left" delay={0.2} duration={0.7}>
+              <div className="relative bg-[#14120F] border-2 border-[#FFC93C] p-6 sm:p-7 shadow-[8px_8px_0px_0px_#FFC93C] rotate-1 hover:rotate-0 transition-transform">
+                
+                {/* Card Corner Stamp with Subtle Floating Animation */}
+                <FloatingElement yOffset={3} duration={3.8} className="absolute -top-3 -right-3 z-20">
+                  <div className="bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase px-2.5 py-1 tracking-widest border border-[#14120F] rotate-3 shadow-sm">
+                    Acoustic Frequency
+                  </div>
+                </FloatingElement>
 
               {/* Kaali-Peeli Taxi Roof Header Stripe */}
               <div className="h-2 w-full bg-taxi-pattern mb-5" />
@@ -244,6 +256,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenJoinModal }) => {
               </div>
 
             </div>
+            </ScrollReveal>
           </div>
 
         </div>

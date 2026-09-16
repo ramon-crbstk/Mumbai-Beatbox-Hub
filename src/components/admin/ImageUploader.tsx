@@ -149,8 +149,13 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             type="url"
             value={value}
             onChange={(e) => {
-              setUploadError(null);
-              onChange(e.target.value);
+              const val = e.target.value;
+              if (val.startsWith('data:') || val.startsWith('blob:')) {
+                setUploadError('Local blob/base64 URLs cannot be saved. Please use the Upload button to host on Cloudinary.');
+              } else {
+                setUploadError(null);
+              }
+              onChange(val);
             }}
             placeholder={placeholder}
             disabled={disabled || isUploading}

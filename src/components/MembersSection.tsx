@@ -3,6 +3,8 @@ import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
 import { Play, Square, ChevronLeft, ChevronRight, Mic, MicOff, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind } from 'lucide-react';
 import { fetchCommunityMembers } from '../lib/supabase';
+import { motion } from 'motion/react';
+import { ScrollReveal } from './animations/MotionComponents';
 
 interface MembersSectionProps {
   refreshTrigger?: number;
@@ -212,7 +214,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6">
+        <ScrollReveal direction="up" delay={0.05} className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
               <Radio className="w-3.5 h-3.5 animate-pulse text-[#FFC93C]" />
@@ -252,10 +254,10 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* Category Filters for fast navigation */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-thin scrollbar-thumb-[#FFC93C]/20 text-xs font-mono">
+        <ScrollReveal direction="up" delay={0.1} className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-thin scrollbar-thumb-[#FFC93C]/20 text-xs font-mono">
           <span className="flex items-center gap-1 text-[#FFC93C] font-bold uppercase tracking-wider pr-2 whitespace-nowrap">
             <Filter className="w-3.5 h-3.5" /> Filter Sound:
           </span>
@@ -272,7 +274,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               {opt.label}
             </button>
           ))}
-        </div>
+        </ScrollReveal>
 
         {/* Horizontal Scrollable Row for Member Cards */}
         <div
@@ -297,9 +299,17 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               const progress = playbackProgress[member.id] || 0;
 
               return (
-                <div
+                <motion.div
                   key={member.id}
                   id={`member-card-${member.id}`}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.1 }}
+                  transition={{
+                    duration: 0.5,
+                    delay: Math.min(index * 0.06, 0.35),
+                    ease: [0.21, 0.47, 0.32, 0.98]
+                  }}
                   className={`snap-start shrink-0 w-[290px] sm:w-[320px] bg-[#1A1713] border-2 transition-all duration-300 flex flex-col justify-between group ${
                     isPlaying
                       ? 'border-[#FFC93C] shadow-[0_0_25px_rgba(255,201,60,0.25)] scale-[1.01]'
@@ -541,7 +551,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                     </div>
                   );
                 })()}
-              </div>
+              </motion.div>
             );
           }))}
         </div>

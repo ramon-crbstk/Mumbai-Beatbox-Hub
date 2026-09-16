@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { Menu, X, Mic2, ArrowUpRight } from 'lucide-react';
 
 interface NavbarProps {
-  onOpenJoinModal: (eventName?: string) => void;
+  onOpenJoinModal?: (eventName?: string) => void;
+  onJoinCypherClick?: () => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
+export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -24,6 +25,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
     const target = document.querySelector(href);
     if (target) {
       target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  const handleJoinCypherClick = (e?: React.MouseEvent) => {
+    if (e) e.preventDefault();
+    setMobileMenuOpen(false);
+    if (onJoinCypherClick) {
+      onJoinCypherClick();
+      return;
+    }
+    const target =
+      document.getElementById('inquiry-form-card') ||
+      document.getElementById('inquiry-form') ||
+      document.getElementById('contact');
+
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const nameInput = document.getElementById('contact-name') as HTMLInputElement | null;
+      if (nameInput) {
+        setTimeout(() => nameInput.focus(), 600);
+      }
     }
   };
 
@@ -79,7 +101,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
             <button
               type="button"
               id="nav-join-button"
-              onClick={() => onOpenJoinModal()}
+              onClick={handleJoinCypherClick}
               className="relative inline-flex items-center gap-2 bg-[#FFC93C] text-[#14120F] px-4 py-2 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] hover:bg-[#F4EFE4] hover:shadow-[1px_1px_0px_0px_#FFC93C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
             >
               <Mic2 className="w-4 h-4 text-[#14120F]" />
@@ -128,10 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal }) => {
             <button
               type="button"
               id="mobile-nav-cta"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onOpenJoinModal();
-              }}
+              onClick={handleJoinCypherClick}
               className="w-full flex items-center justify-center gap-2 bg-[#FFC93C] text-[#14120F] py-3 text-sm font-bold uppercase tracking-wider font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A]"
             >
               <Mic2 className="w-4 h-4" />

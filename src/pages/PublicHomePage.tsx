@@ -38,10 +38,26 @@ export function PublicHomePage() {
     }
   };
 
+  const scrollToInquiryForm = () => {
+    const target =
+      document.getElementById('inquiry-form-card') ||
+      document.getElementById('inquiry-form') ||
+      document.getElementById('contact');
+
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const nameInput = document.getElementById('contact-name') as HTMLInputElement | null;
+      if (nameInput) {
+        setTimeout(() => nameInput.focus(), 600);
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#14120F] text-[#F4EFE4] font-sans selection:bg-[#FFC93C] selection:text-[#14120F]">
       {/* Navigation Bar */}
       <Navbar
+        onJoinCypherClick={scrollToInquiryForm}
         onOpenJoinModal={() => handleOpenJoinModal()}
       />
 

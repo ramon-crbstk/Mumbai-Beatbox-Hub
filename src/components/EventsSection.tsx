@@ -3,6 +3,7 @@ import { EventItem, RegistrationStatus } from '../types';
 import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2, ChevronDown, ChevronUp, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { fetchUpcomingEvents, getLocalEvents, formatEventDate, fetchAllEventRsvpCounts } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
+import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
 
 interface EventsSectionProps {
   onRsvpClick: (event: EventItem) => void;
@@ -33,7 +34,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+        <ScrollReveal direction="up" delay={0.05} className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#E4402A] text-[#F4EFE4] text-xs font-mono font-bold uppercase tracking-widest mb-3 rotate-[-1deg] shadow-sm">
               <Flame className="w-3.5 h-3.5" />
@@ -51,11 +52,11 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
             <span className="w-2 h-2 rounded-full bg-[#FFC93C] animate-pulse" />
             <span>FREE ENTRY // NO PASSES NEEDED</span>
           </div>
-        </div>
+        </ScrollReveal>
 
         {/* 1-2 Event Cards as Street Flyers */}
         {events.length === 0 ? (
-          <div className="bg-[#1A1713] border-2 border-dashed border-[#FFC93C]/30 p-12 text-center">
+          <ScrollReveal direction="up" className="bg-[#1A1713] border-2 border-dashed border-[#FFC93C]/30 p-12 text-center">
             <Calendar className="w-12 h-12 text-[#FFC93C]/40 mx-auto mb-3" />
             <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4] mb-2">
               Next Cypher Date Dropping Soon
@@ -63,10 +64,10 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
             <p className="text-xs sm:text-sm font-mono text-[#F4EFE4]/70 max-w-md mx-auto">
               Our organizers are scouting outdoor spots across South Bombay & suburbs. Keep notifications on or RSVP below to receive the venue drop first.
             </p>
-          </div>
+          </ScrollReveal>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            <StaggerContainer staggerDelay={0.1} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
               {visibleEvents.map((evt, idx) => {
                 const maxCap = evt.maxPeople !== undefined ? evt.maxPeople : evt.max_people;
               const count = rsvpCounts[evt.id] || (evt.name ? rsvpCounts[evt.name] : 0) || evt.rsvpCount || 0;
@@ -78,13 +79,17 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
               const isOpen = !isFull && !isClosed;
 
               return (
-                <div
+                <StaggerItem
                   key={evt.id}
-                  id={`event-card-${evt.id}`}
-                  className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] shadow-[8px_8px_0px_0px_#FFC93C] ${
-                    idx % 2 === 0 ? 'rotate-[-0.8deg]' : 'rotate-[0.8deg]'
-                  } hover:rotate-0 transition-transform duration-200 p-6 sm:p-8 flex flex-col justify-between`}
+                  direction="up"
+                  className="h-full flex flex-col"
                 >
+                  <div
+                    id={`event-card-${evt.id}`}
+                    className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] shadow-[8px_8px_0px_0px_#FFC93C] ${
+                      idx % 2 === 0 ? 'rotate-[-0.8deg]' : 'rotate-[0.8deg]'
+                    } hover:rotate-0 transition-transform duration-200 p-6 sm:p-8 flex flex-col justify-between h-full`}
+                  >
                   
                   {/* Event Badge Header */}
                   <div>
@@ -213,10 +218,11 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                     )}
                   </div>
 
-                </div>
+                  </div>
+                </StaggerItem>
               );
             })}
-          </div>
+          </StaggerContainer>
 
           {events.length > 3 && (
             <div className="mt-10 text-center">
@@ -234,7 +240,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
         )}
 
         {/* Street Note Banner */}
-        <div className="mt-10 p-4 bg-[#181512] border border-[#FFC93C]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#F4EFE4]/80">
+        <ScrollReveal direction="up" delay={0.1} className="mt-10 p-4 bg-[#181512] border border-[#FFC93C]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#F4EFE4]/80">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
             <span className="text-[#FFC93C] font-bold">⚡ WEATHER / PERMIT NOTE:</span>
             <span>All sessions are acoustic. In case of unexpected rains, jams shift to nearby covered walkways.</span>
@@ -249,7 +255,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
             <span>WhatsApp group gets instant live pin</span>
             <ArrowUpRight className="w-3 h-3" />
           </a>
-        </div>
+        </ScrollReveal>
 
       </div>
     </section>
