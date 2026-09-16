@@ -103,8 +103,11 @@ export interface CommunityMember {
   avatarInitials: string;
   accentBg: string;
   photoUrl?: string;
-  audioUrl?: string;
-  audio_url?: string;
+  photo_url?: string;
+  voiceNoteUrl?: string | null;
+  voice_note_url?: string | null;
+  audioUrl?: string | null;
+  audio_url?: string | null;
   createdAt?: string;
 }
 

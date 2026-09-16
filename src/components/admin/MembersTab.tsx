@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Headphones,
   Mic,
+  MicOff,
   Upload,
   Radio,
   FileAudio,
@@ -22,7 +23,7 @@ import {
 } from 'lucide-react';
 import { CommunityMember } from '../../types';
 import { saveCommunityMember, deleteCommunityMember } from '../../lib/supabase';
-import { playBeatboxSound, stopBeatboxSound } from '../../utils/audioSynthesizer';
+import { uploadAudioToCloudinary, validateAudioFile } from '../../lib/cloudinary';
 import { ImageUploader } from './ImageUploader';
 
 interface MembersTabProps {
@@ -60,6 +61,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [isPreviewPlaying, setIsPreviewPlaying] = useState(false);
+  const [isUploadingAudio, setIsUploadingAudio] = useState(false);
+  const [uploadAudioProgress, setUploadAudioProgress] = useState(0);
 
   // Audio References
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -81,7 +84,6 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       if (recordTimerRef.current) {
         clearInterval(recordTimerRef.current);
       }
-      stopBeatboxSound();
     };
   }, []);
 
@@ -113,6 +115,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     setPhotoUrl('');
     setAudioUrl('');
     setAudioFileName('');
+    setIsUploadingAudio(false);
+    setUploadAudioProgress(0);
     setIsRecording(false);
     setRecordSeconds(0);
     setErrorMessage(null);
@@ -134,44 +138,70 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     setAccentBg(item.accentBg || '#FFC93C');
     setPhotoUrl(item.photoUrl || '');
     
-    const existingAudio = item.audioUrl || item.audio_url || '';
+    const existingAudio = item.voice_note_url || item.voiceNoteUrl || item.audioUrl || item.audio_url || '';
     setAudioUrl(existingAudio);
-    setAudioFileName(existingAudio ? 'Recorded / Uploaded Voice Note' : '');
+    setAudioFileName(existingAudio ? 'Cloudinary Voice Note Attached' : '');
+    setIsUploadingAudio(false);
+    setUploadAudioProgress(0);
     setIsRecording(false);
     setRecordSeconds(0);
     setErrorMessage(null);
     setModalOpen(true);
   };
 
-  // Audio File Upload Handler
-  const handleAudioFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Audio File Upload Handler - Uploads directly to Cloudinary (folder: mumbai-beatbox-hub/members/audio)
+  const handleAudioFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setAudioFileName(file.name);
-    const reader = new FileReader();
-    reader.onload = () => {
-      const dataUrl = reader.result as string;
-      setAudioUrl(dataUrl);
+    const validation = validateAudioFile(file);
+    if (!validation.valid) {
+      setErrorMessage(validation.error || 'Invalid audio file.');
+      return;
+    }
 
-      // Detect audio length
-      try {
-        const temp = new Audio(dataUrl);
-        temp.onloadedmetadata = () => {
-          if (temp.duration && !isNaN(temp.duration) && temp.duration > 0) {
-            const mins = Math.floor(temp.duration / 60);
-            const secs = Math.floor(temp.duration % 60);
-            setVoiceNoteDuration(`${mins}:${String(secs).padStart(2, '0')}`);
-          }
-        };
-      } catch {
-        // ignore metadata calculation failure
+    setErrorMessage(null);
+    setIsUploadingAudio(true);
+    setUploadAudioProgress(0);
+    setAudioFileName(file.name);
+
+    try {
+      const res = await uploadAudioToCloudinary(file, {
+        folder: 'mumbai-beatbox-hub/members/audio',
+        onProgress: (pct) => setUploadAudioProgress(pct),
+      });
+
+      setIsUploadingAudio(false);
+
+      if (res.success && res.secureUrl) {
+        setAudioUrl(res.secureUrl);
+        setAudioFileName(file.name);
+
+        // Detect audio duration from Cloudinary file
+        try {
+          const temp = new Audio(res.secureUrl);
+          temp.onloadedmetadata = () => {
+            if (temp.duration && !isNaN(temp.duration) && temp.duration > 0) {
+              const mins = Math.floor(temp.duration / 60);
+              const secs = Math.floor(temp.duration % 60);
+              setVoiceNoteDuration(`${mins}:${String(secs).padStart(2, '0')}`);
+            }
+          };
+        } catch {
+          // ignore
+        }
+      } else {
+        setErrorMessage(res.error || 'Failed to upload audio to Cloudinary.');
+        setAudioUrl('');
+        setAudioFileName('');
       }
-    };
-    reader.readAsDataURL(file);
+    } catch {
+      setIsUploadingAudio(false);
+      setErrorMessage('Audio upload failed. Please check network connection.');
+    }
   };
 
-  // Microphone Live Recording
+  // Microphone Live Recording - Uploads blob to Cloudinary on stop
   const startRecording = async () => {
     try {
       stopAllPreviewAudio();
@@ -184,30 +214,37 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
         if (e.data.size > 0) chunks.push(e.data);
       };
 
-      recorder.onstop = () => {
+      recorder.onstop = async () => {
         const mimeType = recorder.mimeType || 'audio/webm';
         const blob = new Blob(chunks, { type: mimeType });
-        const reader = new FileReader();
-        reader.onload = () => {
-          const dataUrl = reader.result as string;
-          setAudioUrl(dataUrl);
-          setAudioFileName(`voice_drop_${Date.now()}.webm`);
-
-          try {
-            const temp = new Audio(dataUrl);
-            temp.onloadedmetadata = () => {
-              if (temp.duration && !isNaN(temp.duration) && temp.duration > 0) {
-                const mins = Math.floor(temp.duration / 60);
-                const secs = Math.floor(temp.duration % 60);
-                setVoiceNoteDuration(`${mins}:${String(secs).padStart(2, '0')}`);
-              }
-            };
-          } catch {
-            // ignore
-          }
-        };
-        reader.readAsDataURL(blob);
         stream.getTracks().forEach((track) => track.stop());
+
+        setIsUploadingAudio(true);
+        setUploadAudioProgress(0);
+        setErrorMessage(null);
+
+        const recordedFile = new File([blob], `voice_drop_${Date.now()}.webm`, { type: mimeType });
+        try {
+          const res = await uploadAudioToCloudinary(recordedFile, {
+            folder: 'mumbai-beatbox-hub/members/audio',
+            onProgress: (pct) => setUploadAudioProgress(pct),
+          });
+
+          setIsUploadingAudio(false);
+
+          if (res.success && res.secureUrl) {
+            setAudioUrl(res.secureUrl);
+            setAudioFileName(`voice_drop_${Date.now()}.webm`);
+            const mins = Math.floor(recordSeconds / 60);
+            const secs = recordSeconds % 60;
+            setVoiceNoteDuration(`${mins}:${String(secs).padStart(2, '0')}`);
+          } else {
+            setErrorMessage(res.error || 'Failed to upload recorded voice note to Cloudinary.');
+          }
+        } catch {
+          setIsUploadingAudio(false);
+          setErrorMessage('Failed to upload recording to Cloudinary.');
+        }
       };
 
       recorder.start();
@@ -256,14 +293,13 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
   };
 
   const handleSoundTest = (item: CommunityMember & { photoUrl: string }) => {
-    const memberAudio = item.audioUrl || item.audio_url;
+    const memberAudio = item.voice_note_url || item.voiceNoteUrl || item.audioUrl || item.audio_url;
 
     if (activeSoundId === item.id) {
       if (tableAudioRef.current) {
         tableAudioRef.current.pause();
         tableAudioRef.current = null;
       }
-      stopBeatboxSound();
       setActiveSoundId(null);
       return;
     }
@@ -272,12 +308,13 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       tableAudioRef.current.pause();
       tableAudioRef.current = null;
     }
-    stopBeatboxSound();
-    setActiveSoundId(item.id);
+    setActiveSoundId(null);
 
-    if (memberAudio && memberAudio.trim() !== '') {
+    // Only play if member has real uploaded voice_note_url - NO demo sound generator
+    if (memberAudio && memberAudio.trim() !== '' && !memberAudio.startsWith('data:') && !memberAudio.startsWith('blob:')) {
       try {
-        const audio = new Audio(memberAudio);
+        setActiveSoundId(item.id);
+        const audio = new Audio(memberAudio.trim());
         tableAudioRef.current = audio;
         audio.onended = () => setActiveSoundId(null);
         audio.onerror = () => setActiveSoundId(null);
@@ -285,11 +322,6 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       } catch {
         setActiveSoundId(null);
       }
-    } else {
-      playBeatboxSound(item.soundType);
-      setTimeout(() => {
-        setActiveSoundId((cur) => (cur === item.id ? null : cur));
-      }, 5000);
     }
   };
 
@@ -300,10 +332,22 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       return;
     }
 
+    if (isUploadingAudio) {
+      setErrorMessage('Please wait until the audio file finishes uploading to Cloudinary.');
+      return;
+    }
+
+    const trimmedAudio = audioUrl.trim();
+    if (trimmedAudio.startsWith('data:') || trimmedAudio.startsWith('blob:')) {
+      setErrorMessage('Audio is in a temporary local format. Please re-upload so it is saved to Cloudinary.');
+      return;
+    }
+
     setSaving(true);
     setErrorMessage(null);
 
     const initials = avatarInitials.trim() || name.trim().slice(0, 2).toUpperCase();
+    const finalVoiceNoteUrl = trimmedAudio !== '' ? trimmedAudio : null;
 
     const payload = {
       id: editingItem?.id,
@@ -318,7 +362,9 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       avatarInitials: initials,
       accentBg: accentBg || '#FFC93C',
       photoUrl: photoUrl.trim(),
-      audioUrl: audioUrl.trim(),
+      voice_note_url: finalVoiceNoteUrl,
+      voiceNoteUrl: finalVoiceNoteUrl,
+      audioUrl: finalVoiceNoteUrl,
       createdAt: editingItem?.createdAt || new Date().toISOString(),
     };
 
@@ -475,34 +521,46 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     <div className="text-[11px] text-[#F4EFE4]/50 mt-0.5">{item.experience}</div>
                   </td>
                   <td className="p-3.5 whitespace-nowrap">
-                    <div className="flex flex-col gap-1">
-                      <button
-                        type="button"
-                        onClick={() => handleSoundTest(item)}
-                        className={`px-2.5 py-1 border text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer ${
-                          activeSoundId === item.id
-                            ? 'bg-[#FFC93C] text-[#14120F] border-[#FFC93C]'
-                            : 'bg-[#14120F] text-[#F4EFE4]/80 border-[#F4EFE4]/20 hover:border-[#FFC93C]'
-                        }`}
-                      >
-                        {activeSoundId === item.id ? (
-                          <>
-                            <Square className="w-3.5 h-3.5 fill-current" />
-                            <span>Stop ({item.voiceNoteDuration})</span>
-                          </>
-                        ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            <span>{item.audioUrl || item.audio_url ? 'Play Voice Note' : 'Audition'} ({item.voiceNoteDuration})</span>
-                          </>
-                        )}
-                      </button>
-                      {(item.audioUrl || item.audio_url) && (
-                        <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
-                          <Mic className="w-2.5 h-2.5" /> Uploaded Voice Note
-                        </span>
-                      )}
-                    </div>
+                    {(() => {
+                      const rawAudio = item.voice_note_url || item.voiceNoteUrl || item.audioUrl || item.audio_url;
+                      const hasAudio = Boolean(rawAudio && rawAudio.trim() !== '' && !rawAudio.startsWith('data:') && !rawAudio.startsWith('blob:'));
+                      if (!hasAudio) {
+                        return (
+                          <span className="text-[11px] text-[#F4EFE4]/40 font-mono flex items-center gap-1.5">
+                            <MicOff className="w-3 h-3 text-[#F4EFE4]/30" />
+                            <span>No Audio</span>
+                          </span>
+                        );
+                      }
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            onClick={() => handleSoundTest(item)}
+                            className={`px-2.5 py-1 border text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer ${
+                              activeSoundId === item.id
+                                ? 'bg-[#FFC93C] text-[#14120F] border-[#FFC93C]'
+                                : 'bg-[#14120F] text-[#F4EFE4]/80 border-[#F4EFE4]/20 hover:border-[#FFC93C]'
+                            }`}
+                          >
+                            {activeSoundId === item.id ? (
+                              <>
+                                <Square className="w-3.5 h-3.5 fill-current" />
+                                <span>Stop</span>
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                                <span>Play ({item.voiceNoteDuration || '0:15'})</span>
+                              </>
+                            )}
+                          </button>
+                          <span className="text-[10px] text-emerald-400 font-mono flex items-center gap-1">
+                            <Mic className="w-2.5 h-2.5" /> Uploaded Voice Note
+                          </span>
+                        </div>
+                      );
+                    })()}
                   </td>
                   <td className="p-3.5 text-right whitespace-nowrap">
                     <div className="flex items-center justify-end gap-2">
@@ -675,16 +733,25 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                 </div>
 
                 <p className="text-[11px] text-[#F4EFE4]/70">
-                  Upload an audio file (MP3, WAV, M4A, OGG, WebM) or record live via your microphone. This voice note will play when visitors click this member&apos;s card on the frontend.
+                  Upload an audio file (MP3, WAV, M4A, OGG, WebM) or record live via your microphone. The file is uploaded directly to Cloudinary and saved to <code className="text-[#FFC93C] font-mono">members.voice_note_url</code>. Only genuine uploaded audio plays on the frontend.
                 </p>
 
                 {/* Upload & Record Buttons */}
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <label className="px-3.5 py-2 bg-[#1A1713] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/30 hover:border-[#FFC93C] transition-colors cursor-pointer flex items-center gap-2 font-mono text-xs font-bold uppercase">
-                    <Upload className="w-3.5 h-3.5" />
-                    <span>Upload Audio File</span>
+                  <label className={`px-3.5 py-2 border transition-colors flex items-center gap-2 font-mono text-xs font-bold uppercase ${
+                    isUploadingAudio
+                      ? 'bg-[#1A1713] text-[#F4EFE4]/40 border-[#F4EFE4]/10 cursor-not-allowed'
+                      : 'bg-[#1A1713] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border-[#F4EFE4]/30 hover:border-[#FFC93C] cursor-pointer'
+                  }`}>
+                    {isUploadingAudio ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FFC93C]" />
+                    ) : (
+                      <Upload className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isUploadingAudio ? 'Uploading...' : 'Upload Audio File'}</span>
                     <input
                       type="file"
+                      disabled={isUploadingAudio}
                       accept="audio/*,.mp3,.wav,.m4a,.ogg,.webm,.aac"
                       className="hidden"
                       onChange={handleAudioFileUpload}
@@ -703,8 +770,9 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   ) : (
                     <button
                       type="button"
+                      disabled={isUploadingAudio}
                       onClick={startRecording}
-                      className="px-3.5 py-2 bg-[#1A1713] hover:bg-[#E4402A] text-[#F4EFE4] hover:text-white border border-[#F4EFE4]/30 hover:border-[#E4402A] transition-colors cursor-pointer flex items-center gap-2 font-mono text-xs font-bold uppercase"
+                      className="px-3.5 py-2 bg-[#1A1713] hover:bg-[#E4402A] text-[#F4EFE4] hover:text-white border border-[#F4EFE4]/30 hover:border-[#E4402A] transition-colors cursor-pointer flex items-center gap-2 font-mono text-xs font-bold uppercase disabled:opacity-50"
                     >
                       <Radio className="w-3.5 h-3.5 text-[#E4402A]" />
                       <span>Record via Mic</span>
@@ -712,41 +780,65 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   )}
                 </div>
 
+                {/* Cloudinary Audio Upload Progress */}
+                {isUploadingAudio && (
+                  <div className="p-3 bg-[#1A1713] border border-[#FFC93C]/40 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C]">
+                      <span className="flex items-center gap-1.5 font-bold">
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        Uploading Audio to Cloudinary...
+                      </span>
+                      <span>{uploadAudioProgress}%</span>
+                    </div>
+                    <div className="w-full bg-[#14120F] h-1.5 overflow-hidden">
+                      <div
+                        className="bg-[#FFC93C] h-full transition-all duration-150"
+                        style={{ width: `${uploadAudioProgress}%` }}
+                      />
+                    </div>
+                    <div className="text-[10px] text-[#F4EFE4]/50 font-mono">
+                      Destination: mumbai-beatbox-hub/members/audio/
+                    </div>
+                  </div>
+                )}
+
                 {/* Audio URL Input */}
                 <div>
                   <label className="block text-[10px] uppercase text-[#F4EFE4]/60 mb-1">
-                    Or paste direct Audio URL:
+                    Or paste direct Cloudinary / hosted Audio URL:
                   </label>
                   <input
                     type="url"
                     value={audioUrl}
                     onChange={(e) => {
                       setAudioUrl(e.target.value);
-                      setAudioFileName(e.target.value ? 'Custom Audio URL' : '');
+                      setAudioFileName(e.target.value ? 'Custom Hosted Audio URL' : '');
                     }}
-                    placeholder="https://.../routine.mp3 or data:audio/..."
-                    className="w-full px-3 py-1.5 bg-[#1A1713] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] text-[11px] focus:outline-none"
+                    placeholder="https://res.cloudinary.com/.../voice_note.mp3"
+                    className="w-full px-3 py-1.5 bg-[#1A1713] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] text-[11px] focus:outline-none font-mono"
                   />
                 </div>
 
-                {/* Attached Audio Player Preview */}
+                {/* Attached Audio Player Preview with REMOVE AUDIO button */}
                 {audioUrl && (
-                  <div className="p-3 bg-[#1A1713] border border-emerald-500/40 flex items-center justify-between gap-3 text-xs">
+                  <div className="p-3 bg-[#1A1713] border border-emerald-500/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                     <div className="flex items-center gap-2 overflow-hidden">
                       <FileAudio className="w-4 h-4 text-emerald-400 shrink-0" />
                       <div className="truncate">
                         <div className="text-[#F4EFE4] font-bold truncate">
-                          {audioFileName || 'Member Voice Note Attached'}
+                          {audioFileName || 'Cloudinary Voice Note Attached'}
                         </div>
-                        <div className="text-[10px] text-emerald-400">Ready to play on frontend</div>
+                        <div className="text-[10px] text-emerald-400 font-mono truncate">
+                          {audioUrl.startsWith('http') ? audioUrl : 'Audio attached'}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                       <button
                         type="button"
                         onClick={togglePreviewAudio}
-                        className="px-3 py-1 bg-[#FFC93C] text-[#14120F] hover:bg-[#ffe082] font-bold uppercase text-[11px] flex items-center gap-1.5 cursor-pointer"
+                        className="px-3 py-1 bg-[#FFC93C] text-[#14120F] hover:bg-[#ffe082] font-bold uppercase text-[11px] flex items-center gap-1.5 cursor-pointer font-mono"
                       >
                         {isPreviewPlaying ? (
                           <>
@@ -761,6 +853,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                         )}
                       </button>
 
+                      {/* Explicit REMOVE AUDIO Button */}
                       <button
                         type="button"
                         onClick={() => {
@@ -768,10 +861,11 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                           setAudioUrl('');
                           setAudioFileName('');
                         }}
-                        className="p-1 bg-[#14120F] text-[#F4EFE4]/60 hover:text-[#E4402A] border border-[#F4EFE4]/20 cursor-pointer"
-                        title="Remove Audio"
+                        className="px-2.5 py-1 bg-[#E4402A]/20 hover:bg-[#E4402A] text-[#E4402A] hover:text-white border border-[#E4402A]/40 font-mono text-[11px] font-bold uppercase transition-colors flex items-center gap-1 cursor-pointer"
+                        title="Remove audio and set voice_note_url to null"
                       >
-                        <X className="w-3.5 h-3.5" />
+                        <Trash2 className="w-3 h-3" />
+                        <span>REMOVE AUDIO</span>
                       </button>
                     </div>
                   </div>

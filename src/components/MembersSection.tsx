@@ -1,11 +1,28 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
-import { Play, Square, ChevronLeft, ChevronRight, Mic, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind } from 'lucide-react';
+import { Play, Square, ChevronLeft, ChevronRight, Mic, MicOff, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind } from 'lucide-react';
 import { fetchCommunityMembers } from '../lib/supabase';
 
 interface MembersSectionProps {
   refreshTrigger?: number;
+}
+
+/**
+ * Validates whether an audio URL is a genuine, playable remote URL.
+ * Rejects empty values, null/undefined strings, and temporary base64/blob URIs.
+ */
+function isValidAudioUrl(url: unknown): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  if (trimmed === '' || trimmed === 'null' || trimmed === 'undefined') return false;
+  if (trimmed.startsWith('data:') || trimmed.startsWith('blob:')) return false;
+  try {
+    const parsed = new URL(trimmed, window.location.origin);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
 }
 
 export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger = 0 }) => {
@@ -13,6 +30,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [completedMemberId, setCompletedMemberId] = useState<string | null>(null);
   const [playbackProgress, setPlaybackProgress] = useState<{ [id: string]: number }>({});
+  const [currentTimeMap, setCurrentTimeMap] = useState<{ [id: string]: number }>({});
   const [selectedFilter, setSelectedFilter] = useState<string>('all');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -21,7 +39,21 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     async function loadMembers() {
       const remote = await fetchCommunityMembers();
       if (isMounted) {
-        setMembersList(remote);
+        if (remote && remote.length > 0) {
+          setMembersList(remote);
+        } else {
+          // If no remote records exist yet, load community members with NO default audio (voice_note_url is strictly null)
+          setMembersList(
+            COMMUNITY_MEMBERS.map((m) => ({
+              ...m,
+              photoUrl: m.photoUrl || '',
+              voice_note_url: null,
+              voiceNoteUrl: null,
+              audioUrl: null,
+              audio_url: null,
+            }))
+          );
+        }
       }
     }
     loadMembers();
@@ -30,11 +62,8 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     };
   }, [refreshTrigger]);
   
-  // Audio playback references
+  // Audio playback reference (Native HTML5 Audio only — NO synthesizers, NO demo fallbacks)
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const soundTimerRef = useRef<number | null>(null);
-  const intervalTimerRef = useRef<number | null>(null);
 
   // Stop any active audio safely
   const stopAllAudio = () => {
@@ -48,23 +77,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
       }
       audioElementRef.current = null;
     }
-
-    if (audioContextRef.current) {
-      try {
-        audioContextRef.current.close();
-      } catch {
-        // audio context already closed
-      }
-      audioContextRef.current = null;
-    }
-    if (soundTimerRef.current) {
-      clearTimeout(soundTimerRef.current);
-      soundTimerRef.current = null;
-    }
-    if (intervalTimerRef.current) {
-      clearInterval(intervalTimerRef.current);
-      intervalTimerRef.current = null;
-    }
     setActiveMemberId(null);
   };
 
@@ -74,9 +86,18 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     };
   }, []);
 
-  // Play uploaded voice note file or fallback to Web Audio synthesizer
+  // Play uploaded member voice note file exclusively from member.voice_note_url
   const playVoiceNote = (member: CommunityMember & { photoUrl: string }) => {
-    // If clicked on the already playing member, stop it
+    const rawAudioUrl = member.voice_note_url || member.voiceNoteUrl || member.audio_url || member.audioUrl;
+    
+    // Strict requirement: Only play if voice_note_url exists and is a valid URL
+    if (!isValidAudioUrl(rawAudioUrl)) {
+      console.warn(`[MBH] Member "${member.name}" does not have an uploaded voice note URL.`);
+      stopAllAudio();
+      return;
+    }
+
+    // If clicked on the already playing member, pause/stop it
     if (activeMemberId === member.id) {
       stopAllAudio();
       return;
@@ -86,229 +107,48 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     stopAllAudio();
     setCompletedMemberId(null);
 
-    const voiceAudioUrl = member.audioUrl || member.audio_url;
-
-    // CASE 1: Member has an uploaded voice note audio file
-    if (voiceAudioUrl && voiceAudioUrl.trim() !== '') {
-      try {
-        const audio = new Audio(voiceAudioUrl);
-        audioElementRef.current = audio;
-        setActiveMemberId(member.id);
-        setPlaybackProgress((prev) => ({ ...prev, [member.id]: 0 }));
-
-        audio.ontimeupdate = () => {
-          if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
-            const pct = Math.min(100, Math.round((audio.currentTime / audio.duration) * 100));
-            setPlaybackProgress((prev) => ({ ...prev, [member.id]: pct }));
-          }
-        };
-
-        audio.onended = () => {
-          setCompletedMemberId(member.id);
-          setPlaybackProgress((prev) => ({ ...prev, [member.id]: 100 }));
-          stopAllAudio();
-        };
-
-        audio.onerror = (err) => {
-          console.warn('Could not play uploaded audio file directly:', err);
-          stopAllAudio();
-        };
-
-        audio.play().catch((playErr) => {
-          console.warn('Audio play request failed or blocked by autoplay policy:', playErr);
-          stopAllAudio();
-        });
-
-        return;
-      } catch (err) {
-        console.warn('Failed to initialize Audio for voice note:', err);
-        stopAllAudio();
-      }
-    }
-
-    // CASE 2: Fallback Web Audio API synthesizer for routine previews
     try {
-      const AudioContextClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (!AudioContextClass) return;
-      
-      const ctx = new AudioContextClass();
-      audioContextRef.current = ctx;
+      const audio = new Audio(rawAudioUrl!.trim());
+      audioElementRef.current = audio;
       setActiveMemberId(member.id);
       setPlaybackProgress((prev) => ({ ...prev, [member.id]: 0 }));
+      setCurrentTimeMap((prev) => ({ ...prev, [member.id]: 0 }));
 
-      // Duration in seconds
-      const durationSeconds = parseInt(member.voiceNoteDuration.split(':')[1] || '14', 10);
-      const totalSteps = durationSeconds;
-      let currentStep = 0;
-
-      intervalTimerRef.current = window.setInterval(() => {
-        currentStep += 1;
-        setPlaybackProgress((prev) => ({
-          ...prev,
-          [member.id]: Math.min(100, Math.round((currentStep / totalSteps) * 100)),
-        }));
-        if (currentStep >= totalSteps) {
-          setCompletedMemberId(member.id);
-          setPlaybackProgress((prev) => ({ ...prev, [member.id]: 100 }));
-          stopAllAudio();
-        }
-      }, 1000);
-
-      // Synthesize rhythmic sounds according to soundType
-      const schedulePattern = () => {
-        if (!ctx || ctx.state === 'closed') return;
-        const now = ctx.currentTime;
-        const bpm = member.soundType === 'fast-tech' ? 140 : member.soundType === 'trap-click' ? 128 : 95;
-        const stepDuration = 60 / bpm / 2; // 8th note duration
-
-        for (let i = 0; i < 16; i++) {
-          const time = now + i * stepDuration;
-
-          if (member.soundType === 'bass-growl') {
-            if (i % 4 === 0) {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = 'sawtooth';
-              osc.frequency.setValueAtTime(80, time);
-              osc.frequency.exponentialRampToValueAtTime(32, time + 0.3);
-              gain.gain.setValueAtTime(0.7, time);
-              gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.start(time);
-              osc.stop(time + 0.36);
-            }
-            if (i % 4 === 2) {
-              const osc2 = ctx.createOscillator();
-              const gain2 = ctx.createGain();
-              osc2.type = 'triangle';
-              osc2.frequency.setValueAtTime(240, time);
-              osc2.frequency.exponentialRampToValueAtTime(70, time + 0.15);
-              gain2.gain.setValueAtTime(0.5, time);
-              gain2.gain.exponentialRampToValueAtTime(0.01, time + 0.15);
-              osc2.connect(gain2);
-              gain2.connect(ctx.destination);
-              osc2.start(time);
-              osc2.stop(time + 0.16);
-            }
-          } else if (member.soundType === 'liproll') {
-            if (i % 2 === 0) {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = 'sine';
-              osc.frequency.setValueAtTime(110, time);
-              osc.frequency.exponentialRampToValueAtTime(40, time + 0.22);
-              gain.gain.setValueAtTime(0.6, time);
-              gain.gain.exponentialRampToValueAtTime(0.01, time + 0.22);
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.start(time);
-              osc.stop(time + 0.23);
-            }
-            if (i % 4 === 1 || i % 4 === 3) {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = 'square';
-              osc.frequency.setValueAtTime(450, time);
-              osc.frequency.exponentialRampToValueAtTime(120, time + 0.06);
-              gain.gain.setValueAtTime(0.3, time);
-              gain.gain.exponentialRampToValueAtTime(0.01, time + 0.06);
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.start(time);
-              osc.stop(time + 0.07);
-            }
-          } else if (member.soundType === 'fast-tech') {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            const isSnare = i % 4 === 2;
-            osc.type = isSnare ? 'triangle' : 'square';
-            osc.frequency.setValueAtTime(isSnare ? 320 : 800 + (i % 3) * 100, time);
-            osc.frequency.exponentialRampToValueAtTime(isSnare ? 50 : 200, time + (isSnare ? 0.12 : 0.04));
-            gain.gain.setValueAtTime(isSnare ? 0.6 : 0.25, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + (isSnare ? 0.12 : 0.04));
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(time);
-            osc.stop(time + (isSnare ? 0.13 : 0.05));
-          } else if (member.soundType === 'polyphonic') {
-            const osc1 = ctx.createOscillator();
-            const osc2 = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc1.type = 'sine';
-            osc2.type = 'sawtooth';
-            osc1.frequency.setValueAtTime(130, time);
-            osc2.frequency.setValueAtTime(260 + (i % 4) * 35, time);
-            gain.gain.setValueAtTime(0.35, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + stepDuration * 0.9);
-            osc1.connect(gain);
-            osc2.connect(gain);
-            gain.connect(ctx.destination);
-            osc1.start(time);
-            osc2.start(time);
-            osc1.stop(time + stepDuration * 0.95);
-            osc2.stop(time + stepDuration * 0.95);
-          } else if (member.soundType === 'scratch') {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sawtooth';
-            const startFreq = i % 2 === 0 ? 300 : 750;
-            const endFreq = i % 2 === 0 ? 800 : 250;
-            osc.frequency.setValueAtTime(startFreq, time);
-            osc.frequency.linearRampToValueAtTime(endFreq, time + 0.1);
-            gain.gain.setValueAtTime(0.4, time);
-            gain.gain.exponentialRampToValueAtTime(0.01, time + 0.11);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(time);
-            osc.stop(time + 0.12);
-          } else {
-            if (i % 4 === 0) {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = 'sine';
-              osc.frequency.setValueAtTime(150, time);
-              osc.frequency.exponentialRampToValueAtTime(38, time + 0.35);
-              gain.gain.setValueAtTime(0.75, time);
-              gain.gain.exponentialRampToValueAtTime(0.01, time + 0.35);
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.start(time);
-              osc.stop(time + 0.36);
-            }
-            if (i % 2 !== 0) {
-              const osc = ctx.createOscillator();
-              const gain = ctx.createGain();
-              osc.type = 'square';
-              osc.frequency.setValueAtTime(600, time);
-              osc.frequency.exponentialRampToValueAtTime(100, time + 0.05);
-              gain.gain.setValueAtTime(0.2, time);
-              gain.gain.exponentialRampToValueAtTime(0.01, time + 0.05);
-              osc.connect(gain);
-              gain.connect(ctx.destination);
-              osc.start(time);
-              osc.stop(time + 0.06);
-            }
-          }
+      audio.ontimeupdate = () => {
+        const currentSec = Math.floor(audio.currentTime);
+        setCurrentTimeMap((prev) => ({ ...prev, [member.id]: currentSec }));
+        if (audio.duration && !isNaN(audio.duration) && audio.duration > 0) {
+          const pct = Math.min(100, Math.round((audio.currentTime / audio.duration) * 100));
+          setPlaybackProgress((prev) => ({ ...prev, [member.id]: pct }));
         }
       };
 
-      schedulePattern();
+      audio.onended = () => {
+        setCompletedMemberId(member.id);
+        setPlaybackProgress((prev) => ({ ...prev, [member.id]: 100 }));
+        stopAllAudio();
+      };
 
-      soundTimerRef.current = window.setTimeout(() => {
-        if (activeMemberId === member.id) {
-          schedulePattern();
-        }
-      }, 3500);
+      audio.onerror = (err) => {
+        console.warn(`[MBH] Audio failed to play for member "${member.name}":`, err);
+        stopAllAudio();
+      };
 
+      audio.play().catch((playErr) => {
+        console.warn('[MBH] Play request blocked or failed:', playErr);
+        stopAllAudio();
+      });
     } catch (err) {
-      console.warn('Audio playback error:', err);
+      console.warn('[MBH] Failed to initialize Audio for member:', err);
       stopAllAudio();
     }
   };
 
-  // Rewind current playback by 10 seconds or play from start
+  // Rewind current playback by 10 seconds (only active if member has a valid voice_note_url)
   const rewind10Seconds = (member: CommunityMember & { photoUrl: string }) => {
+    const rawAudioUrl = member.voice_note_url || member.voiceNoteUrl || member.audio_url || member.audioUrl;
+    if (!isValidAudioUrl(rawAudioUrl)) return;
+
     if (activeMemberId === member.id && audioElementRef.current) {
       const audio = audioElementRef.current;
       audio.currentTime = Math.max(0, audio.currentTime - 10);
@@ -317,7 +157,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
         setPlaybackProgress((prev) => ({ ...prev, [member.id]: pct }));
       }
     } else {
-      // If not currently playing or audio context mode, restart playback
       stopAllAudio();
       setTimeout(() => {
         playVoiceNote(member);
@@ -325,8 +164,11 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     }
   };
 
-  // Replay voice note from 0:00
+  // Replay voice note from 0:00 (only active if member has a valid voice_note_url)
   const replayVoiceNote = (member: CommunityMember & { photoUrl: string }) => {
+    const rawAudioUrl = member.voice_note_url || member.voiceNoteUrl || member.audio_url || member.audioUrl;
+    if (!isValidAudioUrl(rawAudioUrl)) return;
+
     stopAllAudio();
     setCompletedMemberId(null);
     setPlaybackProgress((prev) => ({ ...prev, [member.id]: 0 }));
@@ -542,98 +384,161 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                 </div>
 
                 {/* Bottom Section: Voice Note Player with Sound Controls */}
-                <div className="p-4 bg-[#14120F] space-y-3">
-                  
-                  {/* Voice Note Info Header */}
-                  <div className="flex items-center justify-between text-xs font-mono">
-                    <span className="text-[#F4EFE4]/80 font-medium truncate max-w-[180px] flex items-center gap-1.5">
-                      <Mic className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
-                      {member.voiceNoteTitle}
-                    </span>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      {(member.audioUrl || member.audio_url) && (
-                        <span className="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] uppercase font-bold">
-                          AUDIO
+                {(() => {
+                  const rawAudio = member.voice_note_url || member.voiceNoteUrl || member.audio_url || member.audioUrl;
+                  const hasValidAudio = isValidAudioUrl(rawAudio);
+
+                  if (!hasValidAudio) {
+                    return (
+                      <div className="p-4 bg-[#14120F] space-y-3">
+                        {/* Voice Note Info Header - Inactive */}
+                        <div className="flex items-center justify-between text-xs font-mono">
+                          <span className="text-[#F4EFE4]/50 font-medium truncate max-w-[180px] flex items-center gap-1.5">
+                            <MicOff className="w-3.5 h-3.5 text-[#F4EFE4]/40 shrink-0" />
+                            <span>{member.voiceNoteTitle || 'Voice Note'}</span>
+                          </span>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <span className="px-1.5 py-0.5 bg-[#231F19] text-[#F4EFE4]/40 border border-[#F4EFE4]/15 text-[9px] uppercase font-bold">
+                              NO AUDIO
+                            </span>
+                            <span className="text-[#F4EFE4]/30 font-mono font-bold">--:--</span>
+                          </div>
+                        </div>
+
+                        {/* Disabled Progress Bar */}
+                        <div className="w-full bg-[#1C1814] h-2 overflow-hidden border border-[#F4EFE4]/10">
+                          <div className="bg-transparent h-full w-0" />
+                        </div>
+
+                        {/* Sound Control Buttons: Disabled with NO VOICE NOTE indicator */}
+                        <div className="pt-1 flex flex-col gap-2">
+                          <button
+                            id={`voice-btn-${member.id}`}
+                            disabled
+                            className="w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-[#1A1713] text-[#F4EFE4]/35 border border-[#F4EFE4]/10 cursor-not-allowed select-none"
+                            aria-label={`No voice note available for ${member.name}`}
+                          >
+                            <MicOff className="w-3.5 h-3.5 text-[#F4EFE4]/30" />
+                            <span>NO VOICE NOTE</span>
+                          </button>
+
+                          <div className="grid grid-cols-2 gap-2 opacity-30 pointer-events-none">
+                            <button
+                              type="button"
+                              disabled
+                              className="py-1.5 px-2 bg-[#1A1713] text-[#F4EFE4]/30 border border-[#F4EFE4]/10 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
+                            >
+                              <Rewind className="w-3.5 h-3.5" />
+                              <span>BACK 10s</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              disabled
+                              className="py-1.5 px-2 bg-[#1A1713] text-[#F4EFE4]/30 border border-[#F4EFE4]/10 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
+                            >
+                              <RotateCcw className="w-3.5 h-3.5" />
+                              <span>REPLAY</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div className="p-4 bg-[#14120F] space-y-3">
+                      {/* Voice Note Info Header - Active Audio Uploaded */}
+                      <div className="flex items-center justify-between text-xs font-mono">
+                        <span className="text-[#F4EFE4]/80 font-medium truncate max-w-[180px] flex items-center gap-1.5">
+                          <Mic className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+                          {member.voiceNoteTitle || 'Street Routine Freestyle'}
                         </span>
-                      )}
-                      <span className="text-[#FFC93C] font-mono font-bold">
-                        {isPlaying ? `0:${String(Math.floor((progress / 100) * 16)).padStart(2, '0')}` : member.voiceNoteDuration}
-                      </span>
-                    </div>
-                  </div>
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] uppercase font-bold">
+                            VOICE NOTE
+                          </span>
+                          <span className="text-[#FFC93C] font-mono font-bold">
+                            {isPlaying
+                              ? `${Math.floor((currentTimeMap[member.id] || 0) / 60)}:${String(Math.floor((currentTimeMap[member.id] || 0) % 60)).padStart(2, '0')}`
+                              : member.voiceNoteDuration || '0:15'}
+                          </span>
+                        </div>
+                      </div>
 
-                  {/* Playback Progress Bar */}
-                  <div className="w-full bg-[#231F19] h-2 overflow-hidden border border-[#FFC93C]/20">
-                    <div
-                      className="bg-[#FFC93C] h-full transition-all duration-200"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
+                      {/* Playback Progress Bar */}
+                      <div className="w-full bg-[#231F19] h-2 overflow-hidden border border-[#FFC93C]/20">
+                        <div
+                          className="bg-[#FFC93C] h-full transition-all duration-200"
+                          style={{ width: `${progress}%` }}
+                        />
+                      </div>
 
-                  {/* Sound Control Buttons: Play/Stop, Replay Once Completed & Play Back 10 Secs */}
-                  <div className="pt-1 flex flex-col gap-2">
-                    {/* Primary Button: Replay once completed OR Start/Stop */}
-                    {completedMemberId === member.id && !isPlaying ? (
-                      <button
-                        id={`voice-replay-btn-${member.id}`}
-                        onClick={() => replayVoiceNote(member)}
-                        className="w-full py-2.5 px-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] border border-emerald-400 transition-all active:scale-95 shadow cursor-pointer"
-                        aria-label={`Replay voice note of ${member.name}`}
-                      >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>REPLAY ROUTINE</span>
-                      </button>
-                    ) : (
-                      <button
-                        id={`voice-btn-${member.id}`}
-                        onClick={() => playVoiceNote(member)}
-                        className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
-                          isPlaying
-                            ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
-                            : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'
-                        }`}
-                        aria-label={isPlaying ? `Stop voice note of ${member.name}` : `Start voice note of ${member.name}`}
-                      >
-                        {isPlaying ? (
-                          <>
-                            <Square className="w-3.5 h-3.5 fill-current" />
-                            <span>STOP VOICE NOTE</span>
-                          </>
+                      {/* Sound Control Buttons: Play/Stop, Replay Once Completed & Play Back 10 Secs */}
+                      <div className="pt-1 flex flex-col gap-2">
+                        {completedMemberId === member.id && !isPlaying ? (
+                          <button
+                            id={`voice-replay-btn-${member.id}`}
+                            onClick={() => replayVoiceNote(member)}
+                            className="w-full py-2.5 px-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] border border-emerald-400 transition-all active:scale-95 shadow cursor-pointer"
+                            aria-label={`Replay voice note of ${member.name}`}
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                            <span>REPLAY ROUTINE</span>
+                          </button>
                         ) : (
-                          <>
-                            <Play className="w-3.5 h-3.5 fill-current" />
-                            <span>START VOICE NOTE</span>
-                          </>
+                          <button
+                            id={`voice-btn-${member.id}`}
+                            onClick={() => playVoiceNote(member)}
+                            className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
+                              isPlaying
+                                ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
+                                : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'
+                            }`}
+                            aria-label={isPlaying ? `Stop voice note of ${member.name}` : `Start voice note of ${member.name}`}
+                          >
+                            {isPlaying ? (
+                              <>
+                                <Square className="w-3.5 h-3.5 fill-current" />
+                                <span>STOP VOICE NOTE</span>
+                              </>
+                            ) : (
+                              <>
+                                <Play className="w-3.5 h-3.5 fill-current" />
+                                <span>START VOICE NOTE</span>
+                              </>
+                            )}
+                          </button>
                         )}
-                      </button>
-                    )}
 
-                    {/* Additional Sound Control Buttons: Play Back 10 Secs & Replay Button */}
-                    <div className="grid grid-cols-2 gap-2">
-                      <button
-                        type="button"
-                        onClick={() => rewind10Seconds(member)}
-                        className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        title="Play back 10 seconds"
-                        aria-label="Play back 10 seconds"
-                      >
-                        <Rewind className="w-3.5 h-3.5 text-[#FFC93C]" />
-                        <span>BACK 10s</span>
-                      </button>
+                        {/* Additional Sound Control Buttons: Play Back 10 Secs & Replay Button */}
+                        <div className="grid grid-cols-2 gap-2">
+                          <button
+                            type="button"
+                            onClick={() => rewind10Seconds(member)}
+                            className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            title="Play back 10 seconds"
+                            aria-label="Play back 10 seconds"
+                          >
+                            <Rewind className="w-3.5 h-3.5 text-[#FFC93C]" />
+                            <span>BACK 10s</span>
+                          </button>
 
-                      <button
-                        type="button"
-                        onClick={() => replayVoiceNote(member)}
-                        className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
-                        title="Replay from start"
-                        aria-label="Replay routine"
-                      >
-                        <RotateCcw className="w-3.5 h-3.5 text-[#FFC93C]" />
-                        <span>REPLAY</span>
-                      </button>
+                          <button
+                            type="button"
+                            onClick={() => replayVoiceNote(member)}
+                            className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            title="Replay from start"
+                            aria-label="Replay routine"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5 text-[#FFC93C]" />
+                            <span>REPLAY</span>
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
+                  );
+                })()}
               </div>
             );
           }))}
