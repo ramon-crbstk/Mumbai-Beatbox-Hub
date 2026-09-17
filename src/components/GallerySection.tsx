@@ -14,18 +14,20 @@ import {
   Flame, 
   MessageCircle, 
   Calendar,
-  Sparkles
+  Sparkles,
+  RotateCw
 } from 'lucide-react';
 import { fetchGalleryItems } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
 import { ScrollReveal } from './animations/MotionComponents';
+import { rotateSequenceOnRefresh, manualRotate } from '../utils/rotation';
 
 interface GallerySectionProps {
   refreshTrigger?: number;
 }
 
 type FilterCategory = 'all' | 'cyphers' | 'battles' | 'sessions' | 'coast';
-type ViewMode = 'masonry' | 'bento';
+type ViewMode = 'bento' | 'masonry';
 
 export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger = 0 }) => {
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
@@ -39,7 +41,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
     async function loadGallery() {
       const items = await fetchGalleryItems();
       if (active) {
-        setGalleryList(items);
+        // Automatically rotate the sequence on each page refresh/mount so all posts cycle through hero tiles
+        const rotated = rotateSequenceOnRefresh(items, 'mbh_gallery_rot_offset');
+        setGalleryList(rotated);
       }
     }
     loadGallery();
@@ -47,6 +51,11 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
       active = false;
     };
   }, [refreshTrigger]);
+
+  const handleRotateSequence = () => {
+    setGalleryList((prev) => manualRotate(prev));
+    setSelectedIdx(null);
+  };
 
   // Filtering
   const filteredList = useMemo(() => {
@@ -119,18 +128,28 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 border border-[#14120F] -rotate-1 shadow-sm">
                 <Camera className="w-3.5 h-3.5" />
-                <span>PHOTO WALL // STREET ARCHIVE</span>
+                <span>PHOTO WALL // ROTATING SPOTLIGHT</span>
               </div>
               <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-[#F4EFE4] leading-none">
                 The Cypher Photo Wall
               </h2>
               <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-2 max-w-2xl leading-relaxed">
-                Raw frames from Carter Road, Shivaji Park, Bandstand & station subways. Human breath, acoustics, and street crowds across Mumbai.
+                Raw frames from Carter Road, Shivaji Park, Bandstand & station subways. Every refresh rotates the sequence so all cypher moments cycle into the featured hero spots.
               </p>
             </div>
 
             {/* View Mode & Stats Bar */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={handleRotateSequence}
+                title="Rotate mosaic sequence so all posts cycle through featured hero spots (auto-rotates on refresh)"
+                className="px-3 py-1.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4]/80 hover:text-[#14120F] border border-[#F4EFE4]/20 hover:border-[#FFC93C] text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
+              >
+                <RotateCw className="w-3.5 h-3.5 text-[#FFC93C]" />
+                <span>Rotate Mosaic</span>
+              </button>
+
               <div className="px-3 py-1.5 bg-[#181512] border border-[#FFC93C]/30 text-xs font-mono text-[#FFC93C] flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>{filteredList.length} PHOTOS ON WALL</span>

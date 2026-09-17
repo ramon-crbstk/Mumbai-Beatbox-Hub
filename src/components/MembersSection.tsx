@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
-import { Play, Square, ChevronLeft, ChevronRight, Mic, MicOff, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind } from 'lucide-react';
+import { Play, Square, ChevronLeft, ChevronRight, Mic, MicOff, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind, RotateCw } from 'lucide-react';
 import { fetchCommunityMembers } from '../lib/supabase';
 import { motion } from 'motion/react';
 import { ScrollReveal } from './animations/MotionComponents';
+import { rotateSequenceOnRefresh, manualRotate } from '../utils/rotation';
 
 interface MembersSectionProps {
   refreshTrigger?: number;
@@ -41,21 +42,23 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
     async function loadMembers() {
       const remote = await fetchCommunityMembers();
       if (isMounted) {
+        let baseList: (CommunityMember & { photoUrl: string })[] = [];
         if (remote && remote.length > 0) {
-          setMembersList(remote);
+          baseList = remote;
         } else {
           // If no remote records exist yet, load community members with NO default audio (voice_note_url is strictly null)
-          setMembersList(
-            COMMUNITY_MEMBERS.map((m) => ({
-              ...m,
-              photoUrl: m.photoUrl || '',
-              voice_note_url: null,
-              voiceNoteUrl: null,
-              audioUrl: null,
-              audio_url: null,
-            }))
-          );
+          baseList = COMMUNITY_MEMBERS.map((m) => ({
+            ...m,
+            photoUrl: m.photoUrl || '',
+            voice_note_url: null,
+            voiceNoteUrl: null,
+            audioUrl: null,
+            audio_url: null,
+          }));
         }
+        // Rotate sequence cyclically on refresh so every member gets featured at the front
+        const rotated = rotateSequenceOnRefresh(baseList, 'mbh_members_rot_offset');
+        setMembersList(rotated);
       }
     }
     loadMembers();
@@ -63,6 +66,13 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
       isMounted = false;
     };
   }, [refreshTrigger]);
+
+  const handleRotateRoster = () => {
+    setMembersList((prev) => manualRotate(prev));
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  };
   
   // Audio playback reference (Native HTML5 Audio only — NO synthesizers, NO demo fallbacks)
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -218,7 +228,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
               <Radio className="w-3.5 h-3.5 animate-pulse text-[#FFC93C]" />
-              <span>ROSTER & AUDIO ARCHIVE // {membersList.length > 0 ? `${membersList.length} ARTISTS` : 'COMMUNITY ARTISTS'}</span>
+              <span>ROSTER & AUDIO ARCHIVE // ROTATING SPOTLIGHT</span>
             </div>
             
             <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
@@ -226,22 +236,29 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
             </h2>
             
             <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-2 max-w-2xl leading-relaxed">
-              Meet the vocal percussionists representing Mumbai's streets. Tap <span className="text-[#FFC93C] font-bold">START</span> on any card below to listen to their showcase voice notes, recorded live in our cyphers.
+              Meet the vocal percussionists representing Mumbai's streets. Roster sequence rotates on every refresh to give equal spotlight to all artists. Tap <span className="text-[#FFC93C] font-bold">START</span> on any card below to listen to their showcase voice notes.
             </p>
           </div>
 
-          {/* Navigation Controls: Left & Right Scroll Buttons */}
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex flex-col text-right mr-2">
-              <span className="text-xs font-mono text-[#FFC93C] font-bold">HORIZONTAL DIRECTORY</span>
-              <span className="text-[11px] font-mono text-[#F4EFE4]/50">Scroll left-right for all members</span>
-            </div>
+          {/* Navigation Controls: Rotate & Scroll Buttons */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <button
+              id="members-rotate-btn"
+              type="button"
+              onClick={handleRotateRoster}
+              aria-label="Rotate members roster sequence"
+              title="Rotate roster sequence so all beatboxers take turns at the front (auto-rotates on refresh)"
+              className="p-2.5 sm:p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 flex items-center gap-1.5 px-3 sm:px-3.5 text-xs font-mono font-bold uppercase cursor-pointer"
+            >
+              <RotateCw className="w-4 h-4 text-[#FFC93C]" />
+              <span className="hidden sm:inline">Rotate Order</span>
+            </button>
             
             <button
               id="members-scroll-left-btn"
               onClick={handleScrollLeft}
               aria-label="Scroll members left"
-              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95"
+              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -249,7 +266,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               id="members-scroll-right-btn"
               onClick={handleScrollRight}
               aria-label="Scroll members right"
-              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95"
+              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 cursor-pointer"
             >
               <ChevronRight className="w-5 h-5" />
             </button>

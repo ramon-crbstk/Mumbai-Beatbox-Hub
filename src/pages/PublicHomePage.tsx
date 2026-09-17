@@ -3,6 +3,7 @@ import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { AboutSection } from '../components/AboutSection';
 import { WhatWeDoSection } from '../components/WhatWeDoSection';
+import { SoundboardSection } from '../components/SoundboardSection';
 import { MidPageCta } from '../components/MidPageCta';
 import { EventsSection } from '../components/EventsSection';
 import { GallerySection } from '../components/GallerySection';
@@ -71,6 +72,9 @@ export function PublicHomePage() {
 
         {/* What We Do Section */}
         <WhatWeDoSection onOpenJoinModal={handleOpenJoinModal} />
+
+        {/* Compact Beatbox Soundboard: Interactive Technique Sampler */}
+        <SoundboardSection />
 
         {/* Mid-Page Call to Action Banner */}
         <MidPageCta onOpenContactModal={scrollToContact} />

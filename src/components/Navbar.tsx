@@ -12,6 +12,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
   const navLinks = [
     { label: 'Home', href: '#home' },
     { label: 'About', href: '#about' },
+    { label: 'Soundboard', href: '#soundboard' },
     { label: 'Events', href: '#events' },
     { label: 'Gallery', href: '#gallery' },
     { label: 'Videos', href: '#videos' },
