@@ -33,15 +33,15 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('bento');
-  const [visibleLimit, setVisibleLimit] = useState(4);
+  const [visibleLimit, setVisibleLimit] = useState(16);
 
   useEffect(() => {
     let active = true;
     async function loadGallery() {
       const items = await fetchGalleryItems();
       if (active) {
-        // Automatically rotate the sequence on each page refresh/mount with step 4 so 4 distinct photos cycle in
-        const rotated = rotateSequenceOnRefresh(items, 'mbh_gallery_rot_offset', 4);
+        // Automatically rotate the sequence on each page refresh/mount so all cypher moments cycle into hero spots
+        const rotated = rotateSequenceOnRefresh(items, 'mbh_gallery_rot_offset');
         setGalleryList(rotated);
       }
     }
@@ -132,14 +132,8 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               </p>
             </div>
 
-            {/* View Mode & Stats Bar */}
+            {/* View Toggle */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <div className="px-3 py-1.5 bg-[#181512] border border-[#FFC93C]/30 text-xs font-mono text-[#FFC93C] flex items-center gap-2">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>{displayedItems.length} PHOTOS ON WALL</span>
-              </div>
-
-              {/* View Toggle */}
               <div className="inline-flex p-1 bg-[#181512] border border-[#F4EFE4]/20">
                 <button
                   type="button"
@@ -361,26 +355,16 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
           </div>
         )}
 
-        {/* Expand / Collapse Wall Controls */}
-        {filteredList.length > 4 && (
-          <div className="mt-8 text-center">
-            {visibleLimit <= 4 ? (
-              <button
-                type="button"
-                onClick={() => setVisibleLimit(filteredList.length)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer active:scale-95"
-              >
-                <span>View Full Photo Archive ({filteredList.length} Photos)</span>
-              </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setVisibleLimit(4)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer active:scale-95"
-              >
-                <span>Collapse to 4 Photos</span>
-              </button>
-            )}
+        {/* Load More Frames if more exist */}
+        {filteredList.length > visibleLimit && (
+          <div className="mt-10 text-center">
+            <button
+              type="button"
+              onClick={() => setVisibleLimit((prev) => prev + 12)}
+              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer active:scale-95"
+            >
+              <span>Load More Frames ({filteredList.length - visibleLimit} Remaining)</span>
+            </button>
           </div>
         )}
 
