@@ -14,13 +14,12 @@ import {
   Flame, 
   MessageCircle, 
   Calendar,
-  Sparkles,
-  RotateCw
+  Sparkles
 } from 'lucide-react';
 import { fetchGalleryItems } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
 import { ScrollReveal } from './animations/MotionComponents';
-import { rotateSequenceOnRefresh, manualRotate } from '../utils/rotation';
+import { rotateSequenceOnRefresh } from '../utils/rotation';
 
 interface GallerySectionProps {
   refreshTrigger?: number;
@@ -34,15 +33,15 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('bento');
-  const [visibleLimit, setVisibleLimit] = useState(16);
+  const [visibleLimit, setVisibleLimit] = useState(4);
 
   useEffect(() => {
     let active = true;
     async function loadGallery() {
       const items = await fetchGalleryItems();
       if (active) {
-        // Automatically rotate the sequence on each page refresh/mount so all posts cycle through hero tiles
-        const rotated = rotateSequenceOnRefresh(items, 'mbh_gallery_rot_offset');
+        // Automatically rotate the sequence on each page refresh/mount with step 4 so 4 distinct photos cycle in
+        const rotated = rotateSequenceOnRefresh(items, 'mbh_gallery_rot_offset', 4);
         setGalleryList(rotated);
       }
     }
@@ -51,11 +50,6 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
       active = false;
     };
   }, [refreshTrigger]);
-
-  const handleRotateSequence = () => {
-    setGalleryList((prev) => manualRotate(prev));
-    setSelectedIdx(null);
-  };
 
   // Filtering
   const filteredList = useMemo(() => {
@@ -140,19 +134,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
 
             {/* View Mode & Stats Bar */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
-              <button
-                type="button"
-                onClick={handleRotateSequence}
-                title="Rotate mosaic sequence so all posts cycle through featured hero spots (auto-rotates on refresh)"
-                className="px-3 py-1.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4]/80 hover:text-[#14120F] border border-[#F4EFE4]/20 hover:border-[#FFC93C] text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-all cursor-pointer shadow-xs active:scale-95"
-              >
-                <RotateCw className="w-3.5 h-3.5 text-[#FFC93C]" />
-                <span>Rotate Mosaic</span>
-              </button>
-
               <div className="px-3 py-1.5 bg-[#181512] border border-[#FFC93C]/30 text-xs font-mono text-[#FFC93C] flex items-center gap-2">
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>{filteredList.length} PHOTOS ON WALL</span>
+                <span>{displayedItems.length} PHOTOS ON WALL</span>
               </div>
 
               {/* View Toggle */}
@@ -377,16 +361,26 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
           </div>
         )}
 
-        {/* Load More Trigger if there are more in list */}
-        {filteredList.length > visibleLimit && (
-          <div className="mt-12 text-center">
-            <button
-              type="button"
-              onClick={() => setVisibleLimit((prev) => prev + 8)}
-              className="inline-flex items-center gap-2 px-8 py-3.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] font-mono text-xs font-bold uppercase tracking-widest shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all cursor-pointer"
-            >
-              <span>Load More Photos on Wall ({filteredList.length - visibleLimit} Remaining)</span>
-            </button>
+        {/* Expand / Collapse Wall Controls */}
+        {filteredList.length > 4 && (
+          <div className="mt-8 text-center">
+            {visibleLimit <= 4 ? (
+              <button
+                type="button"
+                onClick={() => setVisibleLimit(filteredList.length)}
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer active:scale-95"
+              >
+                <span>View Full Photo Archive ({filteredList.length} Photos)</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setVisibleLimit(4)}
+                className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer active:scale-95"
+              >
+                <span>Collapse to 4 Photos</span>
+              </button>
+            )}
           </div>
         )}
 

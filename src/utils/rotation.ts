@@ -19,13 +19,13 @@ function getCoprimeStep(len: number): number {
 
 /**
  * Cyclically rotates an array on each page load/refresh using sessionStorage.
- * Advances the offset by a coprime step on each reload so that every member
- * and gallery item cycles through the lead/hero positions over successive visits.
+ * Advances the offset by a step (default coprime step) on each reload so that every member
+ * and gallery item cycles through the spotlight positions over successive visits.
  */
-export function rotateSequenceOnRefresh<T>(items: T[], sessionKey: string): T[] {
+export function rotateSequenceOnRefresh<T>(items: T[], sessionKey: string, customStep?: number): T[] {
   if (!items || items.length <= 1) return items;
   
-  const step = getCoprimeStep(items.length);
+  const step = customStep && customStep > 0 ? customStep : getCoprimeStep(items.length);
   let offset = 0;
 
   try {

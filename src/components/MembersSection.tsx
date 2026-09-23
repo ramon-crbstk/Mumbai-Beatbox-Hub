@@ -1,11 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
-import { Play, Square, ChevronLeft, ChevronRight, Mic, MicOff, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind, RotateCw } from 'lucide-react';
+import { Play, Square, ChevronLeft, ChevronRight, Mic, MicOff, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind } from 'lucide-react';
 import { fetchCommunityMembers } from '../lib/supabase';
 import { motion } from 'motion/react';
 import { ScrollReveal } from './animations/MotionComponents';
-import { rotateSequenceOnRefresh, manualRotate } from '../utils/rotation';
+import { rotateSequenceOnRefresh } from '../utils/rotation';
 
 interface MembersSectionProps {
   refreshTrigger?: number;
@@ -66,13 +66,6 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
       isMounted = false;
     };
   }, [refreshTrigger]);
-
-  const handleRotateRoster = () => {
-    setMembersList((prev) => manualRotate(prev));
-    if (scrollContainerRef.current) {
-      scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-    }
-  };
   
   // Audio playback reference (Native HTML5 Audio only — NO synthesizers, NO demo fallbacks)
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
@@ -240,20 +233,8 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
             </p>
           </div>
 
-          {/* Navigation Controls: Rotate & Scroll Buttons */}
+          {/* Navigation Controls: Scroll Buttons */}
           <div className="flex items-center gap-2 sm:gap-3">
-            <button
-              id="members-rotate-btn"
-              type="button"
-              onClick={handleRotateRoster}
-              aria-label="Rotate members roster sequence"
-              title="Rotate roster sequence so all beatboxers take turns at the front (auto-rotates on refresh)"
-              className="p-2.5 sm:p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 flex items-center gap-1.5 px-3 sm:px-3.5 text-xs font-mono font-bold uppercase cursor-pointer"
-            >
-              <RotateCw className="w-4 h-4 text-[#FFC93C]" />
-              <span className="hidden sm:inline">Rotate Order</span>
-            </button>
-            
             <button
               id="members-scroll-left-btn"
               onClick={handleScrollLeft}
