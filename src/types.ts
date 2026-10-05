@@ -60,7 +60,7 @@ export interface GalleryItem {
   caption: string;
   location: string;
   dateStr: string;
-  aspect: 'square' | 'tall' | 'wide';
+  aspect: 'square' | 'tall' | 'wide' | 'portrait' | 'landscape';
   photoUrl?: string;
   createdAt?: string;
 }

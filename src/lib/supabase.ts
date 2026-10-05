@@ -362,20 +362,21 @@ export async function fetchGalleryItems(): Promise<GalleryItem[]> {
         .order('created_at', { ascending: false });
 
       if (!error && data && data.length > 0) {
-        return data.map((item, idx) => {
-          const fallback = GALLERY_ITEMS.find((g) => g.id === item.id) || GALLERY_ITEMS[idx % GALLERY_ITEMS.length];
-          const hasPhoto = item.photo_url && item.photo_url.trim().length > 0 && item.photo_url !== 'null';
-          return {
-            id: item.id,
-            title: item.title || fallback?.title || 'Cypher Session',
-            caption: item.caption || fallback?.caption || '',
-            location: item.location || fallback?.location || 'Mumbai',
-            dateStr: item.date_str || fallback?.dateStr || 'Cypher Session',
-            aspect: (item.aspect as GalleryItem['aspect']) || fallback?.aspect || 'square',
-            photoUrl: hasPhoto ? item.photo_url : (fallback?.photoUrl || ''),
-            createdAt: item.created_at,
-          };
-        });
+        return data
+          .map((item) => {
+            const hasPhoto = item.photo_url && item.photo_url.trim().length > 0 && item.photo_url !== 'null';
+            return {
+              id: item.id,
+              title: item.title || 'Cypher Session',
+              caption: item.caption || '',
+              location: item.location || 'Mumbai',
+              dateStr: item.date_str || '',
+              aspect: (item.aspect as GalleryItem['aspect']) || 'square',
+              photoUrl: hasPhoto ? item.photo_url : '',
+              createdAt: item.created_at,
+            };
+          })
+          .filter((item) => Boolean(item.photoUrl && !item.photoUrl.includes('unsplash.com')));
       }
       if (error) {
         console.warn('Supabase fetch gallery error:', error.message);
@@ -385,7 +386,7 @@ export async function fetchGalleryItems(): Promise<GalleryItem[]> {
     }
   }
 
-  return GALLERY_ITEMS;
+  return [];
 }
 
 export async function saveGalleryItem(

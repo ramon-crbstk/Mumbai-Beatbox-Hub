@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { VideoItem } from '../types';
-import { Play, Video, X, Flame, ExternalLink, Link2, Copy, Check } from 'lucide-react';
+import { Play, Video, X, Flame, ExternalLink, Link2, Copy, Check, Clock, MapPin, User } from 'lucide-react';
 import { fetchVideos } from '../lib/supabase';
 import { getCloudinaryVideoThumbnailUrl } from '../lib/cloudinary';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
@@ -47,6 +47,30 @@ function parseVideoSource(rawUrl?: string): {
     embedUrl: trimmed,
     originalUrl: trimmed,
   };
+}
+
+// Helper to get crisp, uncropped thumbnail with YouTube fallback
+function resolveVideoThumbnail(vid: VideoItem): string {
+  if (vid.thumbnailUrl && !vid.thumbnailUrl.startsWith('data:') && !vid.thumbnailUrl.startsWith('blob:')) {
+    return getCloudinaryVideoThumbnailUrl(vid.thumbnailUrl, {
+      width: 800,
+      crop: 'limit',
+      quality: 'auto',
+      format: 'auto',
+    });
+  }
+
+  // Fallback to high quality YouTube thumbnail if YouTube video
+  if (vid.videoUrl) {
+    const ytMatch = vid.videoUrl.match(
+      /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([\w-]{11})/i
+    );
+    if (ytMatch && ytMatch[1]) {
+      return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+    }
+  }
+
+  return '';
 }
 
 export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ refreshTrigger = 0 }) => {
@@ -100,7 +124,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
           </div>
         </ScrollReveal>
 
-        {/* Video Thumbnail Row */}
+        {/* Video Cards Grid */}
         {videosList.length === 0 ? (
           <div className="grid grid-cols-1 gap-8">
             <div className="col-span-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
@@ -112,9 +136,19 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
             </div>
           </div>
         ) : (
-          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <StaggerContainer
+            staggerDelay={0.1}
+            className={`grid grid-cols-1 gap-8 ${
+              videosList.length === 1
+                ? 'max-w-xl mx-auto'
+                : videosList.length === 2
+                ? 'md:grid-cols-2 max-w-5xl mx-auto'
+                : 'md:grid-cols-2 lg:grid-cols-3'
+            }`}
+          >
             {videosList.map((vid, idx) => {
-              const displayCategory = vid.category?.replace(/solo/gi, '').trim();
+              const displayCategory = vid.category?.replace(/solo/gi, '').trim() || vid.category;
+              const thumbUrl = resolveVideoThumbnail(vid);
 
               return (
                 <StaggerItem
@@ -124,89 +158,138 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                 >
                   <div
                     id={`video-card-${vid.id}`}
-                    className="relative overflow-hidden bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-all min-h-[420px] sm:min-h-[460px] flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] h-full"
+                    className="relative bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-all flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] h-full overflow-hidden"
                   >
-                    {/* Full-bleed Thumbnail Image using 100% of the card space with auto Cloudinary transformations (w: 640, f: auto, q: auto) */}
-                    {vid.thumbnailUrl && !vid.thumbnailUrl.startsWith('data:') && !vid.thumbnailUrl.startsWith('blob:') ? (
-                      <img
-                        src={getCloudinaryVideoThumbnailUrl(vid.thumbnailUrl, { width: 640, format: 'auto', quality: 'auto' })}
-                        alt={vid.title}
-                        referrerPolicy="no-referrer"
-                        loading="lazy"
-                        decoding="async"
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                    ) : (
-                      <div className="absolute inset-0 bg-[#1A1713] flex flex-col items-center justify-center text-[#FFC93C]/30">
-                        <Video className="w-16 h-16 mb-2" />
-                        <span className="font-mono text-xs uppercase tracking-widest text-[#F4EFE4]/40">Community Video Drop</span>
-                      </div>
-                    )}
-
-                    {/* Dark Gradient Overlays for Readability */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#14120F] via-[#14120F]/70 to-[#14120F]/40 pointer-events-none" />
-                    <div className="absolute inset-0 bg-[#14120F]/20 group-hover:bg-transparent transition-colors pointer-events-none" />
-
-                    {/* Top Bar Header */}
-                    <div className="relative z-10 p-4 sm:p-5 flex items-start justify-between gap-2">
-                      {/* Category Badge */}
-                      {displayCategory && (
-                        <div className="px-2.5 py-1 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
-                          {displayCategory}
+                    {/* Dedicated 16:9 Cinema Video Frame Window */}
+                    <div
+                      onClick={() => setActiveVideo(vid)}
+                      className="relative w-full aspect-video bg-[#0B0907] border-b-2 border-[#F4EFE4]/15 overflow-hidden cursor-pointer flex items-center justify-center select-none"
+                    >
+                      {thumbUrl ? (
+                        <>
+                          {/* Ambient soft blurred backdrop to seamlessly frame non-standard aspect ratios */}
+                          <img
+                            src={thumbUrl}
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-110 pointer-events-none"
+                          />
+                          {/* Foreground high-clarity thumbnail: 100% visible, zero cropping */}
+                          <img
+                            src={thumbUrl}
+                            alt={vid.title}
+                            referrerPolicy="no-referrer"
+                            loading="lazy"
+                            decoding="async"
+                            className="relative z-10 w-full h-full object-contain sm:object-cover transition-transform duration-500 group-hover:scale-105"
+                          />
+                        </>
+                      ) : (
+                        <div className="relative z-10 flex flex-col items-center justify-center text-[#FFC93C]/40 p-6">
+                          <Video className="w-12 h-12 mb-2" />
+                          <span className="font-mono text-xs uppercase tracking-widest text-[#F4EFE4]/50">Community Video Drop</span>
                         </div>
                       )}
 
-                      {/* Drop # & Duration Indicator */}
-                      <div className="flex items-center gap-1.5 ml-auto">
-                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#FFC93C] bg-[#14120F]/90 border border-[#FFC93C]/50 backdrop-blur-xs">
+                      {/* Subtle hover vignette (No dark permanent mask covering the thumbnail) */}
+                      <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors z-10 pointer-events-none" />
+
+                      {/* Top Bar Badges */}
+                      <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between gap-2 pointer-events-none">
+                        {displayCategory ? (
+                          <span className="px-2.5 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
+                            {displayCategory}
+                          </span>
+                        ) : <span />}
+
+                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#FFC93C] bg-[#14120F]/90 border border-[#FFC93C]/60 backdrop-blur-xs">
                           DROP #{idx + 1}
                         </span>
-                        {vid.duration && (
-                          <span className="px-2 py-0.5 text-[10px] font-mono text-[#F4EFE4] bg-[#14120F]/90 border border-[#F4EFE4]/30 backdrop-blur-xs">
+                      </div>
+
+                      {/* Prominent High-Contrast Play Button in Center */}
+                      <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
+                        <div
+                          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FFC93C] text-[#14120F] flex items-center justify-center border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4,0_4px_20px_rgba(0,0,0,0.6)] group-hover:scale-115 group-hover:bg-[#F4EFE4] transition-all"
+                          title="Play Video"
+                          aria-label={`Play ${vid.title}`}
+                        >
+                          <Play className="w-6 h-6 sm:w-7 sm:h-7 fill-current translate-x-0.5" />
+                        </div>
+                      </div>
+
+                      {/* Duration Tag in Bottom-Right Corner */}
+                      {vid.duration && (
+                        <div className="absolute bottom-2.5 right-2.5 z-20 pointer-events-none">
+                          <span className="px-2 py-0.5 text-[10px] sm:text-xs font-mono font-bold text-[#F4EFE4] bg-black/85 border border-white/20 backdrop-blur-xs flex items-center gap-1 shadow-sm">
+                            <Clock className="w-3 h-3 text-[#FFC93C]" />
                             {vid.duration}
                           </span>
-                        )}
+                        </div>
+                      )}
+
+                      {/* Neo-brutalist interactive scrub bar line */}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#14120F] z-20">
+                        <div className="h-full bg-[#FFC93C] w-0 group-hover:w-full transition-all duration-500 ease-out" />
                       </div>
                     </div>
 
-                    {/* Center Play Button Overlay */}
-                    <div 
-                      onClick={() => setActiveVideo(vid)}
-                      className="relative z-10 self-center my-auto w-16 h-16 bg-[#FFC93C] text-[#14120F] rounded-full flex items-center justify-center border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#F4EFE4] group-hover:scale-115 group-hover:bg-[#F4EFE4] transition-all cursor-pointer"
-                      title="Play Video"
-                      aria-label={`Play ${vid.title}`}
-                    >
-                      <Play className="w-7 h-7 fill-current translate-x-0.5" />
-                    </div>
+                    {/* Dedicated Card Body Below the Video Frame */}
+                    <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 gap-4 bg-[#181512]">
+                      <div className="space-y-2">
+                        {/* Venue & Community Views Line */}
+                        <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] gap-2">
+                          <div className="flex items-center gap-1.5 truncate">
+                            <MapPin className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
+                            <span className="truncate">{vid.venue}</span>
+                          </div>
+                          <span className="text-[#F4EFE4]/60 text-[11px] shrink-0 font-medium">
+                            {vid.viewsEstimate}
+                          </span>
+                        </div>
 
-                    {/* Bottom Info & Play CTA */}
-                    <div className="relative z-10 p-4 sm:p-5 pt-0">
-                      <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1 drop-shadow-sm">
-                        <span className="truncate pr-2">{vid.venue}</span>
-                        <span className="text-[#F4EFE4]/80 shrink-0">{vid.viewsEstimate}</span>
+                        {/* Video Title */}
+                        <h3
+                          onClick={() => setActiveVideo(vid)}
+                          className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-snug cursor-pointer line-clamp-2"
+                          title={vid.title}
+                        >
+                          {vid.title}
+                        </h3>
+
+                        {/* Performer Info */}
+                        <p className="text-xs font-mono text-[#F4EFE4]/80 flex items-center gap-1.5 pt-0.5">
+                          <User className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+                          <span>
+                            Featuring:{' '}
+                            <strong className="text-[#FFC93C] font-semibold">{vid.performer}</strong>
+                          </span>
+                        </p>
                       </div>
 
-                      <h3 
-                        onClick={() => setActiveVideo(vid)}
-                        className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-snug cursor-pointer drop-shadow-md"
-                      >
-                        {vid.title}
-                      </h3>
-
-                      <p className="text-xs font-mono text-[#F4EFE4]/90 mt-1 drop-shadow-sm">
-                        Featuring: <span className="text-[#FFC93C] font-semibold">{vid.performer}</span>
-                      </p>
-
-                      {/* Single Full-Width Play Button (No arrow button) */}
-                      <div className="mt-4 pt-3 border-t border-[#F4EFE4]/20">
+                      {/* Play Action Footer */}
+                      <div className="pt-3 border-t border-[#F4EFE4]/15 flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setActiveVideo(vid)}
-                          className="w-full py-2.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                          className="flex-1 py-2.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] hover:shadow-[4px_4px_0px_0px_#E4402A] transition-all flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <Play className="w-3.5 h-3.5 fill-current" />
                           <span>Play Video</span>
                         </button>
+
+                        {vid.videoUrl && (
+                          <a
+                            href={vid.videoUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-2.5 bg-[#14120F] hover:bg-[#E4402A] text-[#F4EFE4] border-2 border-[#F4EFE4]/20 hover:border-[#E4402A] transition-colors cursor-pointer flex items-center justify-center"
+                            title="Open video source link"
+                            aria-label="Open source link in new tab"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                          </a>
+                        )}
                       </div>
                     </div>
                   </div>

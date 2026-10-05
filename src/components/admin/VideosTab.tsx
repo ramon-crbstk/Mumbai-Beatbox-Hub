@@ -20,6 +20,26 @@ import { ImageUploader } from './ImageUploader';
 import { VideoUploader } from './VideoUploader';
 import { CLOUDINARY_CONFIG, CLOUDINARY_FOLDERS, getCloudinaryVideoThumbnailUrl } from '../../lib/cloudinary';
 
+function resolveAdminVideoThumbnail(vid: VideoItem): string {
+  if (vid.thumbnailUrl && !vid.thumbnailUrl.startsWith('data:') && !vid.thumbnailUrl.startsWith('blob:')) {
+    return getCloudinaryVideoThumbnailUrl(vid.thumbnailUrl, {
+      width: 480,
+      crop: 'limit',
+      quality: 'auto',
+      format: 'auto',
+    });
+  }
+  if (vid.videoUrl) {
+    const ytMatch = vid.videoUrl.match(
+      /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/|live\/))([\w-]{11})/i
+    );
+    if (ytMatch && ytMatch[1]) {
+      return `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+    }
+  }
+  return '';
+}
+
 interface VideosTabProps {
   items: VideoItem[];
   onRefresh: () => void;
@@ -230,9 +250,9 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
                       onClick={() => setPreviewVideo(item)}
                       className="w-16 h-10 bg-[#14120F] border border-[#F4EFE4]/20 overflow-hidden relative cursor-pointer group flex items-center justify-center"
                     >
-                      {item.thumbnailUrl ? (
+                      {resolveAdminVideoThumbnail(item) ? (
                         <img 
-                          src={getCloudinaryVideoThumbnailUrl(item.thumbnailUrl, { width: 240, format: 'auto', quality: 'auto' })} 
+                          src={resolveAdminVideoThumbnail(item)} 
                           alt={item.title} 
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform" 
                           referrerPolicy="no-referrer"
@@ -522,7 +542,7 @@ export function VideosTab({ items, onRefresh }: VideosTabProps) {
                   controls 
                   autoPlay 
                   src={previewVideo.videoUrl} 
-                  poster={previewVideo.thumbnailUrl ? getCloudinaryVideoThumbnailUrl(previewVideo.thumbnailUrl, { width: 800, format: 'auto', quality: 'auto' }) : undefined}
+                  poster={resolveAdminVideoThumbnail(previewVideo) || undefined}
                   className="w-full h-full object-contain"
                 />
               ) : (

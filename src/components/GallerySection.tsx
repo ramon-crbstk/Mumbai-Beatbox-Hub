@@ -1,48 +1,55 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { GalleryItem } from '../types';
 import { 
-  Image as ImageIcon, 
   X, 
   MapPin, 
-  Tag, 
   ChevronLeft, 
   ChevronRight, 
   Maximize2, 
   Camera, 
   Columns, 
   LayoutGrid, 
-  Flame, 
-  MessageCircle, 
-  Calendar,
   Sparkles
 } from 'lucide-react';
 import { fetchGalleryItems } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
 import { ScrollReveal } from './animations/MotionComponents';
-import { rotateSequenceOnRefresh } from '../utils/rotation';
 
 interface GallerySectionProps {
   refreshTrigger?: number;
 }
 
-type FilterCategory = 'all' | 'cyphers' | 'battles' | 'sessions' | 'coast';
 type ViewMode = 'bento' | 'masonry';
+
+const MAX_PER_VIEW = 9;
 
 export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger = 0 }) => {
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  const [activeFilter, setActiveFilter] = useState<FilterCategory>('all');
   const [viewMode, setViewMode] = useState<ViewMode>('bento');
-  const [visibleLimit, setVisibleLimit] = useState(16);
+  const [currentPage, setCurrentPage] = useState(0);
 
+  const scrollContainerRef = useRef<HTMLDivElement | null>(null);
+
+  // Fetch only authentic photos from Supabase (strictly exclude mock/fake images)
   useEffect(() => {
     let active = true;
     async function loadGallery() {
-      const items = await fetchGalleryItems();
-      if (active) {
-        // Automatically rotate the sequence on each page refresh/mount so all cypher moments cycle into hero spots
-        const rotated = rotateSequenceOnRefresh(items, 'mbh_gallery_rot_offset');
-        setGalleryList(rotated);
+      setLoading(true);
+      try {
+        const items = await fetchGalleryItems();
+        if (active) {
+          const realItems = (items || []).filter(
+            (item) => item.photoUrl && item.photoUrl.trim().length > 0 && !item.photoUrl.includes('unsplash.com')
+          );
+          setGalleryList(realItems);
+        }
+      } catch (err) {
+        console.warn('Failed to load gallery items:', err);
+        if (active) setGalleryList([]);
+      } finally {
+        if (active) setLoading(false);
       }
     }
     loadGallery();
@@ -51,30 +58,58 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
     };
   }, [refreshTrigger]);
 
-  // Filtering
-  const filteredList = useMemo(() => {
-    if (activeFilter === 'all') return galleryList;
-    return galleryList.filter((item) => {
-      const text = `${item.title} ${item.caption} ${item.location}`.toLowerCase();
-      if (activeFilter === 'cyphers') {
-        return text.includes('cypher') || text.includes('circle') || text.includes('open');
-      }
-      if (activeFilter === 'battles') {
-        return text.includes('battle') || text.includes('smoke') || text.includes('final') || text.includes('championship');
-      }
-      if (activeFilter === 'sessions') {
-        return text.includes('clinic') || text.includes('workshop') || text.includes('drill') || text.includes('mic') || text.includes('tag');
-      }
-      if (activeFilter === 'coast') {
-        return text.includes('carter') || text.includes('bandstand') || text.includes('bandra') || text.includes('marine drive') || text.includes('sea') || text.includes('beach');
-      }
-      return true;
-    });
-  }, [galleryList, activeFilter]);
+  // Chunk items into pages of max 9 images for horizontal scrolling (both Mosaic & Wall)
+  const pages = useMemo(() => {
+    const chunks: GalleryItem[][] = [];
+    for (let i = 0; i < galleryList.length; i += MAX_PER_VIEW) {
+      chunks.push(galleryList.slice(i, i + MAX_PER_VIEW));
+    }
+    return chunks;
+  }, [galleryList]);
 
-  const displayedItems = filteredList.slice(0, visibleLimit);
+  const totalPages = pages.length || 1;
 
-  // Keyboard navigation for lightbox
+  // Reset page when list length changes
+  useEffect(() => {
+    setCurrentPage(0);
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+  }, [galleryList.length]);
+
+  // Handle manual scroll / swipe sync
+  const handleContainerScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollLeft, clientWidth } = scrollContainerRef.current;
+    if (clientWidth > 0) {
+      const pageIndex = Math.round(scrollLeft / clientWidth);
+      if (pageIndex !== currentPage && pageIndex >= 0 && pageIndex < totalPages) {
+        setCurrentPage(pageIndex);
+      }
+    }
+  };
+
+  const scrollToPage = (pageIndex: number) => {
+    const target = Math.max(0, Math.min(pageIndex, totalPages - 1));
+    setCurrentPage(target);
+    if (scrollContainerRef.current) {
+      const width = scrollContainerRef.current.clientWidth;
+      scrollContainerRef.current.scrollTo({
+        left: target * width,
+        behavior: 'smooth',
+      });
+    }
+  };
+
+  const handlePrevPage = () => {
+    scrollToPage(currentPage - 1);
+  };
+
+  const handleNextPage = () => {
+    scrollToPage(currentPage + 1);
+  };
+
+  // Lightbox keyboard navigation
   useEffect(() => {
     if (selectedIdx === null) return;
 
@@ -82,63 +117,65 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
       if (e.key === 'Escape') {
         setSelectedIdx(null);
       } else if (e.key === 'ArrowRight') {
-        setSelectedIdx((prev) => (prev !== null ? (prev + 1) % displayedItems.length : null));
+        setSelectedIdx((prev) => (prev !== null ? (prev + 1) % galleryList.length : null));
       } else if (e.key === 'ArrowLeft') {
-        setSelectedIdx((prev) => (prev !== null ? (prev - 1 + displayedItems.length) % displayedItems.length : null));
+        setSelectedIdx((prev) => (prev !== null ? (prev - 1 + galleryList.length) % galleryList.length : null));
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIdx, displayedItems.length]);
+  }, [selectedIdx, galleryList.length]);
 
-  const selectedItem = selectedIdx !== null ? displayedItems[selectedIdx] : null;
+  const selectedItem = selectedIdx !== null ? galleryList[selectedIdx] : null;
 
-  const handlePrev = (e: React.MouseEvent) => {
+  const handleLightboxPrev = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (selectedIdx !== null) {
-      setSelectedIdx((selectedIdx - 1 + displayedItems.length) % displayedItems.length);
+      setSelectedIdx((selectedIdx - 1 + galleryList.length) % galleryList.length);
     }
   };
 
-  const handleNext = (e: React.MouseEvent) => {
+  const handleLightboxNext = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (selectedIdx !== null) {
-      setSelectedIdx((selectedIdx + 1) % displayedItems.length);
+      setSelectedIdx((selectedIdx + 1) % galleryList.length);
     }
   };
 
   return (
     <section id="gallery" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative overflow-hidden">
       
-      {/* Background Subtle Noise and Atmosphere */}
+      {/* Background Subtle Atmosphere */}
       <div className="absolute inset-0 bg-radial from-[#FFC93C]/5 via-transparent to-transparent pointer-events-none opacity-40" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         {/* Section Header */}
-        <ScrollReveal direction="up" delay={0.05} className="mb-10">
+        <ScrollReveal direction="up" delay={0.05} className="mb-8">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 border border-[#14120F] -rotate-1 shadow-sm">
                 <Camera className="w-3.5 h-3.5" />
-                <span>PHOTO WALL // ROTATING SPOTLIGHT</span>
+                <span>PHOTO WALL // ARCHIVE</span>
               </div>
               <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-[#F4EFE4] leading-none">
                 The Cypher Photo Wall
               </h2>
               <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-2 max-w-2xl leading-relaxed">
-                Raw frames from Carter Road, Shivaji Park, Bandstand & station subways. Every refresh rotates the sequence so all cypher moments cycle into the featured hero spots.
+                Authentic visual moments from Carter Road, Shivaji Park, Bandstand & street sessions.
               </p>
             </div>
 
-            {/* View Toggle */}
+            {/* View Mode Switcher & Page Controls */}
             <div className="flex flex-wrap items-center gap-3 shrink-0">
+              
+              {/* Mosaic / Wall View Mode Switcher */}
               <div className="inline-flex p-1 bg-[#181512] border border-[#F4EFE4]/20">
                 <button
                   type="button"
                   onClick={() => setViewMode('bento')}
-                  title="Bento Mosaic Grid"
+                  title="Mosaic Grid"
                   className={`px-3 py-1.5 text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer ${
                     viewMode === 'bento'
                       ? 'bg-[#FFC93C] text-[#14120F]'
@@ -146,12 +183,12 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                   }`}
                 >
                   <LayoutGrid className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Mosaic</span>
+                  <span>Mosaic</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewMode('masonry')}
-                  title="Masonry Wall View"
+                  title="Wall View"
                   className={`px-3 py-1.5 text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer ${
                     viewMode === 'masonry'
                       ? 'bg-[#FFC93C] text-[#14120F]'
@@ -159,347 +196,553 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                   }`}
                 >
                   <Columns className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Wall</span>
+                  <span>Wall</span>
                 </button>
               </div>
-            </div>
-          </div>
 
-          {/* Interactive Filter Pills */}
-          <div className="mt-8 flex flex-wrap items-center gap-2 pt-4 border-t border-[#F4EFE4]/10">
-            <span className="text-xs font-mono text-[#F4EFE4]/50 mr-2 uppercase">Filter Wall:</span>
-            {[
-              { id: 'all', label: `All Wall Photos (${galleryList.length})` },
-              { id: 'cyphers', label: 'Street Cyphers' },
-              { id: 'battles', label: 'Battles & Stages' },
-              { id: 'sessions', label: 'Acoustic Drills' },
-              { id: 'coast', label: 'Bandra & Seaside' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setActiveFilter(tab.id as FilterCategory)}
-                className={`px-3.5 py-1.5 text-xs font-mono font-semibold uppercase tracking-wider transition-all border cursor-pointer ${
-                  activeFilter === tab.id
-                    ? 'bg-[#E4402A] text-[#F4EFE4] border-[#E4402A] shadow-[2px_2px_0px_0px_#FFC93C]'
-                    : 'bg-[#181512] text-[#F4EFE4]/70 border-[#F4EFE4]/20 hover:border-[#FFC93C] hover:text-[#F4EFE4]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+              {/* Horizontal Scroll Navigation Controls (Left / Right) */}
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 0}
+                    aria-label="Scroll to previous photos"
+                    className={`p-2 border transition-all cursor-pointer ${
+                      currentPage === 0
+                        ? 'bg-[#181512]/50 text-[#F4EFE4]/30 border-[#F4EFE4]/10 cursor-not-allowed'
+                        : 'bg-[#181512] text-[#FFC93C] border-[#FFC93C]/40 hover:bg-[#FFC93C] hover:text-[#14120F]'
+                    }`}
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </button>
+
+                  <span className="text-xs font-mono text-[#F4EFE4]/70 px-2 py-1 bg-[#181512] border border-[#F4EFE4]/20">
+                    {currentPage + 1} / {totalPages}
+                  </span>
+
+                  <button
+                    type="button"
+                    onClick={handleNextPage}
+                    disabled={currentPage >= totalPages - 1}
+                    aria-label="Scroll to next photos"
+                    className={`p-2 border transition-all cursor-pointer ${
+                      currentPage >= totalPages - 1
+                        ? 'bg-[#181512]/50 text-[#F4EFE4]/30 border-[#F4EFE4]/10 cursor-not-allowed'
+                        : 'bg-[#181512] text-[#FFC93C] border-[#FFC93C]/40 hover:bg-[#FFC93C] hover:text-[#14120F]'
+                    }`}
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+            </div>
           </div>
         </ScrollReveal>
 
-        {/* The Wall Display */}
-        {displayedItems.length === 0 ? (
+        {/* Loading State */}
+        {loading ? (
           <div className="py-20 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
-            <ImageIcon className="w-12 h-12 text-[#FFC93C]/50 mx-auto mb-3" />
-            <h3 className="font-['Anton'] text-2xl text-[#F4EFE4] tracking-wide uppercase">No Photos in this Filter</h3>
-            <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto mb-4">
-              Try clicking &quot;All Wall Photos&quot; to view the complete street archive.
-            </p>
-            <button
-              type="button"
-              onClick={() => setActiveFilter('all')}
-              className="px-4 py-2 bg-[#FFC93C] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider"
-            >
-              Reset Filter
-            </button>
+            <div className="w-10 h-10 border-2 border-[#FFC93C] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="font-mono text-xs uppercase text-[#F4EFE4]/70">Checking Cypher Archive...</p>
           </div>
-        ) : viewMode === 'masonry' ? (
+        ) : galleryList.length === 0 ? (
           /* =========================================================================
-             1. MASONRY PHOTO WALL
+             REAL EMPTY STATE (No fake/mock data)
              ========================================================================= */
-          <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-4 [column-fill:_balance]">
-            {displayedItems.map((item, idx) => {
-              const photoSrc = item.photoUrl || 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80';
-              
-              // Varied height aspect ratios for organic wall feel
-              const aspectClass = item.aspect === 'tall' 
-                ? 'aspect-[3/4]' 
-                : item.aspect === 'wide' 
-                ? 'aspect-[16/10]' 
-                : 'aspect-square';
-
-              const tapeRotate = idx % 3 === 0 ? '-rotate-3' : idx % 2 === 0 ? 'rotate-2' : '-rotate-1';
-
-              return (
-                <div
-                  key={item.id}
-                  className="break-inside-avoid mb-4 group"
-                  onClick={() => setSelectedIdx(idx)}
-                >
-                  <div className="relative bg-[#181512] border-2 border-[#14120F] p-2.5 shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer overflow-hidden group-hover:-translate-y-1">
-                    
-                    {/* Corner Paper Tape Accent */}
-                    <div className={`absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 ${tapeRotate} border border-[#14120F]/40 z-20 pointer-events-none shadow-xs`} />
-
-                    {/* Image Frame */}
-                    <div className={`relative w-full ${aspectClass} overflow-hidden bg-[#14120F]`}>
-                      <img
-                        src={photoSrc}
-                        alt={item.title}
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                      />
-
-                      {/* Top Stamp Tag */}
-                      <div className="absolute top-2 right-2 z-10 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[9px] font-bold uppercase border border-[#FFC93C]/40 backdrop-blur-xs">
-                        {item.dateStr || 'Cypher'}
-                      </div>
-
-                      {/* Hover Overlay Vignette */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-[#14120F] via-[#14120F]/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3.5 z-10">
-                        
-                        {/* Top Location Chip */}
-                        <div className="flex items-center gap-1.5 self-start px-2 py-0.5 bg-[#14120F]/90 border border-[#F4EFE4]/30 text-[10px] font-mono text-[#F4EFE4]">
-                          <MapPin className="w-3 h-3 text-[#FFC93C]" />
-                          <span className="truncate max-w-[140px]">{item.location}</span>
-                        </div>
-
-                        {/* Bottom Title & Excerpt */}
-                        <div>
-                          <h4 className="font-['Anton'] text-lg uppercase tracking-tight text-[#F4EFE4] leading-tight mb-1">
-                            {item.title}
-                          </h4>
-                          <p className="text-[11px] font-sans text-[#F4EFE4]/80 line-clamp-2 leading-snug mb-2">
-                            {item.caption}
-                          </p>
-                          <div className="inline-flex items-center gap-1 text-[10px] font-mono text-[#FFC93C] font-bold uppercase">
-                            <Maximize2 className="w-3 h-3" />
-                            <span>Click to Expand</span>
-                          </div>
-                        </div>
-
-                      </div>
-                    </div>
-
-                    {/* Permanent Bottom Strip */}
-                    <div className="mt-2 pt-1.5 border-t border-[#F4EFE4]/10 flex items-center justify-between text-[11px] font-mono text-[#F4EFE4]/70 px-0.5">
-                      <span className="truncate max-w-[160px] text-[#F4EFE4] font-medium">{item.title}</span>
-                      <span className="text-[10px] text-[#FFC93C] font-bold shrink-0">#{idx + 1}</span>
-                    </div>
-
-                  </div>
-                </div>
-              );
-            })}
+          <div className="py-16 md:py-20 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8 max-w-2xl mx-auto shadow-[4px_4px_0px_0px_#14120F]">
+            <div className="w-16 h-16 rounded-full bg-[#FFC93C]/10 border border-[#FFC93C]/30 flex items-center justify-center mx-auto mb-4">
+              <Camera className="w-8 h-8 text-[#FFC93C]" />
+            </div>
+            
+            <h3 className="font-['Anton'] text-2xl sm:text-3xl text-[#F4EFE4] tracking-wide uppercase">
+              No Gallery Photos Uploaded Yet
+            </h3>
+            <p className="font-mono text-xs sm:text-sm text-[#F4EFE4]/70 mt-2 max-w-md mx-auto leading-relaxed">
+              Authentic cypher moments and battle frames uploaded through the Admin Studio will appear here in our mosaic & wall layout.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
+              <a
+                href="/admin"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFC93C] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] hover:bg-[#F4EFE4] transition-all cursor-pointer"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Upload First Photo (Admin)</span>
+              </a>
+              <a
+                href={COMMUNITY_CONTACT.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#181512] text-[#F4EFE4] border border-[#F4EFE4]/20 font-mono text-xs font-bold uppercase tracking-wider hover:border-[#FFC93C] transition-all"
+              >
+                <span>Check Instagram Highlights</span>
+              </a>
+            </div>
           </div>
         ) : (
           /* =========================================================================
-             2. BENTO MOSAIC GRID
+             HORIZONTAL SCROLLABLE PHOTO CONTAINER (Max 9 Images per Page, Left/Right Scroll)
              ========================================================================= */
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 auto-rows-[220px] sm:auto-rows-[240px] gap-4">
-            {displayedItems.map((item, idx) => {
-              const photoSrc = item.photoUrl || 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80';
-              
-              // Editorial Bento Spans
-              const isHero = idx === 0 || idx === 7;
-              const isWide = idx === 3 || idx === 10;
-              const isTall = idx === 4 || idx === 11;
+          <div className="relative group/gallery">
+            
+            {/* Left Scroll Floating Button (Desktop) */}
+            {totalPages > 1 && currentPage > 0 && (
+              <button
+                type="button"
+                onClick={handlePrevPage}
+                aria-label="Previous photos"
+                className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-[#181512] text-[#FFC93C] border-2 border-[#FFC93C] shadow-[3px_3px_0px_0px_#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer active:scale-95"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+            )}
 
-              const spanClass = isHero 
-                ? 'sm:col-span-2 sm:row-span-2' 
-                : isWide 
-                ? 'sm:col-span-2 sm:row-span-1' 
-                : isTall 
-                ? 'sm:row-span-2 sm:col-span-1' 
-                : 'col-span-1 row-span-1';
+            {/* Right Scroll Floating Button (Desktop) */}
+            {totalPages > 1 && currentPage < totalPages - 1 && (
+              <button
+                type="button"
+                onClick={handleNextPage}
+                aria-label="Next photos"
+                className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-[#181512] text-[#FFC93C] border-2 border-[#FFC93C] shadow-[3px_3px_0px_0px_#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer active:scale-95"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            )}
 
-              return (
-                <div
-                  key={item.id}
-                  onClick={() => setSelectedIdx(idx)}
-                  className={`group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer hover:-translate-y-0.5 ${spanClass}`}
-                >
-                  {/* Corner Paper Tape Accent */}
-                  <div className={`absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 ${idx % 2 === 0 ? '-rotate-2' : 'rotate-2'} border border-[#14120F]/40 z-20 pointer-events-none shadow-xs`} />
+            {/* Horizontal Scroll Track */}
+            <div
+              ref={scrollContainerRef}
+              onScroll={handleContainerScroll}
+              className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            >
+              {pages.map((pageItems, pageIdx) => {
+                const pageOffset = pageIdx * MAX_PER_VIEW;
 
-                  <img
-                    src={photoSrc}
-                    alt={item.title}
-                    loading="lazy"
-                    referrerPolicy="no-referrer"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
-                  />
+                return (
+                  <div
+                    key={`page-${pageIdx}`}
+                    className="w-full shrink-0 snap-start px-0.5"
+                  >
+                    {viewMode === 'bento' ? (
+                      /* =========================================================================
+                         1. MOSAIC VIEW (Clear, fully visible images without awkward cropping)
+                         ========================================================================= */
+                      pageItems.length === 1 ? (
+                        /* Single Photo Hero Layout */
+                        <div className="w-full max-w-3xl mx-auto">
+                          <div
+                            onClick={() => setSelectedIdx(pageOffset)}
+                            className="group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer flex flex-col"
+                          >
+                            <div className="relative w-full h-[400px] sm:h-[500px] bg-[#0E0C0A] flex items-center justify-center overflow-hidden">
+                              <img
+                                src={pageItems[0].photoUrl}
+                                alt=""
+                                aria-hidden="true"
+                                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-110 pointer-events-none select-none"
+                              />
+                              <img
+                                src={pageItems[0].photoUrl}
+                                alt={pageItems[0].title}
+                                loading="lazy"
+                                className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.02] transition-transform duration-300"
+                              />
+                              <div className="absolute top-3 right-3 z-20 px-2 py-1 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1.5">
+                                <Maximize2 className="w-3 h-3" />
+                                <span>Click to Expand</span>
+                              </div>
+                            </div>
 
-                  {/* Corner Badge */}
-                  <div className="absolute top-3 right-3 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 z-10 backdrop-blur-xs">
-                    {item.dateStr}
+                            <div className="p-4 sm:p-5 bg-[#181512] border-t border-[#F4EFE4]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                              <div>
+                                <div className="flex items-center gap-2 text-xs font-mono text-[#FFC93C] mb-1">
+                                  <MapPin className="w-3.5 h-3.5" />
+                                  <span>{pageItems[0].location}</span>
+                                  {pageItems[0].dateStr && (
+                                    <>
+                                      <span className="text-[#F4EFE4]/30">•</span>
+                                      <span>{pageItems[0].dateStr}</span>
+                                    </>
+                                  )}
+                                </div>
+                                <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4]">
+                                  {pageItems[0].title}
+                                </h3>
+                                {pageItems[0].caption && (
+                                  <p className="text-xs sm:text-sm font-sans text-[#F4EFE4]/80 mt-1 max-w-2xl leading-relaxed">
+                                    {pageItems[0].caption.replace(/\*\*/g, '')}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : pageItems.length === 2 ? (
+                        /* Two Photos Layout (Side by Side, Large Generous Frames) */
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {pageItems.map((item, localIdx) => {
+                            const globalIdx = pageOffset + localIdx;
+                            return (
+                              <div
+                                key={item.id}
+                                onClick={() => setSelectedIdx(globalIdx)}
+                                className="group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer flex flex-col"
+                              >
+                                {/* Tape Accent */}
+                                <div className={`absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 ${localIdx % 2 === 0 ? '-rotate-2' : 'rotate-2'} border border-[#14120F]/40 z-20 pointer-events-none shadow-xs`} />
+
+                                {/* Image Canvas: full visibility with soft backdrop */}
+                                <div className="relative w-full h-[380px] sm:h-[460px] md:h-[500px] bg-[#0E0C0A] flex items-center justify-center overflow-hidden">
+                                  <img
+                                    src={item.photoUrl}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-25 scale-110 pointer-events-none select-none"
+                                  />
+                                  <img
+                                    src={item.photoUrl}
+                                    alt={item.title}
+                                    loading="lazy"
+                                    className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.02] transition-transform duration-300"
+                                  />
+                                  <div className="absolute top-3 right-3 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Maximize2 className="w-3 h-3" />
+                                    <span>Expand</span>
+                                  </div>
+                                </div>
+
+                                {/* Dedicated Info Strip below the photo */}
+                                <div className="p-4 bg-[#181512] border-t border-[#F4EFE4]/10 shrink-0">
+                                  <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1.5">
+                                    <span className="flex items-center gap-1.5 truncate">
+                                      <MapPin className="w-3.5 h-3.5 shrink-0" />
+                                      <span className="truncate">{item.location}</span>
+                                    </span>
+                                    {item.dateStr && (
+                                      <span className="text-[10px] uppercase font-bold text-[#F4EFE4]/80 bg-[#14120F] px-2 py-0.5 border border-[#F4EFE4]/20 shrink-0">
+                                        {item.dateStr}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <h3 className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] leading-snug">
+                                    {item.title}
+                                  </h3>
+                                  {item.caption && (
+                                    <p className="text-xs font-sans text-[#F4EFE4]/70 line-clamp-2 mt-1.5 leading-relaxed">
+                                      {item.caption.replace(/\*\*/g, '')}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        /* Multi-Photo Bento Mosaic (3 to 9 Photos) */
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                          {pageItems.map((item, localIdx) => {
+                            const globalIdx = pageOffset + localIdx;
+                            const isFeatured = localIdx === 0 && pageItems.length >= 4;
+
+                            return (
+                              <div
+                                key={item.id}
+                                onClick={() => setSelectedIdx(globalIdx)}
+                                className={`group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer flex flex-col ${
+                                  isFeatured ? 'sm:col-span-2' : 'col-span-1'
+                                }`}
+                              >
+                                {/* Tape Accent */}
+                                <div className={`absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 ${localIdx % 2 === 0 ? '-rotate-2' : 'rotate-2'} border border-[#14120F]/40 z-20 pointer-events-none shadow-xs`} />
+
+                                {/* Image Canvas */}
+                                <div className={`relative w-full ${isFeatured ? 'h-[360px] sm:h-[420px]' : 'h-[300px] sm:h-[350px]'} bg-[#0E0C0A] flex items-center justify-center overflow-hidden`}>
+                                  <img
+                                    src={item.photoUrl}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 pointer-events-none select-none"
+                                  />
+                                  <img
+                                    src={item.photoUrl}
+                                    alt={item.title}
+                                    loading="lazy"
+                                    className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.02] transition-transform duration-300"
+                                  />
+                                  <div className="absolute top-3 right-3 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <Maximize2 className="w-3 h-3" />
+                                    <span>Expand</span>
+                                  </div>
+                                </div>
+
+                                {/* Info Strip */}
+                                <div className="p-3.5 bg-[#181512] border-t border-[#F4EFE4]/10 shrink-0">
+                                  <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1">
+                                    <span className="flex items-center gap-1.5 truncate">
+                                      <MapPin className="w-3 h-3 shrink-0" />
+                                      <span className="truncate">{item.location}</span>
+                                    </span>
+                                    {item.dateStr && (
+                                      <span className="text-[10px] uppercase font-bold text-[#F4EFE4]/80 bg-[#14120F] px-1.5 py-0.5 border border-[#F4EFE4]/20 shrink-0">
+                                        {item.dateStr}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <h3 className={`font-['Anton'] uppercase tracking-tight text-[#F4EFE4] leading-snug truncate ${isFeatured ? 'text-xl sm:text-2xl' : 'text-lg'}`}>
+                                    {item.title}
+                                  </h3>
+                                  {item.caption && (
+                                    <p className="text-xs font-sans text-[#F4EFE4]/70 line-clamp-1 mt-1 leading-relaxed">
+                                      {item.caption.replace(/\*\*/g, '')}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )
+                    ) : (
+                      /* =========================================================================
+                         2. WALL VIEW (Clear, aspect-ratio preserving wall frames)
+                         ========================================================================= */
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {[0, 1, 2].map((colIdx) => {
+                          const colItems = pageItems.filter((_, idx) => idx % 3 === colIdx);
+                          if (colItems.length === 0) return null;
+
+                          return (
+                            <div key={`col-${colIdx}`} className="flex flex-col gap-5">
+                              {colItems.map((item) => {
+                                const globalIdx = galleryList.findIndex((g) => g.id === item.id);
+                                const isPortrait = item.aspect === 'tall' || item.aspect === 'portrait';
+                                const isLandscape = item.aspect === 'wide' || item.aspect === 'landscape';
+                                const aspectClass = isPortrait
+                                  ? 'aspect-[3/4]'
+                                  : isLandscape
+                                  ? 'aspect-[16/10]'
+                                  : 'aspect-square';
+
+                                return (
+                                  <div
+                                    key={item.id}
+                                    onClick={() => setSelectedIdx(globalIdx >= 0 ? globalIdx : 0)}
+                                    className="group relative bg-[#181512] border-2 border-[#14120F] p-3 shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer overflow-hidden group-hover:-translate-y-1"
+                                  >
+                                    {/* Paper Tape */}
+                                    <div className="absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 -rotate-2 border border-[#14120F]/40 z-20 pointer-events-none shadow-xs" />
+
+                                    {/* Frame */}
+                                    <div className={`relative w-full ${aspectClass} overflow-hidden bg-[#0D0B09] flex items-center justify-center`}>
+                                      <img
+                                        src={item.photoUrl}
+                                        alt=""
+                                        aria-hidden="true"
+                                        className="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 pointer-events-none select-none"
+                                      />
+                                      <img
+                                        src={item.photoUrl}
+                                        alt={item.title}
+                                        loading="lazy"
+                                        className="relative z-10 max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                                      />
+
+                                      {/* Top Stamp Tag */}
+                                      <div className="absolute top-2 right-2 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[9px] font-bold uppercase border border-[#FFC93C]/40 backdrop-blur-xs">
+                                        {item.dateStr || 'Cypher'}
+                                      </div>
+                                    </div>
+
+                                    {/* Bottom Info Strip */}
+                                    <div className="mt-3 pt-2 border-t border-[#F4EFE4]/10">
+                                      <div className="flex items-center justify-between text-[11px] font-mono text-[#FFC93C] mb-1">
+                                        <span className="flex items-center gap-1 truncate">
+                                          <MapPin className="w-3 h-3 shrink-0" />
+                                          <span className="truncate">{item.location}</span>
+                                        </span>
+                                        <span className="text-[10px] text-[#FFC93C] font-bold shrink-0">#{globalIdx + 1}</span>
+                                      </div>
+                                      <h4 className="font-['Anton'] text-lg uppercase tracking-tight text-[#F4EFE4] leading-tight truncate">
+                                        {item.title}
+                                      </h4>
+                                      {item.caption && (
+                                        <p className="text-[11px] font-sans text-[#F4EFE4]/70 line-clamp-1 mt-0.5 leading-snug">
+                                          {item.caption.replace(/\*\*/g, '')}
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
+                );
+              })}
+            </div>
 
-                  {/* Gradient Info Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#14120F] via-[#14120F]/50 to-transparent opacity-80 sm:opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-4 z-10">
-                    <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1">
-                      <span className="flex items-center gap-1.5">
-                        <MapPin className="w-3.5 h-3.5" />
-                        <span className="truncate max-w-[160px]">{item.location}</span>
-                      </span>
-                      <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-bold text-[#FFC93C] bg-[#14120F]/80 px-2 py-0.5 border border-[#FFC93C]/40">
-                        <Maximize2 className="w-3 h-3" />
-                        <span>Expand</span>
-                      </span>
-                    </div>
-                    <h3 className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] leading-tight mb-1">
-                      {item.title}
-                    </h3>
-                    <p className="text-xs font-sans text-[#F4EFE4]/80 line-clamp-2 leading-relaxed">
-                      {item.caption}
-                    </p>
+            {/* Bottom Pagination & Scroll Indicators */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#F4EFE4]/10">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-mono text-[#F4EFE4]/50 uppercase">Page:</span>
+                  <div className="flex items-center gap-1.5">
+                    {pages.map((_, pIdx) => (
+                      <button
+                        key={`page-btn-${pIdx}`}
+                        type="button"
+                        onClick={() => scrollToPage(pIdx)}
+                        className={`w-7 h-7 text-xs font-mono font-bold transition-all border cursor-pointer ${
+                          currentPage === pIdx
+                            ? 'bg-[#FFC93C] text-[#14120F] border-[#FFC93C] shadow-[2px_2px_0px_0px_#14120F]'
+                            : 'bg-[#181512] text-[#F4EFE4]/70 border-[#F4EFE4]/20 hover:border-[#FFC93C] hover:text-[#F4EFE4]'
+                        }`}
+                      >
+                        {pIdx + 1}
+                      </button>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
+
+                {/* Left/Right Buttons */}
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrevPage}
+                    disabled={currentPage === 0}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 border font-mono text-xs font-bold uppercase transition-all cursor-pointer ${
+                      currentPage === 0
+                        ? 'opacity-40 border-[#F4EFE4]/10 text-[#F4EFE4]/40 cursor-not-allowed'
+                        : 'bg-[#181512] border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] shadow-[2px_2px_0px_0px_#14120F]'
+                    }`}
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Scroll Left</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleNextPage}
+                    disabled={currentPage >= totalPages - 1}
+                    className={`inline-flex items-center gap-1.5 px-4 py-2 border font-mono text-xs font-bold uppercase transition-all cursor-pointer ${
+                      currentPage >= totalPages - 1
+                        ? 'opacity-40 border-[#F4EFE4]/10 text-[#F4EFE4]/40 cursor-not-allowed'
+                        : 'bg-[#181512] border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] shadow-[2px_2px_0px_0px_#14120F]'
+                    }`}
+                  >
+                    <span>Scroll Right</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
+
           </div>
         )}
-
-        {/* Load More Frames if more exist */}
-        {filteredList.length > visibleLimit && (
-          <div className="mt-10 text-center">
-            <button
-              type="button"
-              onClick={() => setVisibleLimit((prev) => prev + 12)}
-              className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer active:scale-95"
-            >
-              <span>Load More Frames ({filteredList.length - visibleLimit} Remaining)</span>
-            </button>
-          </div>
-        )}
-
-        {/* Community Dispatch / Contribute to the Wall Banner */}
-        <ScrollReveal direction="up" delay={0.1} className="mt-14 p-6 sm:p-8 bg-[#181512] border-2 border-[#14120F] shadow-[6px_6px_0px_0px_#FFC93C] flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-[#14120F] text-[#FFC93C] text-[11px] font-mono font-bold uppercase tracking-wider border border-[#FFC93C]/40">
-              <Camera className="w-3.5 h-3.5" />
-              <span>COMMUNITY PHOTOGRAPHERS & SHOOTERS</span>
-            </div>
-            <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4]">
-              Captured a sick moment at our weekend cyphers?
-            </h3>
-            <p className="text-xs sm:text-sm font-mono text-[#F4EFE4]/70 leading-relaxed">
-              Drop your high-res photos and video stills in our WhatsApp group or tag <strong>@mumbai.beatbox.hub</strong> on Instagram. We paste fresh authentic community shots onto this wall every week.
-            </p>
-          </div>
-
-          <a
-            href={COMMUNITY_CONTACT.whatsappGroup}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all shrink-0 cursor-pointer"
-          >
-            <MessageCircle className="w-4 h-4" />
-            <span>Send Photos on WhatsApp</span>
-          </a>
-        </ScrollReveal>
 
       </div>
 
       {/* =========================================================================
-         3. FULLSCREEN INTERACTIVE STREET LIGHTBOX MODAL
+         LIGHTBOX MODAL (Full Resolution, Clear & Uncropped)
          ========================================================================= */}
-      {selectedItem && selectedIdx !== null && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/92 backdrop-blur-md p-3 sm:p-6"
+      {selectedItem && (
+        <div
+          role="dialog"
+          aria-modal="true"
           onClick={() => setSelectedIdx(null)}
+          className="fixed inset-0 z-50 bg-[#14120F]/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
         >
-          {/* Modal Container */}
-          <div 
-            className="bg-[#181512] text-[#F4EFE4] border-4 border-[#14120F] shadow-[10px_10px_0px_0px_#FFC93C] max-w-5xl w-full max-h-[92vh] flex flex-col overflow-hidden relative"
-            onClick={(e) => e.stopPropagation()}
+          {/* Close button */}
+          <button
+            type="button"
+            onClick={() => setSelectedIdx(null)}
+            aria-label="Close modal"
+            className="absolute top-4 right-4 z-50 p-2.5 bg-[#181512] border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer"
           >
-            {/* Top Bar */}
-            <div className="flex items-center justify-between p-3.5 sm:p-4 bg-[#14120F] border-b-2 border-[#FFC93C]/30 text-xs font-mono">
-              <div className="flex items-center gap-3">
-                <span className="px-2.5 py-0.5 bg-[#FFC93C] text-[#14120F] font-bold uppercase">
-                  WALL PHOTO #{selectedIdx + 1}
-                </span>
-                <span className="text-[#F4EFE4]/60 hidden sm:inline">
-                  [{selectedIdx + 1} of {displayedItems.length}]
-                </span>
-              </div>
+            <X className="w-6 h-6" />
+          </button>
 
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] text-[#F4EFE4]/50 hidden sm:inline">
-                  Use ← → keys to browse
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setSelectedIdx(null)}
-                  className="p-1.5 bg-[#181512] hover:bg-[#E4402A] text-[#F4EFE4] border border-[#F4EFE4]/30 transition-colors cursor-pointer"
-                  title="Close (Esc)"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            </div>
+          {/* Lightbox Left Navigation */}
+          {galleryList.length > 1 && (
+            <button
+              type="button"
+              onClick={handleLightboxPrev}
+              aria-label="Previous photo"
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-[#181512]/90 border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+          )}
 
-            {/* Main Center Image Viewport */}
-            <div className="relative flex-1 bg-black/80 flex items-center justify-center overflow-hidden min-h-[300px] max-h-[58vh]">
+          {/* Lightbox Right Navigation */}
+          {galleryList.length > 1 && (
+            <button
+              type="button"
+              onClick={handleLightboxNext}
+              aria-label="Next photo"
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-[#181512]/90 border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+          )}
+
+          {/* Lightbox Content Card */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-5xl w-full bg-[#181512] border-2 border-[#FFC93C] shadow-[8px_8px_0px_0px_#14120F] overflow-hidden max-h-[90vh] flex flex-col md:flex-row"
+          >
+            {/* Image Preview Container */}
+            <div className="relative md:w-3/5 bg-black flex items-center justify-center min-h-[320px] md:min-h-[500px] p-2">
               <img
-                src={selectedItem.photoUrl || ''}
+                src={selectedItem.photoUrl}
                 alt={selectedItem.title}
-                referrerPolicy="no-referrer"
-                className="max-w-full max-h-full object-contain"
+                className="max-h-[75vh] w-full object-contain"
               />
-
-              {/* Prev Button */}
-              <button
-                type="button"
-                onClick={handlePrev}
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-[#14120F]/80 hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 flex items-center justify-center transition-all cursor-pointer shadow-lg"
-                title="Previous Photo (Left Arrow)"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-
-              {/* Next Button */}
-              <button
-                type="button"
-                onClick={handleNext}
-                className="absolute right-3 top-1/2 -translate-y-1/2 w-11 h-11 bg-[#14120F]/80 hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 flex items-center justify-center transition-all cursor-pointer shadow-lg"
-                title="Next Photo (Right Arrow)"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
+              <div className="absolute top-3 left-3 px-2 py-1 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40">
+                Frame {selectedIdx !== null ? selectedIdx + 1 : 1} of {galleryList.length}
+              </div>
             </div>
 
-            {/* Bottom Metadata Drawer */}
-            <div className="p-4 sm:p-6 bg-[#14120F] border-t-2 border-[#14120F] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div className="space-y-1.5 max-w-2xl">
-                <div className="flex flex-wrap items-center gap-2 text-xs font-mono text-[#FFC93C]">
-                  <span className="flex items-center gap-1">
-                    <MapPin className="w-3.5 h-3.5" />
-                    <span>{selectedItem.location}, Mumbai</span>
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{selectedItem.dateStr}</span>
-                  </span>
+            {/* Sidebar Details */}
+            <div className="p-6 md:w-2/5 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#FFC93C]/20 bg-[#181512] overflow-y-auto">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FFC93C]/10 border border-[#FFC93C]/30 text-[#FFC93C] font-mono text-xs mb-3">
+                  <MapPin className="w-3.5 h-3.5" />
+                  <span>{selectedItem.location || 'Mumbai Cypher'}</span>
                 </div>
 
-                <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4] leading-tight">
+                <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4] leading-tight mb-2">
                   {selectedItem.title}
                 </h3>
 
-                <p className="text-xs sm:text-sm font-sans text-[#F4EFE4]/80 leading-relaxed">
-                  {selectedItem.caption}
+                <p className="text-xs sm:text-sm text-[#F4EFE4]/80 font-sans leading-relaxed mb-4 whitespace-pre-line">
+                  {selectedItem.caption || 'Acoustic cypher capture from the Mumbai Beatbox Hub community archives.'}
                 </p>
+
+                {selectedItem.dateStr && (
+                  <div className="text-xs font-mono text-[#F4EFE4]/60 border-t border-[#F4EFE4]/10 pt-3">
+                    <span className="text-[#FFC93C]">Session / Tag:</span> {selectedItem.dateStr}
+                  </div>
+                )}
               </div>
 
-              <div className="shrink-0 flex items-center gap-2">
+              <div className="mt-6 pt-4 border-t border-[#F4EFE4]/10 flex items-center justify-between">
+                <span className="text-[11px] font-mono text-[#F4EFE4]/50">
+                  USE ← → ARROWS TO BROWSE
+                </span>
                 <button
                   type="button"
                   onClick={() => setSelectedIdx(null)}
-                  className="px-5 py-2.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F] transition-colors cursor-pointer"
+                  className="px-3 py-1.5 bg-[#FFC93C] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider hover:bg-[#F4EFE4] transition-colors cursor-pointer"
                 >
-                  Close Wall Viewer
+                  Close
                 </button>
               </div>
             </div>
-
           </div>
         </div>
       )}
