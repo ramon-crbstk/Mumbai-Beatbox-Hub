@@ -359,7 +359,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                   {isPlaying && (
                     <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 animate-pulse shadow">
                       <span className="w-1.5 h-1.5 rounded-full bg-[#F4EFE4]" />
-                      PLAYING VOICE
+                      PLAYING AUDIO
                     </div>
                   )}
                 </div>
@@ -401,11 +401,10 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                   if (!hasValidAudio) {
                     return (
                       <div className="p-4 bg-[#14120F] space-y-3">
-                        {/* Voice Note Info Header - Inactive */}
+                        {/* Audio Info Header - Inactive */}
                         <div className="flex items-center justify-between text-xs font-mono">
-                          <span className="text-[#F4EFE4]/50 font-medium truncate max-w-[180px] flex items-center gap-1.5">
+                          <span className="text-[#F4EFE4]/40 flex items-center gap-1.5">
                             <MicOff className="w-3.5 h-3.5 text-[#F4EFE4]/40 shrink-0" />
-                            <span>{member.voiceNoteTitle || 'Voice Note'}</span>
                           </span>
                           <div className="flex items-center gap-1.5 shrink-0">
                             <span className="px-1.5 py-0.5 bg-[#231F19] text-[#F4EFE4]/40 border border-[#F4EFE4]/15 text-[9px] uppercase font-bold">
@@ -420,16 +419,16 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                           <div className="bg-transparent h-full w-0" />
                         </div>
 
-                        {/* Sound Control Buttons: Disabled with NO VOICE NOTE indicator */}
+                        {/* Sound Control Buttons: Disabled with NO AUDIO indicator */}
                         <div className="pt-1 flex flex-col gap-2">
                           <button
                             id={`voice-btn-${member.id}`}
                             disabled
                             className="w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-[#1A1713] text-[#F4EFE4]/35 border border-[#F4EFE4]/10 cursor-not-allowed select-none"
-                            aria-label={`No voice note available for ${member.name}`}
+                            aria-label={`No audio available for ${member.name}`}
                           >
                             <MicOff className="w-3.5 h-3.5 text-[#F4EFE4]/30" />
-                            <span>NO VOICE NOTE</span>
+                            <span>NO AUDIO AVAILABLE</span>
                           </button>
 
                           <div className="grid grid-cols-2 gap-2 opacity-30 pointer-events-none">
@@ -458,22 +457,16 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
 
                   return (
                     <div className="p-4 bg-[#14120F] space-y-3">
-                      {/* Voice Note Info Header - Active Audio Uploaded */}
+                      {/* Audio Info Header - Active Audio Uploaded (Voice note title and badge removed) */}
                       <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-[#F4EFE4]/80 font-medium truncate max-w-[180px] flex items-center gap-1.5">
+                        <span className="text-[#FFC93C] flex items-center gap-1.5">
                           <Mic className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
-                          {member.voiceNoteTitle || 'Street Routine Freestyle'}
                         </span>
-                        <div className="flex items-center gap-1.5 shrink-0">
-                          <span className="px-1.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[9px] uppercase font-bold">
-                            VOICE NOTE
-                          </span>
-                          <span className="text-[#FFC93C] font-mono font-bold">
-                            {isPlaying
-                              ? `${Math.floor((currentTimeMap[member.id] || 0) / 60)}:${String(Math.floor((currentTimeMap[member.id] || 0) % 60)).padStart(2, '0')}`
-                              : member.voiceNoteDuration || '0:15'}
-                          </span>
-                        </div>
+                        <span className="text-[#FFC93C] font-mono font-bold">
+                          {isPlaying
+                            ? `${Math.floor((currentTimeMap[member.id] || 0) / 60)}:${String(Math.floor((currentTimeMap[member.id] || 0) % 60)).padStart(2, '0')}`
+                            : member.voiceNoteDuration || '0:15'}
+                        </span>
                       </div>
 
                       {/* Playback Progress Bar */}
@@ -491,7 +484,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                             id={`voice-replay-btn-${member.id}`}
                             onClick={() => replayVoiceNote(member)}
                             className="w-full py-2.5 px-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] border border-emerald-400 transition-all active:scale-95 shadow cursor-pointer"
-                            aria-label={`Replay voice note of ${member.name}`}
+                            aria-label={`Replay audio of ${member.name}`}
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
                             <span>REPLAY ROUTINE</span>
@@ -505,17 +498,17 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                                 ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
                                 : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'
                             }`}
-                            aria-label={isPlaying ? `Stop voice note of ${member.name}` : `Start voice note of ${member.name}`}
+                            aria-label={isPlaying ? `Stop audio of ${member.name}` : `Start audio of ${member.name}`}
                           >
                             {isPlaying ? (
                               <>
                                 <Square className="w-3.5 h-3.5 fill-current" />
-                                <span>STOP VOICE NOTE</span>
+                                <span>STOP AUDIO</span>
                               </>
                             ) : (
                               <>
                                 <Play className="w-3.5 h-3.5 fill-current" />
-                                <span>START VOICE NOTE</span>
+                                <span>PLAY AUDIO</span>
                               </>
                             )}
                           </button>

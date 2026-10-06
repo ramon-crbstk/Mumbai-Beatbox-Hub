@@ -195,17 +195,13 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                       <div className="absolute inset-0 bg-black/10 group-hover:bg-black/30 transition-colors z-10 pointer-events-none" />
 
                       {/* Top Bar Badges */}
-                      <div className="absolute top-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between gap-2 pointer-events-none">
-                        {displayCategory ? (
+                      {displayCategory && (
+                        <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none">
                           <span className="px-2.5 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
                             {displayCategory}
                           </span>
-                        ) : <span />}
-
-                        <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider text-[#FFC93C] bg-[#14120F]/90 border border-[#FFC93C]/60 backdrop-blur-xs">
-                          DROP #{idx + 1}
-                        </span>
-                      </div>
+                        </div>
+                      )}
 
                       {/* Prominent High-Contrast Play Button in Center */}
                       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
