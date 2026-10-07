@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { CommunityMember, GalleryItem, VideoItem, EventItem } from '../types';
+import { CommunityMember, GalleryItem, VideoItem, EventItem, CollaborationItem } from '../types';
 import { COMMUNITY_MEMBERS, GALLERY_ITEMS, FEATURED_VIDEOS } from '../data/communityData';
 
 // Retrieve environment variables safely
@@ -189,7 +189,7 @@ export async function checkAllSupabaseTables(): Promise<{
 }> {
   const configured = isSupabaseConfigured();
   const projectRef = getSupabaseProjectRef();
-  const tablesToCheck = ['members', 'gallery', 'videos', 'events', 'rsvps', 'contact_dispatches'];
+  const tablesToCheck = ['members', 'gallery', 'videos', 'events', 'rsvps', 'contact_dispatches', 'collaborations'];
 
   if (!configured) {
     return {
@@ -675,6 +675,7 @@ export function mapMemberRecord(item: Record<string, unknown>): CommunityMember 
     specialty: String(item.specialty || ''),
     area: String(item.area || ''),
     experience: String(item.experience || ''),
+    bio: item.bio ? String(item.bio) : undefined,
     voiceNoteTitle: String(item.voice_note_title || item.voiceNoteTitle || 'Street Routine Freestyle'),
     voiceNoteDuration: String(item.voice_note_duration || item.voiceNoteDuration || '0:15'),
     soundType: (item.sound_type || item.soundType || 'bass-growl') as CommunityMember['soundType'],
@@ -2114,3 +2115,281 @@ try {
 } catch {
   // ignore
 }
+
+// ============================================================================
+// COLLABORATIONS / COMMUNITY ROSTER REPOSITORY (public.collaborations)
+// ============================================================================
+
+export const DEFAULT_COLLABORATIONS: CollaborationItem[] = [
+  {
+    id: 'collab-1',
+    name: 'Bandra Street Sound',
+    short_code: 'BS',
+    description: 'Acoustic Partner in Bandra West promenade sessions',
+    collaboration_type: 'Acoustic Partner',
+    logo_url: '',
+    website_url: '',
+    display_order: 1,
+    is_visible: true,
+  },
+  {
+    id: 'collab-2',
+    name: 'Khar Cultural Warehouse',
+    short_code: 'KC',
+    description: 'Workshop and indoor training warehouse venue',
+    collaboration_type: 'Workshop Venue',
+    logo_url: '',
+    website_url: '',
+    display_order: 2,
+    is_visible: true,
+  },
+  {
+    id: 'collab-3',
+    name: 'Mumbai Underground Fest',
+    short_code: 'MU',
+    description: 'Annual urban street dance and beatbox battle stage',
+    collaboration_type: 'Stage Partner',
+    logo_url: '',
+    website_url: '',
+    display_order: 3,
+    is_visible: true,
+  },
+  {
+    id: 'collab-4',
+    name: 'Collegiate Hip-Hop League',
+    short_code: 'CH',
+    description: 'Inter-collegiate vocal percussion tournament circuit',
+    collaboration_type: 'Youth Circuit',
+    logo_url: '',
+    website_url: '',
+    display_order: 4,
+    is_visible: true,
+  },
+  {
+    id: 'collab-5',
+    name: 'Suburban Jam Series',
+    short_code: 'SJ',
+    description: 'Monthly weekend park jam and acoustic cipher series',
+    collaboration_type: 'Jam Supporter',
+    logo_url: '',
+    website_url: '',
+    display_order: 5,
+    is_visible: true,
+  },
+];
+
+/**
+ * Fetches collaborations from public.collaborations.
+ * Public users: Only fetches rows where is_visible = true, sorted by display_order ASC.
+ * Admins (includeHidden = true): Fetches all rows, sorted by display_order ASC.
+ */
+export async function fetchCollaborations(includeHidden = false): Promise<CollaborationItem[]> {
+  const supabase = getSupabase();
+  if (supabase) {
+    try {
+      let query = supabase.from('collaborations').select('*');
+      if (!includeHidden) {
+        query = query.eq('is_visible', true);
+      }
+      query = query.order('display_order', { ascending: true });
+
+      const { data, error } = await query;
+      if (!error && Array.isArray(data)) {
+        return data.map((row) => ({
+          id: row.id,
+          name: row.name,
+          short_code: row.short_code ?? null,
+          description: row.description ?? null,
+          collaboration_type: row.collaboration_type ?? null,
+          logo_url: row.logo_url ?? null,
+          website_url: row.website_url ?? null,
+          display_order: Number(row.display_order ?? 0),
+          is_visible: Boolean(row.is_visible),
+          created_at: row.created_at,
+          updated_at: row.updated_at,
+        }));
+      }
+
+      if (error) {
+        // Table may not have been created yet or schema cache updating
+        console.warn('Supabase fetch collaborations note:', error.message);
+      }
+    } catch (err) {
+      console.warn('Supabase fetch collaborations error:', err);
+    }
+  }
+
+  // Fallback to default community roster
+  return includeHidden
+    ? DEFAULT_COLLABORATIONS
+    : DEFAULT_COLLABORATIONS.filter((c) => c.is_visible);
+}
+
+/**
+ * Creates or updates a collaboration record in public.collaborations.
+ * Strictly checks admin authentication first.
+ */
+export async function saveCollaboration(
+  item: Partial<CollaborationItem>
+): Promise<{ success: boolean; item?: CollaborationItem; error?: string; source: 'supabase' | 'fallback' }> {
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return {
+      success: false,
+      error: 'Security constraint: Administrator authentication required.',
+      source: 'supabase',
+    };
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not available.', source: 'fallback' };
+  }
+
+  const isEditing = Boolean(item.id && !item.id.startsWith('collab-'));
+
+  const payload: Record<string, unknown> = {
+    name: (item.name || '').trim(),
+    short_code: item.short_code ? item.short_code.trim() : null,
+    description: item.description ? item.description.trim() : null,
+    collaboration_type: item.collaboration_type ? item.collaboration_type.trim() : null,
+    logo_url: item.logo_url ? item.logo_url.trim() : null,
+    website_url: item.website_url ? item.website_url.trim() : null,
+    display_order: Number(item.display_order ?? 0),
+    is_visible: item.is_visible !== false,
+  };
+
+  try {
+    if (isEditing && item.id) {
+      const { data, error } = await supabase
+        .from('collaborations')
+        .update(payload)
+        .eq('id', item.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('Supabase collaboration update error:', error.message);
+        return { success: false, error: error.message, source: 'supabase' };
+      }
+      return { success: true, item: data as CollaborationItem, source: 'supabase' };
+    } else {
+      const { data, error } = await supabase
+        .from('collaborations')
+        .insert([payload])
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('Supabase collaboration insert error:', error.message);
+        return { success: false, error: error.message, source: 'supabase' };
+      }
+      return { success: true, item: data as CollaborationItem, source: 'supabase' };
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: msg, source: 'supabase' };
+  }
+}
+
+/**
+ * Deletes a collaboration record from public.collaborations.
+ */
+export async function deleteCollaboration(id: string): Promise<{ success: boolean; error?: string }> {
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.' };
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not available.' };
+  }
+
+  try {
+    const { error } = await supabase.from('collaborations').delete().eq('id', id);
+    if (error) {
+      console.warn('Supabase collaboration delete error:', error.message);
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Toggles visibility for a collaboration record.
+ */
+export async function toggleCollaborationVisibility(
+  id: string,
+  is_visible: boolean
+): Promise<{ success: boolean; error?: string }> {
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.' };
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not available.' };
+  }
+
+  try {
+    const { error } = await supabase
+      .from('collaborations')
+      .update({ is_visible })
+      .eq('id', id);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: msg };
+  }
+}
+
+/**
+ * Updates display order for a collaboration record.
+ */
+export async function updateCollaborationOrder(
+  id: string,
+  display_order: number
+): Promise<{ success: boolean; error?: string }> {
+  if (!isAdminAuthenticated()) {
+    await verifyAdminSessionLive();
+  }
+  if (!isAdminAuthenticated()) {
+    return { success: false, error: 'Security constraint: Administrator authentication required.' };
+  }
+
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client not available.' };
+  }
+
+  try {
+    const { error } = await supabase
+      .from('collaborations')
+      .update({ display_order })
+      .eq('id', id);
+
+    if (error) {
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: msg };
+  }
+}
+

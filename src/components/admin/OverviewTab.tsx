@@ -11,9 +11,10 @@ import {
   ExternalLink,
   CheckCircle2,
   Clock,
-  Activity
+  Activity,
+  Building2
 } from 'lucide-react';
-import { GalleryItem, VideoItem, CommunityMember } from '../../types';
+import { GalleryItem, VideoItem, CommunityMember, CollaborationItem } from '../../types';
 import { RsvpRecord, ContactDispatchRecord, getSupabaseUrl } from '../../lib/supabase';
 import { AdminUser } from '../../lib/adminAuth';
 
@@ -22,9 +23,10 @@ interface OverviewTabProps {
   gallery: GalleryItem[];
   videos: VideoItem[];
   members: (CommunityMember & { photoUrl: string })[];
+  collaborations?: CollaborationItem[];
   rsvps: RsvpRecord[];
   messages: ContactDispatchRecord[];
-  onSelectTab: (tab: 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages' | 'security') => void;
+  onSelectTab: (tab: 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'collaborations' | 'rsvps' | 'messages' | 'security') => void;
   onOpenAddModal: (tab: 'gallery' | 'videos' | 'members') => void;
 }
 
@@ -33,6 +35,7 @@ export function OverviewTab({
   gallery,
   videos,
   members,
+  collaborations = [],
   rsvps,
   messages,
   onSelectTab,
@@ -90,6 +93,16 @@ export function OverviewTab({
       description: 'Community messages & leads',
       actionLabel: 'View Inbox',
       action: () => onSelectTab('messages'),
+    },
+    {
+      title: 'Collaborations',
+      count: collaborations.length,
+      tab: 'collaborations' as const,
+      icon: Building2,
+      color: '#FFC93C',
+      description: 'Community roster & stages',
+      actionLabel: 'Manage Roster',
+      action: () => onSelectTab('collaborations'),
     },
   ];
 

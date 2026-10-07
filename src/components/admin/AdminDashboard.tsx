@@ -17,7 +17,8 @@ import {
   Radio,
   Calendar,
   BookOpen,
-  Clock
+  Clock,
+  Building2
 } from 'lucide-react';
 import { AdminUser, signOutAdmin } from '../../lib/adminAuth';
 import { 
@@ -27,23 +28,25 @@ import {
   fetchRsvps, 
   fetchContactDispatches,
   fetchUpcomingEvents,
+  fetchCollaborations,
   getLocalEvents,
   setAdminAuthenticated,
   RsvpRecord,
   ContactDispatchRecord
 } from '../../lib/supabase';
-import { GalleryItem, VideoItem, CommunityMember, EventItem } from '../../types';
+import { GalleryItem, VideoItem, CommunityMember, EventItem, CollaborationItem } from '../../types';
 
 import { OverviewTab } from './OverviewTab';
 import { EventsTab } from './EventsTab';
 import { GalleryTab } from './GalleryTab';
 import { VideosTab } from './VideosTab';
 import { MembersTab } from './MembersTab';
+import { CollaborationsTab } from './CollaborationsTab';
 import { RsvpsTab } from './RsvpsTab';
 import { MessagesTab } from './MessagesTab';
 import { SessionDiagnosisBanner } from './SessionDiagnosisBanner';
 
-type AdminTab = 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'rsvps' | 'messages' | 'security';
+type AdminTab = 'overview' | 'events' | 'gallery' | 'videos' | 'members' | 'collaborations' | 'rsvps' | 'messages' | 'security';
 
 interface AdminDashboardProps {
   adminUser: AdminUser;
@@ -79,6 +82,7 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [members, setMembers] = useState<(CommunityMember & { photoUrl: string })[]>([]);
+  const [collaborations, setCollaborations] = useState<CollaborationItem[]>([]);
   const [rsvps, setRsvps] = useState<RsvpRecord[]>([]);
   const [messages, setMessages] = useState<ContactDispatchRecord[]>([]);
 
@@ -92,13 +96,14 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     setLoadError(null);
 
     try {
-      const [galRes, vidRes, memRes, rsvpRes, msgRes, evtRes] = await Promise.all([
+      const [galRes, vidRes, memRes, rsvpRes, msgRes, evtRes, colRes] = await Promise.all([
         fetchGalleryItems(),
         fetchVideoItems(),
         fetchCommunityMembers(),
         fetchRsvps(),
         fetchContactDispatches(),
         fetchUpcomingEvents(),
+        fetchCollaborations(true),
       ]);
 
       if (galRes) setGallery(galRes);
@@ -107,6 +112,7 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
       if (rsvpRes) setRsvps(rsvpRes);
       if (msgRes) setMessages(msgRes);
       if (evtRes) setEvents(evtRes);
+      if (colRes) setCollaborations(colRes);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setLoadError(msg || 'Failed to sync with Supabase tables.');
@@ -131,6 +137,7 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     { id: 'gallery' as const, label: 'Gallery', icon: ImageIcon, count: gallery.length },
     { id: 'videos' as const, label: 'Videos', icon: VideoIcon, count: videos.length },
     { id: 'members' as const, label: 'Members', icon: Users, count: members.length },
+    { id: 'collaborations' as const, label: 'Collaborations', icon: Building2, count: collaborations.length },
     { id: 'rsvps' as const, label: 'RSVPs', icon: Ticket, count: rsvps.length },
     { id: 'messages' as const, label: 'Dispatches', icon: Mail, count: messages.length },
     { id: 'security' as const, label: 'Security & safe', icon: ShieldCheck, count: null },
@@ -339,6 +346,7 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
                 {activeTab === 'gallery' && 'Gallery Media Management'}
                 {activeTab === 'videos' && 'Featured Video Drops'}
                 {activeTab === 'members' && 'Beatboxer Community Roster'}
+                {activeTab === 'collaborations' && 'Community Roster & Affiliated Stages'}
                 {activeTab === 'rsvps' && 'Event Attendee RSVPs'}
                 {activeTab === 'messages' && 'Contact Inquiries & Dispatches'}
                 {activeTab === 'security' && 'Security & Safe Diagnostics'}
@@ -364,6 +372,7 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
                   gallery={gallery}
                   videos={videos}
                   members={members}
+                  collaborations={collaborations}
                   rsvps={rsvps}
                   messages={messages}
                   onSelectTab={(tab) => setActiveTab(tab)}
@@ -396,6 +405,13 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
                 <MembersTab 
                   items={members} 
                   onRefresh={() => loadAllData(true)} 
+                />
+              )}
+
+              {activeTab === 'collaborations' && (
+                <CollaborationsTab
+                  items={collaborations}
+                  onRefresh={() => loadAllData(true)}
                 />
               )}
 

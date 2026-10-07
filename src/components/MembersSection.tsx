@@ -308,7 +308,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                     delay: Math.min(index * 0.06, 0.35),
                     ease: [0.21, 0.47, 0.32, 0.98]
                   }}
-                  className={`snap-start shrink-0 w-[290px] sm:w-[320px] bg-[#1A1713] border-2 transition-all duration-300 flex flex-col justify-between group ${
+                  className={`snap-start shrink-0 w-[84vw] max-w-[320px] sm:w-[320px] bg-[#1A1713] border-2 transition-all duration-300 flex flex-col justify-between group ${
                     isPlaying
                       ? 'border-[#FFC93C] shadow-[0_0_25px_rgba(255,201,60,0.25)] scale-[1.01]'
                     : 'border-[#FFC93C]/25 hover:border-[#FFC93C]/70 hover:shadow-lg'
@@ -483,7 +483,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                           <button
                             id={`voice-replay-btn-${member.id}`}
                             onClick={() => replayVoiceNote(member)}
-                            className="w-full py-2.5 px-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] border border-emerald-400 transition-all active:scale-95 shadow cursor-pointer"
+                            className="w-full min-h-[44px] py-2.5 px-3 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] border border-emerald-400 transition-all active:scale-95 shadow cursor-pointer"
                             aria-label={`Replay audio of ${member.name}`}
                           >
                             <RotateCcw className="w-3.5 h-3.5" />
@@ -493,7 +493,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                           <button
                             id={`voice-btn-${member.id}`}
                             onClick={() => playVoiceNote(member)}
-                            className={`w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
+                            className={`w-full min-h-[44px] py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
                               isPlaying
                                 ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
                                 : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'

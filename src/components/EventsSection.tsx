@@ -86,14 +86,14 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                 >
                   <div
                     id={`event-card-${evt.id}`}
-                    className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] shadow-[8px_8px_0px_0px_#FFC93C] ${
-                      idx % 2 === 0 ? 'rotate-[-0.8deg]' : 'rotate-[0.8deg]'
-                    } hover:rotate-0 transition-transform duration-200 p-6 sm:p-8 flex flex-col justify-between h-full`}
+                    className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[8px_8px_0px_0px_#FFC93C] rotate-0 ${
+                      idx % 2 === 0 ? 'sm:rotate-[-0.8deg]' : 'sm:rotate-[0.8deg]'
+                    } hover:rotate-0 transition-transform duration-200 p-5 sm:p-8 flex flex-col justify-between h-full`}
                   >
                   
                   {/* Event Badge Header */}
                   <div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#14120F] pb-4 mb-6">
+                    <div className="flex flex-wrap items-center justify-between gap-2 border-b-2 border-[#14120F] pb-4 mb-5 sm:mb-6">
                       <div className="flex items-center gap-2 font-mono text-xs font-bold text-[#14120F] uppercase">
                         <span className="w-2.5 h-2.5 bg-[#FFC93C] border border-[#14120F]" />
                         <span>EVENT FLYER #{idx + 1}</span>
@@ -137,7 +137,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                     </h3>
 
                     {/* Meta details list */}
-                    <div className="space-y-2.5 mb-6 text-xs sm:text-sm font-mono text-[#14120F]/90 bg-[#E5DFC8] p-4 border border-[#14120F]/30">
+                    <div className="space-y-2.5 mb-6 text-xs sm:text-sm font-mono text-[#14120F]/90 bg-[#E5DFC8] p-3.5 sm:p-4 border border-[#14120F]/30">
                       <div className="flex items-center gap-2.5">
                         <Calendar className="w-4 h-4 text-[#E4402A] flex-shrink-0" />
                         <span className="font-bold">{formatEventDate(evt.date)}</span>
@@ -181,7 +181,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                   </div>
 
                   {/* Event Bottom Action & RSVP */}
-                  <div className="pt-4 border-t-2 border-[#14120F] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="pt-4 border-t-2 border-[#14120F] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
                     <div className="text-xs font-mono text-[#14120F]/70">
                       <span>Entry: </span>
                       <strong className="text-[#14120F] font-bold">{evt.entry}</strong>
@@ -191,7 +191,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                       <button
                         type="button"
                         disabled
-                        className="inline-flex items-center justify-center gap-2 bg-gray-400 text-gray-800 px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-gray-600 opacity-60 cursor-not-allowed"
+                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-gray-400 text-gray-800 px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-gray-600 opacity-60 cursor-not-allowed"
                       >
                         <Ban className="w-4 h-4" />
                         <span>Registration Closed</span>
@@ -200,7 +200,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                       <button
                         type="button"
                         disabled
-                        className="inline-flex items-center justify-center gap-2 bg-amber-800 text-[#F4EFE4] px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-amber-950 opacity-80 cursor-not-allowed"
+                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-amber-800 text-[#F4EFE4] px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-amber-950 opacity-80 cursor-not-allowed"
                       >
                         <AlertTriangle className="w-4 h-4" />
                         <span>Slots Filled</span>
@@ -210,7 +210,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                         type="button"
                         id={`rsvp-btn-${evt.id}`}
                         onClick={() => onRsvpClick(evt)}
-                        className="inline-flex items-center justify-center gap-2 bg-[#14120F] text-[#FFC93C] hover:bg-[#E4402A] hover:text-[#F4EFE4] px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-[#14120F] text-[#FFC93C] hover:bg-[#E4402A] hover:text-[#F4EFE4] px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
                       >
                         <Ticket className="w-4 h-4" />
                         <span>RSVP for Jam</span>

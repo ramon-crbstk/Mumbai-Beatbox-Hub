@@ -79,18 +79,19 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-xs p-3 sm:p-4"
       onClick={onClose}
     >
       <div 
-        className="bg-[#F4EFE4] text-[#14120F] border-4 border-[#14120F] p-6 sm:p-8 max-w-lg w-full shadow-[8px_8px_0px_0px_#FFC93C] relative max-h-[90vh] overflow-y-auto"
+        className="bg-[#F4EFE4] text-[#14120F] border-4 border-[#14120F] p-5 sm:p-8 max-w-lg w-full shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[8px_8px_0px_0px_#FFC93C] relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-1.5 bg-[#14120F] text-[#F4EFE4] hover:bg-[#E4402A] transition-colors border border-[#14120F] cursor-pointer"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 bg-[#14120F] text-[#F4EFE4] hover:bg-[#E4402A] transition-colors border border-[#14120F] cursor-pointer z-10"
+          aria-label="Close modal"
         >
           <X className="w-5 h-5" />
         </button>
@@ -278,7 +279,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                   placeholder="e.g. Rohan"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
+                  className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
                 />
               </div>
 
@@ -292,7 +293,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                   placeholder="+91 98765 XXXXX"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
+                  className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
                 />
               </div>
 
@@ -303,7 +304,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                 <select
                   value={skill}
                   onChange={(e) => setSkill(e.target.value)}
-                  className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-xs text-[#14120F] focus:outline-none focus:border-[#E4402A]"
+                  className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-base sm:text-xs text-[#14120F] focus:outline-none focus:border-[#E4402A]"
                 >
                   <option>Beginner (First time at a cypher)</option>
                   <option>Intermediate (Knows basics & sounds)</option>
@@ -317,7 +318,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 bg-[#14120F] hover:bg-[#E4402A] disabled:opacity-70 text-[#FFC93C] hover:text-[#F4EFE4] font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full min-h-[48px] py-3.5 bg-[#14120F] hover:bg-[#E4402A] disabled:opacity-70 text-[#FFC93C] hover:text-[#F4EFE4] font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>

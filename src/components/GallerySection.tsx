@@ -7,9 +7,8 @@ import {
   ChevronRight, 
   Maximize2, 
   Camera, 
-  Columns, 
-  LayoutGrid, 
-  Sparkles
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { fetchGalleryItems } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
@@ -19,15 +18,13 @@ interface GallerySectionProps {
   refreshTrigger?: number;
 }
 
-type ViewMode = 'bento' | 'masonry';
-
-const MAX_PER_VIEW = 9;
+// Exactly 6 images per page: swipe right to view additional photos
+const MAX_PER_VIEW = 6;
 
 export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger = 0 }) => {
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
-  const [viewMode, setViewMode] = useState<ViewMode>('bento');
   const [currentPage, setCurrentPage] = useState(0);
 
   const scrollContainerRef = useRef<HTMLDivElement | null>(null);
@@ -58,7 +55,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
     };
   }, [refreshTrigger]);
 
-  // Chunk items into pages of max 9 images for horizontal scrolling (both Mosaic & Wall)
+  // Chunk items into pages of exactly max 6 images
   const pages = useMemo(() => {
     const chunks: GalleryItem[][] = [];
     for (let i = 0; i < galleryList.length; i += MAX_PER_VIEW) {
@@ -77,7 +74,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
     }
   }, [galleryList.length]);
 
-  // Handle manual scroll / swipe sync
+  // Handle manual scroll / touch swipe sync
   const handleContainerScroll = () => {
     if (!scrollContainerRef.current) return;
     const { scrollLeft, clientWidth } = scrollContainerRef.current;
@@ -152,10 +149,10 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
         
         {/* Section Header */}
-        <ScrollReveal direction="up" delay={0.05} className="mb-8">
+        <ScrollReveal direction="up" delay={0.05} className="mb-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 border border-[#14120F] -rotate-1 shadow-sm">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 border border-[#14120F] shadow-sm">
                 <Camera className="w-3.5 h-3.5" />
                 <span>PHOTO WALL // ARCHIVE</span>
               </div>
@@ -167,47 +164,20 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               </p>
             </div>
 
-            {/* View Mode Switcher & Page Controls */}
-            <div className="flex flex-wrap items-center gap-3 shrink-0">
-              
-              {/* Mosaic / Wall View Mode Switcher */}
-              <div className="inline-flex p-1 bg-[#181512] border border-[#F4EFE4]/20">
-                <button
-                  type="button"
-                  onClick={() => setViewMode('bento')}
-                  title="Mosaic Grid"
-                  className={`px-3 py-1.5 text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer ${
-                    viewMode === 'bento'
-                      ? 'bg-[#FFC93C] text-[#14120F]'
-                      : 'text-[#F4EFE4]/70 hover:text-[#F4EFE4]'
-                  }`}
-                >
-                  <LayoutGrid className="w-3.5 h-3.5" />
-                  <span>Mosaic</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode('masonry')}
-                  title="Wall View"
-                  className={`px-3 py-1.5 text-xs font-mono font-bold uppercase flex items-center gap-1.5 transition-colors cursor-pointer ${
-                    viewMode === 'masonry'
-                      ? 'bg-[#FFC93C] text-[#14120F]'
-                      : 'text-[#F4EFE4]/70 hover:text-[#F4EFE4]'
-                  }`}
-                >
-                  <Columns className="w-3.5 h-3.5" />
-                  <span>Wall</span>
-                </button>
-              </div>
+            {/* Navigation Controls: Active if photos are more than 6 */}
+            {totalPages > 1 && (
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="hidden sm:inline-flex text-xs font-mono text-[#FFC93C] items-center gap-1.5 mr-1 font-semibold">
+                  <span>Swipe right for more</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </span>
 
-              {/* Horizontal Scroll Navigation Controls (Left / Right) */}
-              {totalPages > 1 && (
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={handlePrevPage}
                     disabled={currentPage === 0}
-                    aria-label="Scroll to previous photos"
+                    aria-label="Previous photos"
                     className={`p-2 border transition-all cursor-pointer ${
                       currentPage === 0
                         ? 'bg-[#181512]/50 text-[#F4EFE4]/30 border-[#F4EFE4]/10 cursor-not-allowed'
@@ -217,7 +187,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                     <ChevronLeft className="w-4 h-4" />
                   </button>
 
-                  <span className="text-xs font-mono text-[#F4EFE4]/70 px-2 py-1 bg-[#181512] border border-[#F4EFE4]/20">
+                  <span className="text-xs font-mono text-[#F4EFE4]/80 px-2.5 py-1 bg-[#181512] border border-[#F4EFE4]/20 font-bold">
                     {currentPage + 1} / {totalPages}
                   </span>
 
@@ -225,7 +195,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                     type="button"
                     onClick={handleNextPage}
                     disabled={currentPage >= totalPages - 1}
-                    aria-label="Scroll to next photos"
+                    aria-label="Next photos"
                     className={`p-2 border transition-all cursor-pointer ${
                       currentPage >= totalPages - 1
                         ? 'bg-[#181512]/50 text-[#F4EFE4]/30 border-[#F4EFE4]/10 cursor-not-allowed'
@@ -235,9 +205,8 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                     <ChevronRight className="w-4 h-4" />
                   </button>
                 </div>
-              )}
-
-            </div>
+              </div>
+            )}
           </div>
         </ScrollReveal>
 
@@ -248,9 +217,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
             <p className="font-mono text-xs uppercase text-[#F4EFE4]/70">Checking Cypher Archive...</p>
           </div>
         ) : galleryList.length === 0 ? (
-          /* =========================================================================
-             REAL EMPTY STATE (No fake/mock data)
-             ========================================================================= */
+          /* Empty State (No fake/mock data) */
           <div className="py-16 md:py-20 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8 max-w-2xl mx-auto shadow-[4px_4px_0px_0px_#14120F]">
             <div className="w-16 h-16 rounded-full bg-[#FFC93C]/10 border border-[#FFC93C]/30 flex items-center justify-center mx-auto mb-4">
               <Camera className="w-8 h-8 text-[#FFC93C]" />
@@ -260,11 +227,11 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               No Gallery Photos Uploaded Yet
             </h3>
             <p className="font-mono text-xs sm:text-sm text-[#F4EFE4]/70 mt-2 max-w-md mx-auto leading-relaxed">
-              Authentic cypher moments and battle frames uploaded through the Admin Studio will appear here in our mosaic & wall layout.
+              Authentic cypher moments and battle frames uploaded through the Admin Studio will appear here on the photo wall.
             </p>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-4">
               <a
-                href="/admin"
+                href="/mbh-admin"
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#FFC93C] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider shadow-[3px_3px_0px_0px_#14120F] hover:bg-[#F4EFE4] transition-all cursor-pointer"
               >
                 <Sparkles className="w-3.5 h-3.5" />
@@ -282,39 +249,56 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
           </div>
         ) : (
           /* =========================================================================
-             HORIZONTAL SCROLLABLE PHOTO CONTAINER (Max 9 Images per Page, Left/Right Scroll)
+             PHOTO WALL CONTAINER (Max 6 Images per Page, Swipe Right / Scroll)
              ========================================================================= */
           <div className="relative group/gallery">
             
-            {/* Left Scroll Floating Button (Desktop) */}
+            {/* Mobile / Touch Swipe Right Indicator Cue */}
+            {totalPages > 1 && currentPage < totalPages - 1 && (
+              <div 
+                onClick={handleNextPage}
+                className="sm:hidden flex items-center justify-between px-4 py-2.5 bg-[#181512] border-2 border-[#FFC93C] text-[#FFC93C] font-mono text-xs mb-4 cursor-pointer active:bg-[#FFC93C] active:text-[#14120F] transition-colors shadow-[2px_2px_0px_0px_#14120F]"
+              >
+                <span className="flex items-center gap-1.5 font-bold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Swipe right to view other images ({galleryList.length} photos)</span>
+                </span>
+                <span className="flex items-center gap-1 font-bold text-[#F4EFE4]">
+                  <span>Page {currentPage + 2}</span>
+                  <ChevronRight className="w-4 h-4" />
+                </span>
+              </div>
+            )}
+
+            {/* Left Scroll Floating Arrow (Desktop) */}
             {totalPages > 1 && currentPage > 0 && (
               <button
                 type="button"
                 onClick={handlePrevPage}
                 aria-label="Previous photos"
-                className="hidden md:flex absolute -left-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-[#181512] text-[#FFC93C] border-2 border-[#FFC93C] shadow-[3px_3px_0px_0px_#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer active:scale-95"
+                className="hidden md:flex absolute -left-5 top-1/2 -translate-y-1/2 z-30 p-3 bg-[#181512] text-[#FFC93C] border-2 border-[#FFC93C] shadow-[4px_4px_0px_0px_#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer active:scale-95"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
             )}
 
-            {/* Right Scroll Floating Button (Desktop) */}
+            {/* Right Scroll Floating Arrow (Desktop) */}
             {totalPages > 1 && currentPage < totalPages - 1 && (
               <button
                 type="button"
                 onClick={handleNextPage}
                 aria-label="Next photos"
-                className="hidden md:flex absolute -right-4 top-1/2 -translate-y-1/2 z-30 p-3 bg-[#181512] text-[#FFC93C] border-2 border-[#FFC93C] shadow-[3px_3px_0px_0px_#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer active:scale-95"
+                className="hidden md:flex absolute -right-5 top-1/2 -translate-y-1/2 z-30 p-3 bg-[#181512] text-[#FFC93C] border-2 border-[#FFC93C] shadow-[4px_4px_0px_0px_#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer active:scale-95"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
             )}
 
-            {/* Horizontal Scroll Track */}
+            {/* Horizontal Swipeable Track (Smooth Touch & Snap Scroll) */}
             <div
               ref={scrollContainerRef}
               onScroll={handleContainerScroll}
-              className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+              className="flex overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4 touch-pan-x [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
               {pages.map((pageItems, pageIdx) => {
                 const pageOffset = pageIdx * MAX_PER_VIEW;
@@ -322,270 +306,111 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                 return (
                   <div
                     key={`page-${pageIdx}`}
-                    className="w-full shrink-0 snap-start px-0.5"
+                    className="w-full shrink-0 snap-start px-0.5 sm:px-1"
                   >
-                    {viewMode === 'bento' ? (
-                      /* =========================================================================
-                         1. MOSAIC VIEW (Clear, fully visible images without awkward cropping)
-                         ========================================================================= */
-                      pageItems.length === 1 ? (
-                        /* Single Photo Hero Layout */
-                        <div className="w-full max-w-3xl mx-auto">
+                    {/* Uniform, Symmetric Wall Grid: Every card & frame shares identical height & baseline */}
+                    <div className={`grid gap-6 items-stretch ${
+                      pageItems.length === 1
+                        ? 'grid-cols-1 max-w-xl mx-auto'
+                        : pageItems.length === 2
+                        ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto'
+                        : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                    }`}>
+                      {pageItems.map((item, localIdx) => {
+                        const globalIdx = pageOffset + localIdx;
+
+                        return (
                           <div
-                            onClick={() => setSelectedIdx(pageOffset)}
-                            className="group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer flex flex-col"
+                            key={item.id}
+                            onClick={() => setSelectedIdx(globalIdx)}
+                            className="group bg-[#181512] border-2 border-[#14120F] hover:border-[#FFC93C] p-3.5 sm:p-4 shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all duration-300 cursor-pointer flex flex-col justify-between h-full"
                           >
-                            <div className="relative w-full h-[400px] sm:h-[500px] bg-[#0E0C0A] flex items-center justify-center overflow-hidden">
+                            {/* Unified Photo Canvas: Uniform 4:3 frame so landscape & portrait never mismatch or cause misalignment */}
+                            <div className="relative w-full aspect-[4/3] bg-[#0B0907] overflow-hidden flex items-center justify-center border border-[#F4EFE4]/10 select-none">
+                              {/* Ambient soft backdrop */}
                               <img
-                                src={pageItems[0].photoUrl}
+                                src={item.photoUrl}
                                 alt=""
                                 aria-hidden="true"
-                                className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-30 scale-110 pointer-events-none select-none"
+                                className="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 pointer-events-none select-none"
                               />
+
+                              {/* 100% visible, razor-sharp photo without any cropping */}
                               <img
-                                src={pageItems[0].photoUrl}
-                                alt={pageItems[0].title}
+                                src={item.photoUrl}
+                                alt={item.title}
                                 loading="lazy"
-                                className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.02] transition-transform duration-300"
+                                className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.03] transition-transform duration-300"
                               />
-                              <div className="absolute top-3 right-3 z-20 px-2 py-1 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1.5">
+
+                              {/* Frame Index Badge */}
+                              <div className="absolute top-2.5 left-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] font-bold uppercase border border-[#FFC93C]/40 backdrop-blur-xs">
+                                #{String(globalIdx + 1).padStart(2, '0')}
+                              </div>
+
+                              {/* Top Date / Session Stamp */}
+                              {item.dateStr && (
+                                <div className="absolute top-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#F4EFE4] font-mono text-[10px] font-bold uppercase border border-[#F4EFE4]/30 backdrop-blur-xs">
+                                  {item.dateStr}
+                                </div>
+                              )}
+
+                              {/* Expand Hover Badge */}
+                              <div className="absolute bottom-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Maximize2 className="w-3 h-3" />
-                                <span>Click to Expand</span>
+                                <span>Expand</span>
                               </div>
                             </div>
 
-                            <div className="p-4 sm:p-5 bg-[#181512] border-t border-[#F4EFE4]/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            {/* Aligned Card Information Strip */}
+                            <div className="mt-3.5 pt-3 border-t border-[#F4EFE4]/10 flex flex-col justify-between flex-1">
                               <div>
-                                <div className="flex items-center gap-2 text-xs font-mono text-[#FFC93C] mb-1">
-                                  <MapPin className="w-3.5 h-3.5" />
-                                  <span>{pageItems[0].location}</span>
-                                  {pageItems[0].dateStr && (
-                                    <>
-                                      <span className="text-[#F4EFE4]/30">•</span>
-                                      <span>{pageItems[0].dateStr}</span>
-                                    </>
-                                  )}
+                                {/* Location & Tag Line */}
+                                <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1.5">
+                                  <span className="flex items-center gap-1.5 truncate">
+                                    <MapPin className="w-3.5 h-3.5 shrink-0 text-[#E4402A]" />
+                                    <span className="truncate">{item.location}</span>
+                                  </span>
+                                  <span className="text-[10px] text-[#F4EFE4]/50 uppercase tracking-wider shrink-0">
+                                    CYPHER WALL
+                                  </span>
                                 </div>
-                                <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4]">
-                                  {pageItems[0].title}
-                                </h3>
-                                {pageItems[0].caption && (
-                                  <p className="text-xs sm:text-sm font-sans text-[#F4EFE4]/80 mt-1 max-w-2xl leading-relaxed">
-                                    {pageItems[0].caption.replace(/\*\*/g, '')}
+
+                                {/* Title with fixed height baseline so 1-line and 2-line titles align identically */}
+                                <h4 
+                                  className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-tight line-clamp-2 min-h-[3.25rem]" 
+                                  title={item.title}
+                                >
+                                  {item.title}
+                                </h4>
+
+                                {/* Caption preview */}
+                                {item.caption && (
+                                  <p className="text-xs font-mono text-[#F4EFE4]/70 line-clamp-2 mt-2 leading-relaxed">
+                                    {item.caption.replace(/\*\*/g, '')}
                                   </p>
                                 )}
                               </div>
+
+                              {/* Clean Bottom Action Row */}
+                              <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 flex items-center justify-between text-[11px] font-mono">
+                                <span className="text-[#F4EFE4]/50">FRAME #{globalIdx + 1} OF {galleryList.length}</span>
+                                <span className="text-[#FFC93C] font-semibold flex items-center gap-1 group-hover:underline">
+                                  <span>View Full Photo</span>
+                                  <Maximize2 className="w-3 h-3" />
+                                </span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      ) : pageItems.length === 2 ? (
-                        /* Two Photos Layout (Side by Side, Large Generous Frames) */
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {pageItems.map((item, localIdx) => {
-                            const globalIdx = pageOffset + localIdx;
-                            return (
-                              <div
-                                key={item.id}
-                                onClick={() => setSelectedIdx(globalIdx)}
-                                className="group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer flex flex-col"
-                              >
-                                {/* Tape Accent */}
-                                <div className={`absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 ${localIdx % 2 === 0 ? '-rotate-2' : 'rotate-2'} border border-[#14120F]/40 z-20 pointer-events-none shadow-xs`} />
-
-                                {/* Image Canvas: full visibility with soft backdrop */}
-                                <div className="relative w-full h-[380px] sm:h-[460px] md:h-[500px] bg-[#0E0C0A] flex items-center justify-center overflow-hidden">
-                                  <img
-                                    src={item.photoUrl}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="absolute inset-0 w-full h-full object-cover blur-2xl opacity-25 scale-110 pointer-events-none select-none"
-                                  />
-                                  <img
-                                    src={item.photoUrl}
-                                    alt={item.title}
-                                    loading="lazy"
-                                    className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.02] transition-transform duration-300"
-                                  />
-                                  <div className="absolute top-3 right-3 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Maximize2 className="w-3 h-3" />
-                                    <span>Expand</span>
-                                  </div>
-                                </div>
-
-                                {/* Dedicated Info Strip below the photo */}
-                                <div className="p-4 bg-[#181512] border-t border-[#F4EFE4]/10 shrink-0">
-                                  <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1.5">
-                                    <span className="flex items-center gap-1.5 truncate">
-                                      <MapPin className="w-3.5 h-3.5 shrink-0" />
-                                      <span className="truncate">{item.location}</span>
-                                    </span>
-                                    {item.dateStr && (
-                                      <span className="text-[10px] uppercase font-bold text-[#F4EFE4]/80 bg-[#14120F] px-2 py-0.5 border border-[#F4EFE4]/20 shrink-0">
-                                        {item.dateStr}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <h3 className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] leading-snug">
-                                    {item.title}
-                                  </h3>
-                                  {item.caption && (
-                                    <p className="text-xs font-sans text-[#F4EFE4]/70 line-clamp-2 mt-1.5 leading-relaxed">
-                                      {item.caption.replace(/\*\*/g, '')}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      ) : (
-                        /* Multi-Photo Bento Mosaic (3 to 9 Photos) */
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                          {pageItems.map((item, localIdx) => {
-                            const globalIdx = pageOffset + localIdx;
-                            const isFeatured = localIdx === 0 && pageItems.length >= 4;
-
-                            return (
-                              <div
-                                key={item.id}
-                                onClick={() => setSelectedIdx(globalIdx)}
-                                className={`group relative bg-[#181512] border-2 border-[#14120F] overflow-hidden shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer flex flex-col ${
-                                  isFeatured ? 'sm:col-span-2' : 'col-span-1'
-                                }`}
-                              >
-                                {/* Tape Accent */}
-                                <div className={`absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 ${localIdx % 2 === 0 ? '-rotate-2' : 'rotate-2'} border border-[#14120F]/40 z-20 pointer-events-none shadow-xs`} />
-
-                                {/* Image Canvas */}
-                                <div className={`relative w-full ${isFeatured ? 'h-[360px] sm:h-[420px]' : 'h-[300px] sm:h-[350px]'} bg-[#0E0C0A] flex items-center justify-center overflow-hidden`}>
-                                  <img
-                                    src={item.photoUrl}
-                                    alt=""
-                                    aria-hidden="true"
-                                    className="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 pointer-events-none select-none"
-                                  />
-                                  <img
-                                    src={item.photoUrl}
-                                    alt={item.title}
-                                    loading="lazy"
-                                    className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.02] transition-transform duration-300"
-                                  />
-                                  <div className="absolute top-3 right-3 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Maximize2 className="w-3 h-3" />
-                                    <span>Expand</span>
-                                  </div>
-                                </div>
-
-                                {/* Info Strip */}
-                                <div className="p-3.5 bg-[#181512] border-t border-[#F4EFE4]/10 shrink-0">
-                                  <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1">
-                                    <span className="flex items-center gap-1.5 truncate">
-                                      <MapPin className="w-3 h-3 shrink-0" />
-                                      <span className="truncate">{item.location}</span>
-                                    </span>
-                                    {item.dateStr && (
-                                      <span className="text-[10px] uppercase font-bold text-[#F4EFE4]/80 bg-[#14120F] px-1.5 py-0.5 border border-[#F4EFE4]/20 shrink-0">
-                                        {item.dateStr}
-                                      </span>
-                                    )}
-                                  </div>
-                                  <h3 className={`font-['Anton'] uppercase tracking-tight text-[#F4EFE4] leading-snug truncate ${isFeatured ? 'text-xl sm:text-2xl' : 'text-lg'}`}>
-                                    {item.title}
-                                  </h3>
-                                  {item.caption && (
-                                    <p className="text-xs font-sans text-[#F4EFE4]/70 line-clamp-1 mt-1 leading-relaxed">
-                                      {item.caption.replace(/\*\*/g, '')}
-                                    </p>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      )
-                    ) : (
-                      /* =========================================================================
-                         2. WALL VIEW (Clear, aspect-ratio preserving wall frames)
-                         ========================================================================= */
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {[0, 1, 2].map((colIdx) => {
-                          const colItems = pageItems.filter((_, idx) => idx % 3 === colIdx);
-                          if (colItems.length === 0) return null;
-
-                          return (
-                            <div key={`col-${colIdx}`} className="flex flex-col gap-5">
-                              {colItems.map((item) => {
-                                const globalIdx = galleryList.findIndex((g) => g.id === item.id);
-                                const isPortrait = item.aspect === 'tall' || item.aspect === 'portrait';
-                                const isLandscape = item.aspect === 'wide' || item.aspect === 'landscape';
-                                const aspectClass = isPortrait
-                                  ? 'aspect-[3/4]'
-                                  : isLandscape
-                                  ? 'aspect-[16/10]'
-                                  : 'aspect-square';
-
-                                return (
-                                  <div
-                                    key={item.id}
-                                    onClick={() => setSelectedIdx(globalIdx >= 0 ? globalIdx : 0)}
-                                    className="group relative bg-[#181512] border-2 border-[#14120F] p-3 shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] hover:border-[#FFC93C] transition-all duration-300 cursor-pointer overflow-hidden group-hover:-translate-y-1"
-                                  >
-                                    {/* Paper Tape */}
-                                    <div className="absolute -top-1.5 left-6 w-10 h-3 bg-[#FFC93C]/80 -rotate-2 border border-[#14120F]/40 z-20 pointer-events-none shadow-xs" />
-
-                                    {/* Frame */}
-                                    <div className={`relative w-full ${aspectClass} overflow-hidden bg-[#0D0B09] flex items-center justify-center`}>
-                                      <img
-                                        src={item.photoUrl}
-                                        alt=""
-                                        aria-hidden="true"
-                                        className="absolute inset-0 w-full h-full object-cover blur-xl opacity-25 scale-110 pointer-events-none select-none"
-                                      />
-                                      <img
-                                        src={item.photoUrl}
-                                        alt={item.title}
-                                        loading="lazy"
-                                        className="relative z-10 max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
-                                      />
-
-                                      {/* Top Stamp Tag */}
-                                      <div className="absolute top-2 right-2 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[9px] font-bold uppercase border border-[#FFC93C]/40 backdrop-blur-xs">
-                                        {item.dateStr || 'Cypher'}
-                                      </div>
-                                    </div>
-
-                                    {/* Bottom Info Strip */}
-                                    <div className="mt-3 pt-2 border-t border-[#F4EFE4]/10">
-                                      <div className="flex items-center justify-between text-[11px] font-mono text-[#FFC93C] mb-1">
-                                        <span className="flex items-center gap-1 truncate">
-                                          <MapPin className="w-3 h-3 shrink-0" />
-                                          <span className="truncate">{item.location}</span>
-                                        </span>
-                                        <span className="text-[10px] text-[#FFC93C] font-bold shrink-0">#{globalIdx + 1}</span>
-                                      </div>
-                                      <h4 className="font-['Anton'] text-lg uppercase tracking-tight text-[#F4EFE4] leading-tight truncate">
-                                        {item.title}
-                                      </h4>
-                                      {item.caption && (
-                                        <p className="text-[11px] font-sans text-[#F4EFE4]/70 line-clamp-1 mt-0.5 leading-snug">
-                                          {item.caption.replace(/\*\*/g, '')}
-                                        </p>
-                                      )}
-                                    </div>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}
             </div>
 
-            {/* Bottom Pagination & Scroll Indicators */}
+            {/* Bottom Pagination & Navigation Controls (Visible if pictures > 6) */}
             {totalPages > 1 && (
               <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-[#F4EFE4]/10">
                 <div className="flex items-center gap-2">
@@ -606,9 +431,12 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                       </button>
                     ))}
                   </div>
+                  <span className="text-xs font-mono text-[#F4EFE4]/50 ml-2">
+                    ({galleryList.length} total photos)
+                  </span>
                 </div>
 
-                {/* Left/Right Buttons */}
+                {/* Left/Right Navigation Action Buttons */}
                 <div className="flex items-center gap-3">
                   <button
                     type="button"
@@ -634,7 +462,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                         : 'bg-[#181512] border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] shadow-[2px_2px_0px_0px_#14120F]'
                     }`}
                   >
-                    <span>Scroll Right</span>
+                    <span>Swipe Right</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
@@ -646,22 +474,20 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
 
       </div>
 
-      {/* =========================================================================
-         LIGHTBOX MODAL (Full Resolution, Clear & Uncropped)
-         ========================================================================= */}
+      {/* Lightbox Modal (Full Resolution, Clear & Uncropped) */}
       {selectedItem && (
         <div
           role="dialog"
           aria-modal="true"
           onClick={() => setSelectedIdx(null)}
-          className="fixed inset-0 z-50 bg-[#14120F]/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-6"
+          className="fixed inset-0 z-50 bg-[#14120F]/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-6"
         >
           {/* Close button */}
           <button
             type="button"
             onClick={() => setSelectedIdx(null)}
             aria-label="Close modal"
-            className="absolute top-4 right-4 z-50 p-2.5 bg-[#181512] border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer"
+            className="absolute top-3 right-3 sm:top-4 sm:right-4 z-50 min-w-[44px] min-h-[44px] flex items-center justify-center p-2.5 bg-[#181512] border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
@@ -672,9 +498,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               type="button"
               onClick={handleLightboxPrev}
               aria-label="Previous photo"
-              className="absolute left-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-[#181512]/90 border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer"
+              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-50 min-w-[40px] min-h-[40px] flex items-center justify-center p-2 sm:p-3 bg-[#181512]/90 border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer"
             >
-              <ChevronLeft className="w-6 h-6" />
+              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
 
@@ -684,23 +510,23 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
               type="button"
               onClick={handleLightboxNext}
               aria-label="Next photo"
-              className="absolute right-4 top-1/2 -translate-y-1/2 z-50 p-3 bg-[#181512]/90 border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer"
+              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-50 min-w-[40px] min-h-[40px] flex items-center justify-center p-2 sm:p-3 bg-[#181512]/90 border border-[#FFC93C]/40 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all cursor-pointer"
             >
-              <ChevronRight className="w-6 h-6" />
+              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
             </button>
           )}
 
           {/* Lightbox Content Card */}
           <div
             onClick={(e) => e.stopPropagation()}
-            className="relative max-w-5xl w-full bg-[#181512] border-2 border-[#FFC93C] shadow-[8px_8px_0px_0px_#14120F] overflow-hidden max-h-[90vh] flex flex-col md:flex-row"
+            className="relative max-w-5xl w-full bg-[#181512] border-2 border-[#FFC93C] shadow-[4px_4px_0px_0px_#14120F] sm:shadow-[8px_8px_0px_0px_#14120F] overflow-hidden max-h-[88vh] flex flex-col md:flex-row"
           >
             {/* Image Preview Container */}
-            <div className="relative md:w-3/5 bg-black flex items-center justify-center min-h-[320px] md:min-h-[500px] p-2">
+            <div className="relative md:w-3/5 bg-black flex items-center justify-center min-h-[200px] sm:min-h-[300px] md:min-h-[480px] p-2 shrink-0">
               <img
                 src={selectedItem.photoUrl}
                 alt={selectedItem.title}
-                className="max-h-[75vh] w-full object-contain"
+                className="max-h-[40vh] md:max-h-[75vh] w-full object-contain"
               />
               <div className="absolute top-3 left-3 px-2 py-1 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40">
                 Frame {selectedIdx !== null ? selectedIdx + 1 : 1} of {galleryList.length}
@@ -708,7 +534,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
             </div>
 
             {/* Sidebar Details */}
-            <div className="p-6 md:w-2/5 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#FFC93C]/20 bg-[#181512] overflow-y-auto">
+            <div className="p-4 sm:p-6 md:w-2/5 flex flex-col justify-between border-t md:border-t-0 md:border-l border-[#FFC93C]/20 bg-[#181512] overflow-y-auto">
               <div>
                 <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#FFC93C]/10 border border-[#FFC93C]/30 text-[#FFC93C] font-mono text-xs mb-3">
                   <MapPin className="w-3.5 h-3.5" />

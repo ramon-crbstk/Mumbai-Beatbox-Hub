@@ -17,10 +17,10 @@ export const Footer: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Row */}
-        <ScrollReveal direction="up" delay={0.05} className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-[#F4EFE4]/15">
+        <ScrollReveal direction="up" delay={0.05} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-8 sm:gap-10 pb-12 border-b border-[#F4EFE4]/15">
           
           {/* Brand Mark & Tagline */}
-          <div className="md:col-span-6 space-y-4">
+          <div className="sm:col-span-2 lg:col-span-6 space-y-4">
             <div className="flex items-center gap-3">
               {/* MBH Mark */}
               <div className="w-10 h-10 bg-[#FFC93C] text-[#14120F] flex items-center justify-center font-['Anton'] text-xl font-bold border border-[#14120F] shadow-[2px_2px_0px_0px_#F4EFE4]">
@@ -41,7 +41,7 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Navigation Quick Links */}
-          <div className="md:col-span-3 space-y-3 font-mono text-xs">
+          <div className="lg:col-span-3 space-y-3 font-mono text-xs">
             <span className="text-[#FFC93C] font-bold uppercase tracking-wider block">
               QUICK INDEX
             </span>
@@ -146,7 +146,8 @@ export const Footer: React.FC = () => {
             <button
               type="button"
               onClick={scrollToTop}
-              className="inline-flex items-center gap-1 text-[#F4EFE4] hover:text-[#FFC93C] transition-colors cursor-pointer"
+              className="min-h-[44px] px-3 py-2 inline-flex items-center gap-1.5 text-[#F4EFE4] hover:text-[#FFC93C] transition-colors cursor-pointer border border-transparent hover:border-[#FFC93C]/40 bg-[#181512] sm:bg-transparent"
+              aria-label="Back to top of page"
             >
               <span>TOP</span>
               <ArrowUp className="w-3.5 h-3.5" />

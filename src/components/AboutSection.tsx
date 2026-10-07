@@ -46,7 +46,7 @@ export const AboutSection: React.FC = () => {
 
           {/* Asymmetric Side Bulletin Box */}
           <ScrollReveal direction="left" delay={0.2} className="lg:col-span-4">
-            <div className="bg-[#F4EFE4] text-[#14120F] p-6 border-2 border-[#14120F] shadow-[6px_6px_0px_0px_#FFC93C] rotate-1 hover:rotate-0 transition-transform">
+            <div className="bg-[#F4EFE4] text-[#14120F] p-5 sm:p-6 border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[6px_6px_0px_0px_#FFC93C] rotate-0 sm:rotate-1 hover:rotate-0 transition-transform">
               <div className="flex items-center justify-between border-b border-[#14120F]/20 pb-3 mb-4">
                 <span className="font-['Anton'] text-lg tracking-wider uppercase text-[#14120F]">
                   MANIFESTO BULLETIN
@@ -85,18 +85,18 @@ export const AboutSection: React.FC = () => {
         </div>
 
         {/* Stats Row (4 Stat Blocks with Staggered Entrance) */}
-        <div className="border-t-2 border-b-2 border-[#FFC93C]/40 py-8 bg-[#181512]/70">
-          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 divide-y-2 md:divide-y-0 md:divide-x-2 divide-[#F4EFE4]/15">
+        <div className="border-t-2 border-b-2 border-[#FFC93C]/40 py-6 sm:py-8 bg-[#181512]/70">
+          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-8 md:divide-x-2 md:divide-[#F4EFE4]/15">
             {COMMUNITY_STATS.map((stat, idx) => (
               <StaggerItem
                 key={stat.label}
                 direction="up"
-                className={`pt-4 md:pt-0 ${idx > 0 ? 'md:pl-6' : ''} space-y-1`}
+                className={`space-y-1 ${idx > 0 ? 'md:pl-6' : ''}`}
               >
-                <div className="font-['Anton'] text-4xl sm:text-5xl md:text-6xl text-[#FFC93C] tracking-tight leading-none">
+                <div className="font-['Anton'] text-3xl sm:text-5xl md:text-6xl text-[#FFC93C] tracking-tight leading-none">
                   {stat.number}
                 </div>
-                <div className="font-['Anton'] text-lg sm:text-xl uppercase text-[#F4EFE4] tracking-wide pt-1">
+                <div className="font-['Anton'] text-base sm:text-xl uppercase text-[#F4EFE4] tracking-wide pt-1">
                   {stat.label}
                 </div>
                 <p className="text-xs sm:text-sm font-mono text-[#F4EFE4]/60 leading-snug">

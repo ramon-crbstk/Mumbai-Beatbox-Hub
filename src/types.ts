@@ -97,6 +97,7 @@ export interface CommunityMember {
   specialty: string;
   area: string;
   experience: string;
+  bio?: string;
   voiceNoteTitle: string;
   voiceNoteDuration: string;
   soundType: 'bass-growl' | 'liproll' | 'fast-tech' | 'trap-click' | 'polyphonic' | 'scratch';
@@ -109,5 +110,19 @@ export interface CommunityMember {
   audioUrl?: string | null;
   audio_url?: string | null;
   createdAt?: string;
+}
+
+export interface CollaborationItem {
+  id: string;
+  name: string;
+  short_code?: string | null;
+  description?: string | null;
+  collaboration_type?: string | null;
+  logo_url?: string | null;
+  website_url?: string | null;
+  display_order: number;
+  is_visible: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 

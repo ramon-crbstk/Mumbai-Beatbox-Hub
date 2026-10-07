@@ -54,7 +54,7 @@ export const ContactSection: React.FC = () => {
           <ScrollReveal direction="left" delay={0.05} className="lg:col-span-5 space-y-5">
             
             {/* WhatsApp Community Box (High priority for Indian grassroots cyphers) */}
-            <div className="bg-[#181512] border-2 border-[#FFC93C] p-5 sm:p-6 shadow-[6px_6px_0px_0px_#FFC93C] relative">
+            <div className="bg-[#181512] border-2 border-[#FFC93C] p-5 sm:p-6 shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[6px_6px_0px_0px_#FFC93C] relative">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-10 h-10 bg-[#FFC93C] text-[#14120F] flex items-center justify-center font-bold">
                   <MessageCircle className="w-5 h-5 text-[#14120F]" />
@@ -77,7 +77,7 @@ export const ContactSection: React.FC = () => {
                 href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] py-3 px-4 text-xs font-mono font-bold uppercase tracking-widest border border-[#14120F] transition-all shadow-[2px_2px_0px_0px_#14120F]"
+                className="w-full min-h-[44px] inline-flex items-center justify-center gap-2 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] py-3 px-4 text-xs font-mono font-bold uppercase tracking-widest border border-[#14120F] transition-all shadow-[2px_2px_0px_0px_#14120F] cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Join WhatsApp Group</span>
@@ -112,20 +112,20 @@ export const ContactSection: React.FC = () => {
                     <div className="flex items-center gap-2 shrink-0">
                       <a
                         href={p.tel}
-                        className="px-3 py-1.5 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-bold text-xs uppercase flex items-center gap-1.5 border border-[#14120F]"
+                        className="min-h-[42px] px-3.5 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-bold text-xs uppercase flex items-center gap-1.5 border border-[#14120F] active:scale-95 transition-all"
                         title={`Call ${p.number}`}
                       >
-                        <Phone className="w-3 h-3" />
+                        <Phone className="w-3.5 h-3.5" />
                         <span>Call</span>
                       </a>
                       <a
                         href={p.waUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] font-bold text-xs uppercase flex items-center gap-1.5 border border-[#14120F]"
+                        className="min-h-[42px] px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-[#14120F] font-bold text-xs uppercase flex items-center gap-1.5 border border-[#14120F] active:scale-95 transition-all"
                         title={`Chat with ${p.number} on WhatsApp`}
                       >
-                        <MessageCircle className="w-3 h-3" />
+                        <MessageCircle className="w-3.5 h-3.5" />
                         <span>WhatsApp</span>
                       </a>
                     </div>
@@ -212,7 +212,7 @@ export const ContactSection: React.FC = () => {
 
           {/* Right Column: Contact & Cypher Inquiry Form */}
           <ScrollReveal direction="right" delay={0.1} className="lg:col-span-7">
-            <div id="inquiry-form-card" className="bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] p-6 sm:p-8 shadow-[8px_8px_0px_0px_#FFC93C] scroll-mt-24">
+            <div id="inquiry-form-card" className="bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] p-5 sm:p-8 shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[8px_8px_0px_0px_#FFC93C] scroll-mt-24">
             
             {submitted ? (
               <div className="py-10 text-center space-y-4">
@@ -233,7 +233,7 @@ export const ContactSection: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setSubmitted(false)}
-                    className="px-6 py-2.5 bg-[#14120F] text-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer"
+                    className="min-h-[44px] px-6 py-2.5 bg-[#14120F] text-[#FFC93C] font-mono text-xs font-bold uppercase tracking-wider border border-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer"
                   >
                     Send Another Dispatch
                   </button>
@@ -263,7 +263,7 @@ export const ContactSection: React.FC = () => {
                       placeholder="e.g. Aryan / BeatFlow"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
+                      className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
                     />
                   </div>
 
@@ -278,7 +278,7 @@ export const ContactSection: React.FC = () => {
                       placeholder="+91 98XXX XXXXX"
                       value={formData.contact}
                       onChange={(e) => setFormData({ ...formData, contact: e.target.value })}
-                      className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
+                      className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
                     />
                   </div>
                 </div>
@@ -292,7 +292,7 @@ export const ContactSection: React.FC = () => {
                       id="contact-experience"
                       value={formData.experience}
                       onChange={(e) => setFormData({ ...formData, experience: e.target.value })}
-                      className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-xs text-[#14120F] focus:outline-none focus:border-[#E4402A]"
+                      className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-base sm:text-xs text-[#14120F] focus:outline-none focus:border-[#E4402A]"
                     >
                       <option>Beginner (Just starting out)</option>
                       <option>Intermediate (Have basic routines)</option>
@@ -309,7 +309,7 @@ export const ContactSection: React.FC = () => {
                       id="contact-area"
                       value={formData.area}
                       onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                      className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-xs text-[#14120F] focus:outline-none focus:border-[#E4402A]"
+                      className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-base sm:text-xs text-[#14120F] focus:outline-none focus:border-[#E4402A]"
                     >
                       <option>Bandra (Carter Rd / Bandstand)</option>
                       <option>Dadar / Shivaji Park</option>
@@ -330,7 +330,7 @@ export const ContactSection: React.FC = () => {
                     placeholder="Tell us what you like to spit, sounds you want to learn, or if you're looking for collabs..."
                     value={formData.message}
                     onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                    className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
+                    className="w-full bg-[#E5DFC8] border-2 border-[#14120F] p-3 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
                   />
                 </div>
 
@@ -339,7 +339,7 @@ export const ContactSection: React.FC = () => {
                     type="submit"
                     id="contact-submit-button"
                     disabled={isSubmitting}
-                    className="w-full flex items-center justify-center gap-2.5 bg-[#14120F] hover:bg-[#E4402A] disabled:opacity-75 text-[#FFC93C] hover:text-[#F4EFE4] py-3.5 px-6 font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                    className="w-full min-h-[48px] flex items-center justify-center gap-2.5 bg-[#14120F] hover:bg-[#E4402A] disabled:opacity-75 text-[#FFC93C] hover:text-[#F4EFE4] py-3.5 px-6 font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
                   >
                     {isSubmitting ? (
                       <>

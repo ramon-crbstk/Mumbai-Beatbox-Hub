@@ -304,13 +304,13 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
           onClick={() => setActiveVideo(null)}
         >
           <div 
-            className="bg-[#14120F] text-[#F4EFE4] border-3 border-[#FFC93C] p-4 sm:p-6 max-w-3xl w-full shadow-[8px_8px_0px_0px_#E4402A] relative"
+            className="bg-[#14120F] text-[#F4EFE4] border-3 border-[#FFC93C] p-4 sm:p-6 max-w-3xl w-full shadow-[4px_4px_0px_0px_#E4402A] sm:shadow-[8px_8px_0px_0px_#E4402A] relative max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setActiveVideo(null)}
-              className="absolute top-4 right-4 p-1.5 bg-[#FFC93C] text-[#14120F] hover:bg-[#E4402A] hover:text-[#F4EFE4] transition-colors border border-[#14120F] cursor-pointer z-20"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 bg-[#FFC93C] text-[#14120F] hover:bg-[#E4402A] hover:text-[#F4EFE4] transition-colors border border-[#14120F] cursor-pointer z-20"
               aria-label="Close video player"
             >
               <X className="w-5 h-5" />

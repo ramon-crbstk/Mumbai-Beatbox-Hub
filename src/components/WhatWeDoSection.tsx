@@ -60,7 +60,7 @@ export const WhatWeDoSection: React.FC<WhatWeDoSectionProps> = ({ onOpenJoinModa
               >
                 <div
                   id={`card-${card.id}`}
-                  className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] p-6 sm:p-7 shadow-[6px_6px_0px_0px_#FFC93C] ${rotationClass} hover:rotate-0 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group h-full`}
+                  className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] p-5 sm:p-7 shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[6px_6px_0px_0px_#FFC93C] rotate-0 sm:${rotationClass} hover:rotate-0 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group h-full`}
                 >
                   {/* Top Flyer Header & Stamp */}
                   <div>
@@ -96,11 +96,11 @@ export const WhatWeDoSection: React.FC<WhatWeDoSectionProps> = ({ onOpenJoinModa
                   </div>
 
                   {/* Card Action / Footer */}
-                  <div className="pt-4 border-t border-[#14120F]/20 flex items-center justify-between">
+                  <div className="pt-4 border-t border-[#14120F]/20 flex items-center justify-between min-h-[44px]">
                     <button
                       type="button"
                       onClick={() => onOpenJoinModal(card.title)}
-                      className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#14120F] group-hover:text-[#E4402A] transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase tracking-wider text-[#14120F] group-hover:text-[#E4402A] transition-colors cursor-pointer min-h-[44px]"
                     >
                       <span>Connect & Participate</span>
                       <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />

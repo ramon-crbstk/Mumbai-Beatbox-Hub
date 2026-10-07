@@ -54,29 +54,29 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
       {/* Top Taxi Stripe Accent Line */}
       <div className="h-1 w-full bg-taxi-pattern opacity-80" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-18">
+      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16 sm:h-18">
           
           {/* Logo Mark & Wordmark */}
           <a
             href="#home"
             id="nav-logo"
-            className="group flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC93C]"
+            className="group flex items-center gap-2.5 sm:gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC93C] min-w-0"
             onClick={(e) => handleLinkClick(e, '#home')}
           >
             {/* MBH Kaali-Peeli Stamp Badge with Soundwave Mark */}
-            <div className="relative flex items-center justify-center w-11 h-11 bg-[#FFC93C] text-[#14120F] font-black border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] group-hover:translate-x-0.5 group-hover:translate-y-0.5 group-hover:shadow-[1px_1px_0px_0px_#F4EFE4] transition-all">
-              <span className="font-['Anton'] tracking-wider text-xl leading-none">MBH</span>
-              <span className="absolute -top-1.5 -right-1.5 w-3 h-3 bg-[#E4402A] rounded-full ring-2 ring-[#14120F]" title="Vocal Live Division" />
+            <div className="relative flex items-center justify-center w-9 h-9 sm:w-11 sm:h-11 bg-[#FFC93C] text-[#14120F] font-black border-2 border-[#14120F] shadow-[2px_2px_0px_0px_#F4EFE4] sm:shadow-[3px_3px_0px_0px_#F4EFE4] group-hover:translate-x-0.5 group-hover:translate-y-0.5 transition-all shrink-0">
+              <span className="font-['Anton'] tracking-wider text-base sm:text-xl leading-none">MBH</span>
+              <span className="absolute -top-1 -right-1 sm:-top-1.5 sm:-right-1.5 w-2.5 h-2.5 sm:w-3 sm:h-3 bg-[#E4402A] rounded-full ring-2 ring-[#14120F]" title="Vocal Live Division" />
             </div>
 
-            <div className="flex flex-col">
-              <span className="font-['Anton'] text-xl sm:text-2xl tracking-wider text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-none">
+            <div className="flex flex-col min-w-0">
+              <span className="font-['Anton'] text-lg sm:text-2xl tracking-wider text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-none truncate">
                 MUMBAI BEATBOX HUB
               </span>
-              <span className="text-[11px] font-mono tracking-widest text-[#FFC93C] uppercase mt-0.5 flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#FFC93C] inline-block animate-pulse" />
-                MBH Vocal Percussion Collective
+              <span className="hidden xs:flex text-[10px] sm:text-[11px] font-mono tracking-widest text-[#FFC93C] uppercase mt-0.5 items-center gap-1.5 truncate">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#FFC93C] inline-block animate-pulse shrink-0" />
+                <span>MBH Vocal Percussion Collective</span>
               </span>
             </div>
           </a>
@@ -97,12 +97,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
           </nav>
 
           {/* Nav Right CTA Action */}
-          <div className="hidden sm:flex items-center gap-3">
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
             <button
               type="button"
               id="nav-join-button"
               onClick={handleJoinCypherClick}
-              className="relative inline-flex items-center gap-2 bg-[#FFC93C] text-[#14120F] px-4 py-2 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] hover:bg-[#F4EFE4] hover:shadow-[1px_1px_0px_0px_#FFC93C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+              className="relative inline-flex items-center gap-2 bg-[#FFC93C] text-[#14120F] px-4 py-2 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] hover:bg-[#F4EFE4] hover:shadow-[1px_1px_0px_0px_#FFC93C] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer min-h-[40px]"
             >
               <Mic2 className="w-4 h-4 text-[#14120F]" />
               <span>Join Cypher</span>
@@ -111,13 +111,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
           </div>
 
           {/* Mobile Hamburger Toggle */}
-          <div className="flex lg:hidden items-center gap-2">
+          <div className="flex lg:hidden items-center gap-2 shrink-0">
             <button
               type="button"
               id="nav-mobile-toggle"
               aria-label={mobileMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 text-[#FFC93C] bg-[#14120F] border-2 border-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors"
+              className="min-w-[44px] min-h-[44px] flex items-center justify-center p-2 text-[#FFC93C] bg-[#14120F] border-2 border-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors cursor-pointer"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
@@ -128,7 +128,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#14120F] border-b-4 border-[#FFC93C] px-6 py-6 space-y-4">
+        <div className="lg:hidden bg-[#14120F] border-b-4 border-[#FFC93C] px-4 sm:px-6 py-5 sm:py-6 space-y-4 max-h-[calc(100vh-4.5rem)] overflow-y-auto">
           <div className="text-[11px] font-mono tracking-widest text-[#FFC93C] border-b border-[#FFC93C]/20 pb-2">
             NAVIGATION INDEX // MUMBAI METRO
           </div>
@@ -139,7 +139,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
                 href={link.href}
                 id={`mobile-nav-link-${link.label.toLowerCase()}`}
                 onClick={(e) => handleLinkClick(e, link.href)}
-                className="block px-3 py-2.5 text-sm font-bold uppercase tracking-wider text-[#F4EFE4] bg-[#14120F] border border-[#F4EFE4]/20 hover:border-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all"
+                className="flex items-center px-3 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider text-[#F4EFE4] bg-[#181512] border border-[#F4EFE4]/20 hover:border-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all min-h-[44px]"
               >
                 {link.label}
               </a>
@@ -151,7 +151,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
               type="button"
               id="mobile-nav-cta"
               onClick={handleJoinCypherClick}
-              className="w-full flex items-center justify-center gap-2 bg-[#FFC93C] text-[#14120F] py-3 text-sm font-bold uppercase tracking-wider font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A]"
+              className="w-full min-h-[48px] flex items-center justify-center gap-2 bg-[#FFC93C] text-[#14120F] py-3 text-sm font-bold uppercase tracking-wider font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] active:translate-y-0.5 cursor-pointer"
             >
               <Mic2 className="w-4 h-4" />
               <span>Join a Cypher</span>
