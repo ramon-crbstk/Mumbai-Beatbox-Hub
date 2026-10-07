@@ -2,7 +2,7 @@ import { EventItem, PillarCard, GalleryItem, VideoItem, PartnerLogo, CommunityMe
 
 export const COMMUNITY_STATS = [
   {
-    number: '10+',
+    number: '30+',
     label: 'Active Beatboxers',
     subtext: 'From newcomers to OGs',
   },
