@@ -25,6 +25,8 @@ import {
   toggleCollaborationVisibility,
   updateCollaborationOrder 
 } from '../../lib/supabase';
+import { ImageUploader } from './ImageUploader';
+import { CLOUDINARY_FOLDERS, CLOUDINARY_CONFIG } from '../../lib/cloudinary';
 
 interface CollaborationsTabProps {
   items: CollaborationItem[];
@@ -404,11 +406,18 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                       <h3 className="font-['Anton'] text-xl uppercase tracking-tight text-[#F4EFE4] leading-tight truncate">
                         {item.name}
                       </h3>
-                      {item.short_code && (
-                        <span className="text-[10px] font-mono text-[#F4EFE4]/50">
-                          Code: {item.short_code}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {item.short_code && (
+                          <span className="text-[10px] font-mono text-[#F4EFE4]/50">
+                            Code: {item.short_code}
+                          </span>
+                        )}
+                        {item.logo_url?.includes('cloudinary.com') && (
+                          <span className="px-1.5 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/30 text-[9px] font-mono uppercase font-semibold">
+                            Cloudinary Logo
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
 
@@ -594,20 +603,19 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                 />
               </div>
 
-              {/* Logo URL (Standard TEXT URL field) */}
-              <div>
-                <label className="block text-[#FFC93C] uppercase font-bold mb-1">
-                  Logo URL (Text URL)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://example.com/logo.png"
+              {/* Logo Upload to Cloudinary & URL */}
+              <div className="p-3 bg-[#14120F] border border-[#FFC93C]/30 space-y-2">
+                <ImageUploader
+                  label="Collaboration Logo (Upload Image or Cloudinary URL)"
                   value={logoUrl}
-                  onChange={(e) => setLogoUrl(e.target.value)}
-                  className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#FFC93C]"
+                  onChange={setLogoUrl}
+                  folder={CLOUDINARY_FOLDERS.collaborations}
+                  uploadPreset={CLOUDINARY_CONFIG.imageUploadPreset}
+                  recommendedAspect="1:1 Square or Horizontal PNG/SVG"
+                  placeholder="Upload logo image or paste Cloudinary URL"
                 />
-                <span className="text-[10px] text-[#F4EFE4]/50 mt-1 block">
-                  Keep empty to use the 10x10 monochrome short code box visual fallback.
+                <span className="text-[10px] text-[#F4EFE4]/50 block">
+                  Select an image to upload directly to Cloudinary. The secure Cloudinary link will be saved in the database upon saving. Transparent PNG, SVG, or high-res JPG recommended. Leave empty to use initials fallback.
                 </span>
               </div>
 

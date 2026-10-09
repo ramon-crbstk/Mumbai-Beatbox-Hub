@@ -36,6 +36,7 @@ export const CLOUDINARY_FOLDERS = {
   videos: 'mumbai-beatbox-hub/videos',
   videoThumbnails: 'mumbai-beatbox-hub/videos/thumbnails',
   events: 'mumbai-beatbox-hub/events',
+  collaborations: 'mumbai-beatbox-hub/collaborations',
 } as const;
 
 // Configuration from client environment variables (configured in Vercel or .env)
