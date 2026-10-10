@@ -278,7 +278,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
         <div
           ref={scrollContainerRef}
           id="members-scroll-container"
-          className="flex gap-6 overflow-x-auto pb-8 pt-2 scroll-smooth snap-x snap-mandatory focus:outline-none scrollbar-thin scrollbar-track-[#1E1B16] scrollbar-thumb-[#FFC93C]/40 hover:scrollbar-thumb-[#FFC93C]"
+          className="flex gap-6 overflow-x-auto pb-8 pt-2 scroll-smooth snap-x snap-mandatory overscroll-x-contain focus:outline-none scrollbar-thin scrollbar-track-[#1E1B16] scrollbar-thumb-[#FFC93C]/40 hover:scrollbar-thumb-[#FFC93C]"
           tabIndex={0}
           role="region"
           aria-label="Community members showcase list"
