@@ -1115,41 +1115,58 @@ export async function submitEventRsvp(rsvp: {
   const supabase = getSupabase();
   let eventId = rsvp.eventId;
 
-  // Locate the target event
+  // Locate the target event directly from Supabase
   let targetEvent: EventItem | undefined;
-  const currentEvents = getLocalEvents();
 
-  if (eventId) {
-    targetEvent = currentEvents.find((e) => e.id === eventId);
-  }
-  if (!targetEvent && rsvp.eventName) {
-    targetEvent = currentEvents.find(
-      (e) => (e.title || e.name || '').toLowerCase() === rsvp.eventName.toLowerCase()
-    );
-  }
-
-  // If not found in local cache, query Supabase
-  if (!targetEvent && supabase && eventId) {
+  if (supabase) {
     try {
-      const { data } = await supabase.from('events').select('*').eq('id', eventId).maybeSingle();
-      if (data) {
-        targetEvent = {
-          id: data.id,
-          title: data.title || data.name,
-          name: data.title || data.name,
-          description: data.description || data.blurb || '',
-          blurb: data.description || data.blurb || '',
-          eventType: data.event_type || 'cypher',
-          date: data.date,
-          time: data.time || '5:30 PM',
-          venue: data.venue,
-          location: data.location || data.area || 'Mumbai',
-          area: data.location || data.area || 'Mumbai',
-          entry: data.entry || 'Free Entry / Open to all',
-          isPublished: data.is_published !== false,
-          maxPeople: data.max_people,
-          registrationStatus: data.registration_status || 'open',
-        };
+      if (eventId) {
+        const { data } = await supabase.from('events').select('*').eq('id', eventId).maybeSingle();
+        if (data) {
+          targetEvent = {
+            id: data.id,
+            title: data.title || data.name,
+            name: data.title || data.name,
+            description: data.description || data.blurb || '',
+            blurb: data.description || data.blurb || '',
+            eventType: data.event_type || 'cypher',
+            date: data.date,
+            time: data.time || '5:30 PM',
+            venue: data.venue,
+            location: data.location || data.area || 'Mumbai',
+            area: data.location || data.area || 'Mumbai',
+            entry: data.entry || 'Free Entry / Open to all',
+            isPublished: data.is_published !== false,
+            maxPeople: data.max_people,
+            registrationStatus: data.registration_status || 'open',
+          };
+        }
+      }
+      if (!targetEvent && rsvp.eventName) {
+        const { data } = await supabase
+          .from('events')
+          .select('*')
+          .or(`title.ilike.%${rsvp.eventName}%,name.ilike.%${rsvp.eventName}%`)
+          .maybeSingle();
+        if (data) {
+          targetEvent = {
+            id: data.id,
+            title: data.title || data.name,
+            name: data.title || data.name,
+            description: data.description || data.blurb || '',
+            blurb: data.description || data.blurb || '',
+            eventType: data.event_type || 'cypher',
+            date: data.date,
+            time: data.time || '5:30 PM',
+            venue: data.venue,
+            location: data.location || data.area || 'Mumbai',
+            area: data.location || data.area || 'Mumbai',
+            entry: data.entry || 'Free Entry / Open to all',
+            isPublished: data.is_published !== false,
+            maxPeople: data.max_people,
+            registrationStatus: data.registration_status || 'open',
+          };
+        }
       }
     } catch {
       // ignore
@@ -1643,69 +1660,32 @@ export function getDefaultEvents(): EventItem[] {
 }
 
 export function getLocalEvents(): EventItem[] {
-  try {
-    const raw = localStorage.getItem(LOCAL_EVENTS_KEY);
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        const cleaned = parsed.filter((item: EventItem) => !isFakeOrDemoEvent(item));
-        if (cleaned.length !== parsed.length) {
-          setLocalEvents(cleaned);
-        }
-        return cleaned.map((e) => ({
-          ...e,
-          title: e.title || e.name,
-          name: e.name || e.title,
-          description: e.description || e.blurb,
-          blurb: e.blurb || e.description,
-          location: e.location || e.area,
-          area: e.area || e.location,
-          date: toIsoDate(e.date) || e.date,
-          registrationStatus: (e.registrationStatus || e.registration_status || 'open') as 'open' | 'full' | 'closed',
-          registration_status: (e.registration_status || e.registrationStatus || 'open') as 'open' | 'full' | 'closed',
-          maxPeople: e.maxPeople !== undefined ? e.maxPeople : e.max_people,
-          max_people: e.max_people !== undefined ? e.max_people : e.maxPeople,
-        }));
-      }
-    }
-  } catch {
-    // fallback
-  }
-
   return [];
 }
 
-export function setLocalEvents(events: EventItem[]): void {
+export function setLocalEvents(_events: EventItem[]): void {
+  // Purge any local storage events to ensure ONLY Supabase events are used
   try {
-    localStorage.setItem(LOCAL_EVENTS_KEY, JSON.stringify(events));
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem(LOCAL_EVENTS_KEY);
+      localStorage.removeItem('mhb_events');
+      localStorage.removeItem('mhb_events_v2');
+      localStorage.removeItem('mbh_community_events_cache');
+      localStorage.removeItem('events');
+    }
   } catch {
     // ignore
   }
 }
 
-export function updateLocalEventStatus(eventId: string, newStatus: 'open' | 'full' | 'closed'): void {
-  const current = getLocalEvents();
-  const updated = current.map((e) => {
-    if (e.id === eventId) {
-      return {
-        ...e,
-        registrationStatus: newStatus,
-        registration_status: newStatus,
-        updatedAt: new Date().toISOString(),
-      };
-    }
-    return e;
-  });
-  setLocalEvents(updated);
+export function updateLocalEventStatus(_eventId: string, _newStatus: 'open' | 'full' | 'closed'): void {
+  // No-op: all event status updates must happen on Supabase
 }
 
 export async function updateEventRegistrationStatus(
   eventId: string,
   newStatus: 'open' | 'full' | 'closed'
 ): Promise<boolean> {
-  // Update local cache immediately
-  updateLocalEventStatus(eventId, newStatus);
-
   const supabase = getSupabase();
   if (supabase) {
     try {
@@ -1719,12 +1699,14 @@ export async function updateEventRegistrationStatus(
 
       if (!error) return true;
       console.warn('Supabase status update warning:', error.message);
+      return false;
     } catch (err) {
       console.warn('Supabase status update exception:', err);
+      return false;
     }
   }
 
-  return true;
+  return false;
 }
 
 export async function fetchUpcomingEvents(): Promise<EventItem[]> {
@@ -1812,47 +1794,32 @@ export async function fetchUpcomingEvents(): Promise<EventItem[]> {
     }
   }
 
-  // Preserve and merge any real local events that aren't yet in DB (prevents newly added local events from getting wiped)
-  const localList = getLocalEvents().filter((e) => !isFakeOrDemoEvent(e));
-  const merged: EventItem[] = [...dbEvents];
-
-  for (const local of localList) {
-    const alreadyInDb = merged.some(
-      (m) =>
-        m.id === local.id ||
-        (m.title.trim().toLowerCase() === (local.title || local.name || '').trim().toLowerCase() &&
-          m.date === local.date)
-    );
-    if (!alreadyInDb) {
-      const count = rsvpCounts[local.id] ?? (local.name ? rsvpCounts[local.name] : 0) ?? 0;
-      const maxP = local.maxPeople ?? local.max_people;
-      let status = local.registrationStatus || local.registration_status || 'open';
-      if (status === 'open' && maxP !== null && maxP !== undefined && count >= maxP) {
-        status = 'full';
-      }
-      merged.push({
-        ...local,
-        rsvpCount: count,
-        registrationStatus: status,
-        registration_status: status,
-      });
+  // Purge any local storage event caches completely so nothing local lingers
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(LOCAL_EVENTS_KEY);
+      localStorage.removeItem('mhb_events');
+      localStorage.removeItem('mhb_events_v2');
+      localStorage.removeItem('mbh_community_events_cache');
+      localStorage.removeItem('events');
+    } catch {
+      // ignore
     }
   }
 
   // Sort events chronologically by date
-  merged.sort((a, b) => {
+  dbEvents.sort((a, b) => {
     const timeA = new Date(a.date).getTime() || 0;
     const timeB = new Date(b.date).getTime() || 0;
     return timeA - timeB;
   });
 
-  setLocalEvents(merged);
-  return merged;
+  return dbEvents;
 }
 
 export async function saveUpcomingEvent(
   item: Omit<EventItem, 'id'> & { id?: string }
-): Promise<{ success: boolean; item: EventItem; error?: string; source: 'supabase' | 'local' }> {
+): Promise<{ success: boolean; item: EventItem; error?: string; source: 'supabase' }> {
   // Check admin session with grace for active dashboard
   if (!isAdminAuthenticated()) {
     await verifyAdminSessionLive();
@@ -1868,11 +1835,21 @@ export async function saveUpcomingEvent(
       success: false,
       item: { ...item, id: item.id || `evt-${Date.now()}` } as EventItem,
       error: 'Security constraint: Administrator authentication required.',
-      source: 'local',
+      source: 'supabase',
     };
   }
 
-  const isEditing = Boolean(item.id);
+  const supabase = getSupabase();
+  if (!supabase) {
+    return {
+      success: false,
+      item: { ...item, id: item.id || `evt-${Date.now()}` } as EventItem,
+      error: 'Supabase client is not available. Events must be saved to Supabase.',
+      source: 'supabase',
+    };
+  }
+
+  const isEditing = Boolean(item.id && !item.id.startsWith('temp-') && !item.id.startsWith('evt-'));
   const fallbackId = `evt-${Date.now()}`;
   const eventId = item.id || fallbackId;
   const title = item.title || item.name || 'Community Cypher';
@@ -1911,153 +1888,131 @@ export async function saveUpcomingEvent(
     updatedAt: nowIso,
   };
 
-  // 1. Immediately store in local cache so UI reacts instantaneously
-  const currentEvents = getLocalEvents();
-  let updatedEvents: EventItem[];
-  if (isEditing) {
-    updatedEvents = currentEvents.map((e) => (e.id === eventId ? newEvent : e));
-  } else {
-    updatedEvents = [newEvent, ...currentEvents.filter((e) => e.id !== eventId)];
-  }
-  setLocalEvents(updatedEvents);
+  try {
+    // Build candidate payload
+    const candidatePayload: Record<string, any> = {
+      title: newEvent.title,
+      name: newEvent.title,
+      slug: newEvent.slug,
+      description: newEvent.description,
+      blurb: newEvent.description,
+      event_type: newEvent.eventType,
+      date: newEvent.date,
+      time: newEvent.time,
+      venue: newEvent.venue,
+      location: newEvent.location,
+      area: newEvent.location,
+      entry: newEvent.entry,
+      is_published: newEvent.isPublished,
+      max_people: newEvent.maxPeople,
+      registration_status: newEvent.registrationStatus,
+      is_battle_or_live: Boolean(newEvent.isBattleOrLive),
+      updated_at: newEvent.updatedAt,
+    };
 
-  // 2. Sync to Supabase with adaptive column handling
-  const supabase = getSupabase();
-  if (supabase) {
-    try {
-      // Build candidate payload
-      const candidatePayload: Record<string, any> = {
-        title: newEvent.title,
-        name: newEvent.title,
-        slug: newEvent.slug,
-        description: newEvent.description,
-        blurb: newEvent.description,
-        event_type: newEvent.eventType,
-        date: newEvent.date,
-        time: newEvent.time,
-        venue: newEvent.venue,
-        location: newEvent.location,
-        area: newEvent.location,
-        entry: newEvent.entry,
-        is_published: newEvent.isPublished,
-        max_people: newEvent.maxPeople,
-        registration_status: newEvent.registrationStatus,
-        is_battle_or_live: Boolean(newEvent.isBattleOrLive),
-        updated_at: newEvent.updatedAt,
-      };
-
-      if (!isEditing) {
-        candidatePayload.created_at = newEvent.createdAt;
-        // If eventId matches UUID or text ID
-        if (eventId && !eventId.startsWith('temp-')) {
-          candidatePayload.id = eventId;
-        }
+    if (!isEditing) {
+      candidatePayload.created_at = newEvent.createdAt;
+      // If eventId is a valid DB UUID or string ID
+      if (eventId && !eventId.startsWith('temp-') && !eventId.startsWith('evt-')) {
+        candidatePayload.id = eventId;
       }
-
-      // Adaptive retry loop to strip missing columns if Postgres schema differs
-      let attemptPayload = { ...candidatePayload };
-      let lastErrorMessage = '';
-      let syncedToSupabase = false;
-
-      for (let attempt = 0; attempt < 6; attempt++) {
-        if (isEditing) {
-          const { data, error } = await supabase
-            .from('events')
-            .update(attemptPayload)
-            .eq('id', eventId)
-            .select();
-
-          if (!error) {
-            syncedToSupabase = true;
-            if (data && data[0]?.id) {
-              newEvent = { ...newEvent, id: data[0].id };
-            }
-            break;
-          }
-
-          lastErrorMessage = error.message;
-
-          // Check if an unknown column caused failure
-          const colMatch =
-            error.message.match(/column "?([a-zA-Z0-9_]+)"? does not exist/i) ||
-            error.message.match(/Could not find the '([a-zA-Z0-9_]+)' column/i);
-
-          if (colMatch && colMatch[1] && colMatch[1] in attemptPayload) {
-            delete attemptPayload[colMatch[1]];
-            continue;
-          }
-
-          // If RLS policy blocked update
-          if (error.code === '42501' || error.message.includes('row-level security')) {
-            break;
-          }
-
-          break;
-        } else {
-          // INSERT NEW EVENT
-          const { data, error } = await supabase
-            .from('events')
-            .insert([attemptPayload])
-            .select();
-
-          if (!error) {
-            syncedToSupabase = true;
-            if (data && data[0]?.id) {
-              const remoteId = data[0].id;
-              newEvent = { ...newEvent, id: remoteId };
-              // Update local cache with remote assigned ID
-              const remapped = getLocalEvents().map((e) => (e.id === eventId ? newEvent : e));
-              setLocalEvents(remapped);
-            }
-            break;
-          }
-
-          lastErrorMessage = error.message;
-
-          // Check if column does not exist
-          const colMatch =
-            error.message.match(/column "?([a-zA-Z0-9_]+)"? does not exist/i) ||
-            error.message.match(/Could not find the '([a-zA-Z0-9_]+)' column/i);
-
-          if (colMatch && colMatch[1] && colMatch[1] in attemptPayload) {
-            delete attemptPayload[colMatch[1]];
-            continue;
-          }
-
-          // Check if UUID error on 'id'
-          if (error.message.includes('uuid') && 'id' in attemptPayload) {
-            delete attemptPayload.id;
-            continue;
-          }
-
-          // If RLS policy blocked insert
-          if (error.code === '42501' || error.message.includes('row-level security')) {
-            break;
-          }
-
-          break;
-        }
-      }
-
-      if (syncedToSupabase) {
-        return { success: true, item: newEvent, source: 'supabase' };
-      }
-
-      console.warn('Supabase event cloud sync note:', lastErrorMessage);
-      return {
-        success: true,
-        item: newEvent,
-        error: lastErrorMessage ? `Saved locally. Remote cloud sync notice: ${lastErrorMessage}` : undefined,
-        source: 'local',
-      };
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.warn('Supabase events exception:', msg);
-      return { success: true, item: newEvent, error: `Saved locally. Note: ${msg}`, source: 'local' };
     }
-  }
 
-  return { success: true, item: newEvent, source: 'local' };
+    // Adaptive retry loop to strip missing columns if Postgres schema differs
+    let attemptPayload = { ...candidatePayload };
+    let lastErrorMessage = '';
+    let syncedToSupabase = false;
+
+    for (let attempt = 0; attempt < 6; attempt++) {
+      if (isEditing) {
+        const { data, error } = await supabase
+          .from('events')
+          .update(attemptPayload)
+          .eq('id', eventId)
+          .select();
+
+        if (!error) {
+          syncedToSupabase = true;
+          if (data && data[0]?.id) {
+            newEvent = { ...newEvent, id: data[0].id };
+          }
+          break;
+        }
+
+        lastErrorMessage = error.message;
+
+        // Check if an unknown column caused failure
+        const colMatch =
+          error.message.match(/column "?([a-zA-Z0-9_]+)"? does not exist/i) ||
+          error.message.match(/Could not find the '([a-zA-Z0-9_]+)' column/i);
+
+        if (colMatch && colMatch[1] && colMatch[1] in attemptPayload) {
+          delete attemptPayload[colMatch[1]];
+          continue;
+        }
+
+        if (error.code === '42501' || error.message.includes('row-level security')) {
+          break;
+        }
+
+        break;
+      } else {
+        // INSERT NEW EVENT
+        const { data, error } = await supabase
+          .from('events')
+          .insert([attemptPayload])
+          .select();
+
+        if (!error) {
+          syncedToSupabase = true;
+          if (data && data[0]?.id) {
+            const remoteId = data[0].id;
+            newEvent = { ...newEvent, id: remoteId };
+          }
+          break;
+        }
+
+        lastErrorMessage = error.message;
+
+        // Check if column does not exist
+        const colMatch =
+          error.message.match(/column "?([a-zA-Z0-9_]+)"? does not exist/i) ||
+          error.message.match(/Could not find the '([a-zA-Z0-9_]+)' column/i);
+
+        if (colMatch && colMatch[1] && colMatch[1] in attemptPayload) {
+          delete attemptPayload[colMatch[1]];
+          continue;
+        }
+
+        // Check if UUID error on 'id'
+        if (error.message.includes('uuid') && 'id' in attemptPayload) {
+          delete attemptPayload.id;
+          continue;
+        }
+
+        if (error.code === '42501' || error.message.includes('row-level security')) {
+          break;
+        }
+
+        break;
+      }
+    }
+
+    if (syncedToSupabase) {
+      return { success: true, item: newEvent, source: 'supabase' };
+    }
+
+    return {
+      success: false,
+      item: newEvent,
+      error: lastErrorMessage || 'Failed to save event to Supabase.',
+      source: 'supabase',
+    };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn('Supabase events exception:', msg);
+    return { success: false, item: newEvent, error: msg, source: 'supabase' };
+  }
 }
 
 export async function deleteUpcomingEvent(id: string): Promise<{ success: boolean; error?: string }> {
@@ -2068,15 +2023,17 @@ export async function deleteUpcomingEvent(id: string): Promise<{ success: boolea
     return { success: false, error: 'Security constraint: Administrator authentication required.' };
   }
 
-  // Find target event before filtering to clean its related RSVPs
-  const current = getLocalEvents();
-  const targetEvent = current.find((e) => e.id === id);
-  const filtered = current.filter((e) => e.id !== id);
-  setLocalEvents(filtered);
-
-  // Clean all associated RSVPs for this event locally and in Supabase
-  if (targetEvent) {
-    deleteEventRsvps(id, targetEvent.title || targetEvent.name);
+  // Purge any local caches
+  if (typeof window !== 'undefined') {
+    try {
+      localStorage.removeItem(LOCAL_EVENTS_KEY);
+      localStorage.removeItem('mhb_events');
+      localStorage.removeItem('mhb_events_v2');
+      localStorage.removeItem('mbh_community_events_cache');
+      localStorage.removeItem('events');
+    } catch {
+      // ignore
+    }
   }
 
   const supabase = getSupabase();
@@ -2085,31 +2042,28 @@ export async function deleteUpcomingEvent(id: string): Promise<{ success: boolea
       const { error } = await supabase.from('events').delete().eq('id', id);
       if (error) {
         console.warn('Supabase events delete warning:', error.message);
+        return { success: false, error: error.message };
       }
+      deleteEventRsvps(id);
       return { success: true };
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       console.warn('Supabase events delete exception:', msg);
-      return { success: true };
+      return { success: false, error: msg };
     }
   }
 
-  return { success: true };
+  return { success: false, error: 'Supabase client unavailable' };
 }
 
-// Module-level auto-cleanup of fake demo events & demo RSVPs
+// Module-level auto-cleanup: wipe any legacy local event storage
 try {
-  const storedEventsRaw = typeof window !== 'undefined' ? localStorage.getItem('mbh_community_events_cache') : null;
-  if (storedEventsRaw) {
-    const stored = JSON.parse(storedEventsRaw);
-    if (Array.isArray(stored)) {
-      const cleaned = stored.filter((e) => !isFakeOrDemoEvent(e));
-      if (cleaned.length !== stored.length) {
-        localStorage.setItem('mbh_community_events_cache', JSON.stringify(cleaned));
-      }
-    }
-  }
   if (typeof window !== 'undefined') {
+    localStorage.removeItem(LOCAL_EVENTS_KEY);
+    localStorage.removeItem('mhb_events');
+    localStorage.removeItem('mhb_events_v2');
+    localStorage.removeItem('mbh_community_events_cache');
+    localStorage.removeItem('events');
     purgeFakeRsvps();
   }
 } catch {

@@ -29,7 +29,6 @@ import {
   fetchContactDispatches,
   fetchUpcomingEvents,
   fetchCollaborations,
-  getLocalEvents,
   setAdminAuthenticated,
   RsvpRecord,
   ContactDispatchRecord
@@ -77,8 +76,8 @@ export function AdminDashboard({ adminUser, onLogout, onGoHome }: AdminDashboard
     }
   }, [adminUser]);
 
-  // Data collections initialized with cached events for instant zero-flicker render
-  const [events, setEvents] = useState<EventItem[]>(getLocalEvents);
+  // Data collections initialized directly from Supabase
+  const [events, setEvents] = useState<EventItem[]>([]);
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [videos, setVideos] = useState<VideoItem[]>([]);
   const [members, setMembers] = useState<(CommunityMember & { photoUrl: string })[]>([]);

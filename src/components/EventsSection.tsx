@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { EventItem, RegistrationStatus } from '../types';
 import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2, ChevronDown, ChevronUp, MessageCircle, ArrowUpRight } from 'lucide-react';
-import { fetchUpcomingEvents, getLocalEvents, formatEventDate, fetchAllEventRsvpCounts } from '../lib/supabase';
+import { fetchUpcomingEvents, formatEventDate, fetchAllEventRsvpCounts } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
 
@@ -10,18 +10,25 @@ interface EventsSectionProps {
 }
 
 export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => {
-  const [events, setEvents] = useState<EventItem[]>(getLocalEvents);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
   const [rsvpCounts, setRsvpCounts] = useState<Record<string, number>>({});
   const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
-    Promise.all([fetchUpcomingEvents(), fetchAllEventRsvpCounts()]).then(([data, counts]) => {
-      if (isMounted) {
-        if (data) setEvents(data);
-        if (counts) setRsvpCounts(counts);
-      }
-    });
+    Promise.all([fetchUpcomingEvents(), fetchAllEventRsvpCounts()])
+      .then(([data, counts]) => {
+        if (isMounted) {
+          if (data) setEvents(data);
+          if (counts) setRsvpCounts(counts);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.warn('Events fetch error:', err);
+        if (isMounted) setLoading(false);
+      });
     return () => {
       isMounted = false;
     };
@@ -54,8 +61,13 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
           </div>
         </ScrollReveal>
 
-        {/* 1-2 Event Cards as Street Flyers */}
-        {events.length === 0 ? (
+        {/* Loading State or Event Cards / Street Flyers */}
+        {loading ? (
+          <div className="py-16 text-center border-2 border-dashed border-[#FFC93C]/20 bg-[#1A1713] p-10">
+            <div className="w-8 h-8 border-2 border-[#FFC93C] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+            <p className="font-mono text-xs uppercase text-[#F4EFE4]/60">Checking Cypher Schedule...</p>
+          </div>
+        ) : events.length === 0 ? (
           <ScrollReveal direction="up" className="bg-[#1A1713] border-2 border-dashed border-[#FFC93C]/30 p-12 text-center">
             <Calendar className="w-12 h-12 text-[#FFC93C]/40 mx-auto mb-3" />
             <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4] mb-2">
