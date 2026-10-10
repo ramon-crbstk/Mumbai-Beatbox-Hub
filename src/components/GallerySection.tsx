@@ -139,9 +139,130 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
       setSelectedIdx((selectedIdx + 1) % galleryList.length);
     }
   };
+  const touchStartY = useRef<number>(0);
+  const touchStartX = useRef<number>(0);
+  const isScrollingGesture = useRef<boolean>(false);
+
+  const handleCardTouchStart = (e: React.TouchEvent) => {
+    if (e.touches && e.touches[0]) {
+      touchStartY.current = e.touches[0].clientY;
+      touchStartX.current = e.touches[0].clientX;
+      isScrollingGesture.current = false;
+    }
+  };
+
+  const handleCardTouchMove = (e: React.TouchEvent) => {
+    if (e.touches && e.touches[0]) {
+      const deltaY = Math.abs(e.touches[0].clientY - touchStartY.current);
+      const deltaX = Math.abs(e.touches[0].clientX - touchStartX.current);
+      // If user moves their finger more than 6px in any direction, they are scrolling
+      if (deltaY > 6 || deltaX > 6) {
+        isScrollingGesture.current = true;
+      }
+    }
+  };
+
+  const handleCardClick = (globalIdx: number) => {
+    // Only open lightbox if this was an intentional tap, not a scroll drag
+    if (!isScrollingGesture.current) {
+      setSelectedIdx(globalIdx);
+    }
+  };
+
+  const renderCard = (item: GalleryItem, globalIdx: number) => (
+    <div
+      key={item.id}
+      onTouchStart={handleCardTouchStart}
+      onTouchMove={handleCardTouchMove}
+      onClick={() => handleCardClick(globalIdx)}
+      style={{ touchAction: 'pan-y' }}
+      className="group bg-[#181512] border-2 border-[#14120F] hover:border-[#FFC93C] p-3.5 sm:p-4 shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all duration-300 cursor-pointer flex flex-col justify-between h-full touch-pan-y select-none"
+    >
+      {/* Unified Photo Canvas */}
+      <div 
+        style={{ touchAction: 'pan-y' }}
+        className="relative w-full aspect-[4/3] bg-[#0B0907] overflow-hidden flex items-center justify-center border border-[#F4EFE4]/10 touch-pan-y"
+      >
+        {/* Ambient backdrop */}
+        <img
+          src={item.photoUrl}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          className="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 pointer-events-none select-none"
+        />
+
+        {/* Foreground Photo: pointer-events-none and draggable=false prevents mobile browser from hijacking touch */}
+        <img
+          src={item.photoUrl}
+          alt={item.title}
+          loading="lazy"
+          draggable={false}
+          className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.03] transition-transform duration-300 pointer-events-none select-none"
+        />
+
+        {/* Frame Index Badge */}
+        <div className="absolute top-2.5 left-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] font-bold uppercase border border-[#FFC93C]/40 backdrop-blur-xs pointer-events-none">
+          #{String(globalIdx + 1).padStart(2, '0')}
+        </div>
+
+        {/* Top Date / Session Stamp */}
+        {item.dateStr && (
+          <div className="absolute top-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#F4EFE4] font-mono text-[10px] font-bold uppercase border border-[#F4EFE4]/30 backdrop-blur-xs pointer-events-none">
+            {item.dateStr}
+          </div>
+        )}
+
+        {/* Expand Hover Badge */}
+        <div className="absolute bottom-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+          <Maximize2 className="w-3 h-3" />
+          <span>Expand</span>
+        </div>
+      </div>
+
+      {/* Aligned Card Information Strip */}
+      <div 
+        style={{ touchAction: 'pan-y' }}
+        className="mt-3.5 pt-3 border-t border-[#F4EFE4]/10 flex flex-col justify-between flex-1 touch-pan-y"
+      >
+        <div>
+          <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1.5 pointer-events-none">
+            <span className="flex items-center gap-1.5 truncate">
+              <MapPin className="w-3.5 h-3.5 shrink-0 text-[#E4402A]" />
+              <span className="truncate">{item.location}</span>
+            </span>
+            <span className="text-[10px] text-[#F4EFE4]/50 uppercase tracking-wider shrink-0">
+              CYPHER WALL
+            </span>
+          </div>
+
+          <h4 
+            className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-tight line-clamp-2 min-h-[3.25rem] pointer-events-none" 
+            title={item.title}
+          >
+            {item.title}
+          </h4>
+
+          {item.caption && (
+            <p className="text-xs font-mono text-[#F4EFE4]/70 line-clamp-2 mt-2 leading-relaxed pointer-events-none">
+              {item.caption.replace(/\*\*/g, '')}
+            </p>
+          )}
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 flex items-center justify-between text-[11px] font-mono pointer-events-none">
+          <span className="text-[#F4EFE4]/50">FRAME #{globalIdx + 1} OF {galleryList.length}</span>
+          <span className="text-[#FFC93C] font-semibold flex items-center gap-1 group-hover:underline">
+            <span>View Full Photo</span>
+            <Maximize2 className="w-3 h-3" />
+          </span>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
-    <section id="gallery" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative overflow-hidden">
+    <section id="gallery" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative overflow-x-clip">
       
       {/* Background Subtle Atmosphere */}
       <div className="absolute inset-0 bg-radial from-[#FFC93C]/5 via-transparent to-transparent pointer-events-none opacity-40" />
@@ -296,7 +417,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
 
             {/* Gallery Grid or Paged Slider */}
             {totalPages > 1 ? (
-              /* Horizontal Track for Multi-Page Gallery (> 6 items): touch-friendly with overscroll containment and NO touch-pan-x */
+              /* Horizontal Track for Multi-Page Gallery (> 6 items): touch-friendly with overscroll containment */
               <div
                 ref={scrollContainerRef}
                 onScroll={handleContainerScroll}
@@ -317,85 +438,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                           ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto'
                           : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
                       }`}>
-                        {pageItems.map((item, localIdx) => {
-                          const globalIdx = pageOffset + localIdx;
-
-                          return (
-                            <div
-                              key={item.id}
-                              onClick={() => setSelectedIdx(globalIdx)}
-                              className="group bg-[#181512] border-2 border-[#14120F] hover:border-[#FFC93C] p-3.5 sm:p-4 shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all duration-300 cursor-pointer flex flex-col justify-between h-full"
-                            >
-                              {/* Unified Photo Canvas */}
-                              <div className="relative w-full aspect-[4/3] bg-[#0B0907] overflow-hidden flex items-center justify-center border border-[#F4EFE4]/10 select-none">
-                                <img
-                                  src={item.photoUrl}
-                                  alt=""
-                                  aria-hidden="true"
-                                  className="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 pointer-events-none select-none"
-                                />
-
-                                <img
-                                  src={item.photoUrl}
-                                  alt={item.title}
-                                  loading="lazy"
-                                  className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.03] transition-transform duration-300"
-                                />
-
-                                <div className="absolute top-2.5 left-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] font-bold uppercase border border-[#FFC93C]/40 backdrop-blur-xs">
-                                  #{String(globalIdx + 1).padStart(2, '0')}
-                                </div>
-
-                                {item.dateStr && (
-                                  <div className="absolute top-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#F4EFE4] font-mono text-[10px] font-bold uppercase border border-[#F4EFE4]/30 backdrop-blur-xs">
-                                    {item.dateStr}
-                                  </div>
-                                )}
-
-                                <div className="absolute bottom-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                                  <Maximize2 className="w-3 h-3" />
-                                  <span>Expand</span>
-                                </div>
-                              </div>
-
-                              {/* Aligned Card Information Strip */}
-                              <div className="mt-3.5 pt-3 border-t border-[#F4EFE4]/10 flex flex-col justify-between flex-1">
-                                <div>
-                                  <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1.5">
-                                    <span className="flex items-center gap-1.5 truncate">
-                                      <MapPin className="w-3.5 h-3.5 shrink-0 text-[#E4402A]" />
-                                      <span className="truncate">{item.location}</span>
-                                    </span>
-                                    <span className="text-[10px] text-[#F4EFE4]/50 uppercase tracking-wider shrink-0">
-                                      CYPHER WALL
-                                    </span>
-                                  </div>
-
-                                  <h4 
-                                    className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-tight line-clamp-2 min-h-[3.25rem]" 
-                                    title={item.title}
-                                  >
-                                    {item.title}
-                                  </h4>
-
-                                  {item.caption && (
-                                    <p className="text-xs font-mono text-[#F4EFE4]/70 line-clamp-2 mt-2 leading-relaxed">
-                                      {item.caption.replace(/\*\*/g, '')}
-                                    </p>
-                                  )}
-                                </div>
-
-                                <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 flex items-center justify-between text-[11px] font-mono">
-                                  <span className="text-[#F4EFE4]/50">FRAME #{globalIdx + 1} OF {galleryList.length}</span>
-                                  <span className="text-[#FFC93C] font-semibold flex items-center gap-1 group-hover:underline">
-                                    <span>View Full Photo</span>
-                                    <Maximize2 className="w-3 h-3" />
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
+                        {pageItems.map((item, localIdx) => renderCard(item, pageOffset + localIdx))}
                       </div>
                     </div>
                   );
@@ -411,81 +454,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                     ? 'grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto'
                     : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
                 }`}>
-                  {galleryList.map((item, globalIdx) => (
-                    <div
-                      key={item.id}
-                      onClick={() => setSelectedIdx(globalIdx)}
-                      className="group bg-[#181512] border-2 border-[#14120F] hover:border-[#FFC93C] p-3.5 sm:p-4 shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all duration-300 cursor-pointer flex flex-col justify-between h-full"
-                    >
-                      {/* Unified Photo Canvas */}
-                      <div className="relative w-full aspect-[4/3] bg-[#0B0907] overflow-hidden flex items-center justify-center border border-[#F4EFE4]/10 select-none">
-                        <img
-                          src={item.photoUrl}
-                          alt=""
-                          aria-hidden="true"
-                          className="absolute inset-0 w-full h-full object-cover blur-md opacity-25 scale-110 pointer-events-none select-none"
-                        />
-
-                        <img
-                          src={item.photoUrl}
-                          alt={item.title}
-                          loading="lazy"
-                          className="relative z-10 max-h-full max-w-full object-contain p-2 group-hover:scale-[1.03] transition-transform duration-300"
-                        />
-
-                        <div className="absolute top-2.5 left-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] font-bold uppercase border border-[#FFC93C]/40 backdrop-blur-xs">
-                          #{String(globalIdx + 1).padStart(2, '0')}
-                        </div>
-
-                        {item.dateStr && (
-                          <div className="absolute top-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#F4EFE4] font-mono text-[10px] font-bold uppercase border border-[#F4EFE4]/30 backdrop-blur-xs">
-                            {item.dateStr}
-                          </div>
-                        )}
-
-                        <div className="absolute bottom-2.5 right-2.5 z-20 px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] font-mono text-[10px] uppercase font-bold border border-[#FFC93C]/40 flex items-center gap-1 opacity-90 sm:opacity-0 group-hover:opacity-100 transition-opacity">
-                          <Maximize2 className="w-3 h-3" />
-                          <span>Expand</span>
-                        </div>
-                      </div>
-
-                      {/* Aligned Card Information Strip */}
-                      <div className="mt-3.5 pt-3 border-t border-[#F4EFE4]/10 flex flex-col justify-between flex-1">
-                        <div>
-                          <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] mb-1.5">
-                            <span className="flex items-center gap-1.5 truncate">
-                              <MapPin className="w-3.5 h-3.5 shrink-0 text-[#E4402A]" />
-                              <span className="truncate">{item.location}</span>
-                            </span>
-                            <span className="text-[10px] text-[#F4EFE4]/50 uppercase tracking-wider shrink-0">
-                              CYPHER WALL
-                            </span>
-                          </div>
-
-                          <h4 
-                            className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-tight line-clamp-2 min-h-[3.25rem]" 
-                            title={item.title}
-                          >
-                            {item.title}
-                          </h4>
-
-                          {item.caption && (
-                            <p className="text-xs font-mono text-[#F4EFE4]/70 line-clamp-2 mt-2 leading-relaxed">
-                              {item.caption.replace(/\*\*/g, '')}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="mt-4 pt-3 border-t border-[#F4EFE4]/10 flex items-center justify-between text-[11px] font-mono">
-                          <span className="text-[#F4EFE4]/50">FRAME #{globalIdx + 1} OF {galleryList.length}</span>
-                          <span className="text-[#FFC93C] font-semibold flex items-center gap-1 group-hover:underline">
-                            <span>View Full Photo</span>
-                            <Maximize2 className="w-3 h-3" />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {galleryList.map((item, globalIdx) => renderCard(item, globalIdx))}
                 </div>
               </div>
             )}
