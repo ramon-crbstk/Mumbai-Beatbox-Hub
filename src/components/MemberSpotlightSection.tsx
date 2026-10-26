@@ -183,9 +183,9 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
   const photo = currentMember ? (currentMember.photo_url || currentMember.photoUrl) : '';
 
   return (
-    <section id="spotlight" className="py-16 md:py-24 bg-[#100E0C] border-b-2 border-[#FFC93C]/20 relative overflow-hidden">
+    <section id="spotlight" className="py-16 md:py-24 bg-[#100E0C] border-b-2 border-[#E4402A]/20 relative overflow-hidden">
       {/* Background Ambient Glow Accents */}
-      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-[#FFC93C]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-1/4 -left-20 w-96 h-96 bg-[#E4402A]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 right-0 w-96 h-96 bg-[#E4402A]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -193,14 +193,14 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
         {/* Section Header */}
         <ScrollReveal direction="up" delay={0.05} className="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
-              <Sparkles className="w-3.5 h-3.5 text-[#FFC93C]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] border border-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 shadow-[2px_2px_0px_0px_#E4402A]">
+              <Sparkles className="w-3.5 h-3.5 text-[#14120F]" />
               <span>FEATURED BEATBOXER // COMMUNITY SPOTLIGHT</span>
             </div>
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
+            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
               Member Spotlight
             </h2>
-            <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-1 max-w-xl">
+            <p className="text-sm sm:text-base text-white/75 font-mono mt-1 max-w-xl">
               Showcasing verified artists from Mumbai's underground scene with their technical specialties and voice note drops.
             </p>
           </div>
@@ -208,7 +208,7 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
           {/* Cycler Controls if multiple members exist */}
           {members.length > 1 && (
             <div className="flex items-center gap-3">
-              <span className="text-xs font-mono text-[#F4EFE4]/60">
+              <span className="text-xs font-mono text-white/70">
                 {selectedIndex + 1} of {members.length} Artists
               </span>
               <div className="flex items-center gap-1.5">
@@ -216,7 +216,7 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                   type="button"
                   onClick={handlePrev}
                   aria-label="Previous featured artist"
-                  className="p-2 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-colors cursor-pointer"
+                  className="p-2 bg-[#181512] hover:bg-[#FFC93C] text-white hover:text-[#14120F] border border-white/20 hover:border-[#FFC93C] transition-colors cursor-pointer"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
@@ -224,7 +224,7 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                   type="button"
                   onClick={handleNext}
                   aria-label="Next featured artist"
-                  className="p-2 bg-[#181512] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-colors cursor-pointer"
+                  className="p-2 bg-[#181512] hover:bg-[#FFC93C] text-white hover:text-[#14120F] border border-white/20 hover:border-[#FFC93C] transition-colors cursor-pointer"
                 >
                   <ChevronRight className="w-4 h-4" />
                 </button>
@@ -236,11 +236,11 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
         {/* Featured Spotlight Card */}
         {currentMember && (
           <ScrollReveal direction="up" delay={0.1}>
-            <div className="bg-[#181512] border-2 border-[#FFC93C] shadow-[8px_8px_0px_0px_#E4402A] overflow-hidden">
+            <div className="bg-[#181512] border-2 border-[#E4402A] shadow-[8px_8px_0px_0px_#FFC93C] overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-12">
                 
                 {/* Left Column: Visual Artist Frame (5 cols on lg) */}
-                <div className="lg:col-span-5 relative bg-[#0D0B09] min-h-[360px] sm:min-h-[420px] lg:min-h-full flex items-center justify-center border-b-2 lg:border-b-0 lg:border-r-2 border-[#FFC93C]/30 overflow-hidden group">
+                <div className="lg:col-span-5 relative bg-[#0D0B09] min-h-[360px] sm:min-h-[420px] lg:min-h-full flex items-center justify-center border-b-2 lg:border-b-0 lg:border-r-2 border-[#E4402A]/30 overflow-hidden group">
                   {photo ? (
                     <>
                       {/* Ambient soft-blur duplicate for letterbox margins */}
@@ -260,9 +260,9 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                       />
                     </>
                   ) : (
-                    <div className="flex flex-col items-center justify-center p-8 text-[#FFC93C]">
+                    <div className="flex flex-col items-center justify-center p-8 text-[#E4402A]">
                       <span className="font-['Anton'] text-7xl">{currentMember.avatarInitials}</span>
-                      <span className="font-mono text-xs uppercase tracking-widest text-[#F4EFE4]/60 mt-2">
+                      <span className="font-mono text-xs uppercase tracking-widest text-white/60 mt-2">
                         Mumbai Beatbox Hub Artist
                       </span>
                     </div>
@@ -270,22 +270,22 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
 
                   {/* Top Badge: Territory & Spotlight Tag */}
                   <div className="absolute top-3 left-3 z-20 flex flex-wrap gap-2">
-                    <span className="px-3 py-1 bg-[#E4402A] text-[#F4EFE4] text-xs font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
+                    <span className="px-3 py-1 bg-[#E4402A] text-white text-xs font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
                       SPOTLIGHT
                     </span>
-                    <span className="px-3 py-1 bg-[#14120F]/90 text-[#F4EFE4] text-xs font-mono flex items-center gap-1 border border-[#F4EFE4]/30 backdrop-blur-xs">
-                      <MapPin className="w-3 h-3 text-[#FFC93C]" />
+                    <span className="px-3 py-1 bg-[#14120F]/90 text-white text-xs font-mono flex items-center gap-1 border border-white/30 backdrop-blur-xs">
+                      <MapPin className="w-3 h-3 text-[#E4402A]" />
                       {currentMember.area}
                     </span>
                   </div>
 
                   {/* Bottom Strip: Specialty Pill */}
                   <div className="absolute bottom-3 left-3 right-3 z-20">
-                    <div className="p-2.5 bg-[#14120F]/95 border border-[#FFC93C]/50 backdrop-blur-xs flex items-center justify-between">
-                      <span className="text-xs font-mono text-[#FFC93C] font-bold uppercase truncate">
+                    <div className="p-2.5 bg-[#14120F]/95 border border-white/20 backdrop-blur-xs flex items-center justify-between">
+                      <span className="text-xs font-mono text-white font-bold uppercase truncate">
                         ★ {currentMember.specialty}
                       </span>
-                      <span className="text-[11px] font-mono text-[#F4EFE4]/70 shrink-0 ml-2">
+                      <span className="text-[11px] font-mono text-white/70 shrink-0 ml-2">
                         {currentMember.experience}
                       </span>
                     </div>
@@ -298,7 +298,7 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                   {/* Artist Header Information */}
                   <div>
                     <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
-                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#FFC93C]">
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-white/80">
                         COMMUNITY RESIDENT ARTIST
                       </span>
                       {currentMember.handle && (
@@ -306,7 +306,7 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                           href={`https://instagram.com/${currentMember.handle.replace('@', '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#14120F] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/20 hover:border-[#FFC93C] text-xs font-mono transition-colors"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-[#14120F] hover:bg-[#FFC93C] text-white hover:text-[#14120F] border border-white/20 hover:border-[#FFC93C] text-xs font-mono transition-colors"
                           title="Open Instagram Profile"
                         >
                           <Instagram className="w-3.5 h-3.5 text-[#E4402A]" />
@@ -316,44 +316,44 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                       )}
                     </div>
 
-                    <h3 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4] leading-none mb-4">
+                    <h3 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white leading-none mb-4">
                       {currentMember.name}
                     </h3>
 
                     {/* Bio Narrative */}
                     <div className="relative pl-4 border-l-2 border-[#FFC93C] mb-6">
-                      <p className="text-sm sm:text-base font-mono text-[#F4EFE4]/85 leading-relaxed">
+                      <p className="text-sm sm:text-base font-mono text-white/85 leading-relaxed">
                         {displayBio}
                       </p>
                     </div>
 
                     {/* Technical Specifications Grid */}
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6 font-mono text-xs">
-                      <div className="p-3 bg-[#14120F] border border-[#F4EFE4]/15">
-                        <span className="text-[#F4EFE4]/50 block text-[10px] uppercase">Specialty</span>
-                        <strong className="text-[#FFC93C] text-xs block truncate mt-0.5">{currentMember.specialty}</strong>
+                      <div className="p-3 bg-[#14120F] border border-white/15">
+                        <span className="text-white/50 block text-[10px] uppercase">Specialty</span>
+                        <strong className="text-white text-xs block truncate mt-0.5">{currentMember.specialty}</strong>
                       </div>
-                      <div className="p-3 bg-[#14120F] border border-[#F4EFE4]/15">
-                        <span className="text-[#F4EFE4]/50 block text-[10px] uppercase">Territory</span>
-                        <strong className="text-[#F4EFE4] text-xs block truncate mt-0.5">{currentMember.area}</strong>
+                      <div className="p-3 bg-[#14120F] border border-white/15">
+                        <span className="text-white/50 block text-[10px] uppercase">Territory</span>
+                        <strong className="text-white text-xs block truncate mt-0.5">{currentMember.area}</strong>
                       </div>
-                      <div className="p-3 bg-[#14120F] border border-[#F4EFE4]/15 col-span-2 sm:col-span-1">
-                        <span className="text-[#F4EFE4]/50 block text-[10px] uppercase">Experience</span>
-                        <strong className="text-[#F4EFE4] text-xs block truncate mt-0.5">{currentMember.experience}</strong>
+                      <div className="p-3 bg-[#14120F] border border-white/15 col-span-2 sm:col-span-1">
+                        <span className="text-white/50 block text-[10px] uppercase">Experience</span>
+                        <strong className="text-white text-xs block truncate mt-0.5">{currentMember.experience}</strong>
                       </div>
                     </div>
                   </div>
 
                   {/* Voice Note Upload Section & Direct Links */}
-                  <div className="p-5 sm:p-6 bg-[#14120F] border-2 border-[#F4EFE4]/15 space-y-4">
-                    <div className="flex items-center justify-between gap-2 border-b border-[#F4EFE4]/15 pb-3">
+                  <div className="p-5 sm:p-6 bg-[#14120F] border-2 border-white/15 space-y-4">
+                    <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-3">
                       <div className="flex items-center gap-2">
                         <Volume2 className="w-4 h-4 text-[#FFC93C]" />
-                        <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#F4EFE4]">
+                        <span className="font-mono text-xs font-bold uppercase tracking-wider text-white">
                           Voice Note Uploads & Audio Stream
                         </span>
                       </div>
-                      <span className="text-[11px] font-mono text-[#FFC93C]">
+                      <span className="text-[11px] font-mono text-white/80">
                         {hasAudio ? (currentMember.voiceNoteDuration || 'Available') : 'No Audio File'}
                       </span>
                     </div>
@@ -362,11 +362,11 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                     {hasAudio && rawAudioUrl ? (
                       <div className="space-y-3">
                         <div className="flex items-center justify-between text-xs font-mono">
-                          <span className="text-[#F4EFE4]/70 flex items-center gap-1.5">
-                            <Mic className="w-3.5 h-3.5 text-[#FFC93C]" />
+                          <span className="text-white/80 flex items-center gap-1.5">
+                            <Mic className="w-3.5 h-3.5 text-[#E4402A]" />
                             <span>{isPlaying ? 'Streaming Voice Note...' : 'Routine Recording Ready'}</span>
                           </span>
-                          <span className="text-[#FFC93C] font-mono font-bold">
+                          <span className="text-white font-mono font-bold">
                             {isPlaying
                               ? `${Math.floor(currentTime / 60)}:${String(Math.floor(currentTime % 60)).padStart(2, '0')}`
                               : currentMember.voiceNoteDuration || '0:15'}
@@ -389,8 +389,8 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                           onClick={togglePlayAudio}
                           className={`w-full py-3 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer ${
                             isPlaying
-                              ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e]'
-                              : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#F4EFE4]'
+                              ? 'bg-[#E4402A] text-white hover:bg-[#c9321e]'
+                              : 'bg-[#FFC93C] text-[#14120F] hover:bg-white'
                           }`}
                         >
                           {isPlaying ? (
@@ -407,8 +407,8 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                         </button>
                       </div>
                     ) : (
-                      <div className="py-3 px-4 bg-[#181512] border border-dashed border-[#F4EFE4]/20 text-center font-mono text-xs text-[#F4EFE4]/60">
-                        <Mic className="w-4 h-4 text-[#FFC93C]/60 mx-auto mb-1.5" />
+                      <div className="py-3 px-4 bg-[#181512] border border-dashed border-white/20 text-center font-mono text-xs text-white/60">
+                        <Mic className="w-4 h-4 text-white/60 mx-auto mb-1.5" />
                         <span>No voice note upload currently attached to this member profile.</span>
                       </div>
                     )}
@@ -422,10 +422,10 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                             href={rawAudioUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex-1 min-w-[200px] py-2.5 px-3.5 bg-[#181512] hover:bg-[#201C17] text-[#FFC93C] hover:text-[#F4EFE4] border border-[#FFC93C]/40 hover:border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer"
+                            className="flex-1 min-w-[200px] py-2.5 px-3.5 bg-[#181512] hover:bg-[#201C17] text-white hover:text-white border border-[#FFC93C]/40 hover:border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer"
                             title="Open direct voice note audio file in new browser tab"
                           >
-                            <Headphones className="w-3.5 h-3.5" />
+                            <Headphones className="w-3.5 h-3.5 text-[#FFC93C]" />
                             <span>Open Audio File</span>
                             <ExternalLink className="w-3.5 h-3.5 opacity-80" />
                           </a>
@@ -434,7 +434,7 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                           <button
                             type="button"
                             onClick={() => handleCopyLink(rawAudioUrl)}
-                            className="py-2.5 px-3 bg-[#181512] hover:bg-[#201C17] text-[#F4EFE4]/80 hover:text-[#FFC93C] border border-[#F4EFE4]/20 hover:border-[#FFC93C]/50 text-xs font-mono flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            className="py-2.5 px-3 bg-[#181512] hover:bg-[#201C17] text-white/80 hover:text-white border border-white/20 hover:border-[#FFC93C]/50 text-xs font-mono flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                             title="Copy voice note upload URL to clipboard"
                           >
                             {copiedUrl ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
@@ -447,7 +447,7 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                       <button
                         type="button"
                         onClick={() => scrollToRoster(currentMember.id)}
-                        className="py-2.5 px-4 bg-transparent hover:bg-[#181512] text-[#F4EFE4]/70 hover:text-[#FFC93C] border border-[#F4EFE4]/20 text-xs font-mono flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                        className="py-2.5 px-4 bg-transparent hover:bg-[#181512] text-white/70 hover:text-white border border-white/20 text-xs font-mono flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                       >
                         <span>View in Roster</span>
                         <ArrowRight className="w-3.5 h-3.5" />

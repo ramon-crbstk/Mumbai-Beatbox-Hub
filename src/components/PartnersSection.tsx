@@ -26,12 +26,12 @@ export const PartnersSection: React.FC = () => {
   }, []);
 
   return (
-    <section className="py-12 bg-[#181512] border-b-2 border-[#FFC93C]/20 relative">
+    <section className="py-12 bg-[#181512] border-b-2 border-[#E4402A]/20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <ScrollReveal direction="up" delay={0.05} className="text-center mb-8">
-          <span className="font-mono text-xs uppercase tracking-widest text-[#F4EFE4]/60 font-semibold">
+          <span className="font-mono text-xs uppercase tracking-widest text-white/70 font-semibold">
             COLLABORATED WITH // COMMUNITY ROSTER
           </span>
         </ScrollReveal>
@@ -44,11 +44,11 @@ export const PartnersSection: React.FC = () => {
 
             const cardContent = (
               <div
-                className="bg-[#14120F] border border-[#F4EFE4]/15 hover:border-[#FFC93C]/60 p-4 sm:p-5 flex flex-col items-center justify-center text-center group transition-colors h-full"
+                className="bg-[#14120F] border border-white/15 hover:border-[#FFC93C] p-4 sm:p-5 flex flex-col items-center justify-center text-center group transition-colors h-full"
               >
                 {/* Monochromatic Box Logo Placeholder or Custom Logo URL */}
                 {partner.logo_url && partner.logo_url.trim() ? (
-                  <div className="w-10 h-10 border border-[#F4EFE4]/30 flex items-center justify-center mb-2 overflow-hidden bg-black/40 group-hover:border-[#FFC93C] transition-colors p-1">
+                  <div className="w-10 h-10 border border-white/30 flex items-center justify-center mb-2 overflow-hidden bg-black/40 group-hover:border-[#FFC93C] transition-colors p-1">
                     <img
                       src={partner.logo_url}
                       alt={partner.name}
@@ -59,23 +59,23 @@ export const PartnersSection: React.FC = () => {
                         target.style.display = 'none';
                         const parent = target.parentElement;
                         if (parent) {
-                          parent.className = "w-10 h-10 border border-[#F4EFE4]/30 flex items-center justify-center font-['Anton'] text-lg text-[#F4EFE4]/50 group-hover:text-[#FFC93C] group-hover:border-[#FFC93C] transition-colors mb-2";
+                          parent.className = "w-10 h-10 border border-white/30 flex items-center justify-center font-['Anton'] text-lg text-white/50 group-hover:text-[#FFC93C] group-hover:border-[#FFC93C] transition-colors mb-2";
                           parent.innerText = shortCode;
                         }
                       }}
                     />
                   </div>
                 ) : (
-                  <div className="w-10 h-10 border border-[#F4EFE4]/30 flex items-center justify-center font-['Anton'] text-lg text-[#F4EFE4]/50 group-hover:text-[#FFC93C] group-hover:border-[#FFC93C] transition-colors mb-2">
+                  <div className="w-10 h-10 border border-white/30 flex items-center justify-center font-['Anton'] text-lg text-white/50 group-hover:text-[#FFC93C] group-hover:border-[#FFC93C] transition-colors mb-2">
                     {shortCode}
                   </div>
                 )}
 
-                <span className="font-['Anton'] text-sm tracking-wider uppercase text-[#F4EFE4]/70 group-hover:text-[#F4EFE4] transition-colors line-clamp-1">
+                <span className="font-['Anton'] text-sm tracking-wider uppercase text-white/80 group-hover:text-white transition-colors line-clamp-1">
                   {partner.name}
                 </span>
 
-                <span className="text-[10px] font-mono text-[#F4EFE4]/40 uppercase mt-1 line-clamp-1">
+                <span className="text-[10px] font-mono text-white/50 uppercase mt-1 line-clamp-1">
                   {role}
                 </span>
               </div>
@@ -106,7 +106,7 @@ export const PartnersSection: React.FC = () => {
         </StaggerContainer>
 
         {/* Supporting Line */}
-        <ScrollReveal direction="up" delay={0.1} className="text-center mt-6 text-[11px] font-mono text-[#F4EFE4]/40">
+        <ScrollReveal direction="up" delay={0.1} className="text-center mt-6 text-[11px] font-mono text-white/40">
           Partner logos, college festival stages, and acoustic venue affiliations can be slotted here.
         </ScrollReveal>
 

@@ -101,25 +101,25 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
   const parsedActiveVideo = activeVideo ? parseVideoSource(activeVideo.videoUrl) : null;
 
   return (
-    <section id="videos" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative">
+    <section id="videos" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#E4402A]/20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <ScrollReveal direction="up" delay={0.05} className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] border border-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 shadow-[2px_2px_0px_0px_#E4402A]">
               <Video className="w-3.5 h-3.5" />
               <span>COMMUNITY FOOTAGE // ROUTINE DROPS</span>
             </div>
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
+            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
               Featured Videos & Routine Drops
             </h2>
-            <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-1 max-w-xl">
+            <p className="text-sm sm:text-base text-white/75 font-mono mt-1 max-w-xl">
               Recorded cypher battles, routine drops, and technical breakdown sessions.
             </p>
           </div>
 
-          <div className="text-xs font-mono text-[#FFC93C]">
+          <div className="text-xs font-mono text-white/80">
             COMMUNITY STREAM // STREET FOOTAGE
           </div>
         </ScrollReveal>
@@ -127,10 +127,10 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
         {/* Video Cards Grid */}
         {videosList.length === 0 ? (
           <div className="grid grid-cols-1 gap-8">
-            <div className="col-span-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
-              <Video className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
-              <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Routine Drops Archive</h3>
-              <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto">
+            <div className="col-span-full py-16 text-center border-2 border-dashed border-[#E4402A]/30 bg-[#181512] p-8">
+              <Video className="w-10 h-10 text-[#E4402A]/60 mx-auto mb-3" />
+              <h3 className="font-['Anton'] text-xl text-white tracking-wide uppercase">Routine Drops Archive</h3>
+              <p className="font-mono text-xs text-white/60 mt-1 max-w-md mx-auto">
                 Video drops added by the community will appear here.
               </p>
             </div>
@@ -158,12 +158,12 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                 >
                   <div
                     id={`video-card-${vid.id}`}
-                    className="relative bg-[#181512] border-2 border-[#F4EFE4]/20 hover:border-[#FFC93C] transition-all flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] h-full overflow-hidden"
+                    className="relative bg-[#181512] border-2 border-white/20 hover:border-[#FFC93C] transition-all flex flex-col justify-between group shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#E4402A] h-full overflow-hidden"
                   >
                     {/* Dedicated 16:9 Cinema Video Frame Window */}
                     <div
                       onClick={() => setActiveVideo(vid)}
-                      className="relative w-full aspect-video bg-[#0B0907] border-b-2 border-[#F4EFE4]/15 overflow-hidden cursor-pointer flex items-center justify-center select-none"
+                      className="relative w-full aspect-video bg-[#0B0907] border-b-2 border-white/15 overflow-hidden cursor-pointer flex items-center justify-center select-none"
                     >
                       {thumbUrl ? (
                         <>
@@ -185,9 +185,9 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                           />
                         </>
                       ) : (
-                        <div className="relative z-10 flex flex-col items-center justify-center text-[#FFC93C]/40 p-6">
+                        <div className="relative z-10 flex flex-col items-center justify-center text-white/40 p-6">
                           <Video className="w-12 h-12 mb-2" />
-                          <span className="font-mono text-xs uppercase tracking-widest text-[#F4EFE4]/50">Community Video Drop</span>
+                          <span className="font-mono text-xs uppercase tracking-widest text-white/50">Community Video Drop</span>
                         </div>
                       )}
 
@@ -197,7 +197,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                       {/* Top Bar Badges */}
                       {displayCategory && (
                         <div className="absolute top-2.5 left-2.5 z-20 pointer-events-none">
-                          <span className="px-2.5 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
+                          <span className="px-2.5 py-0.5 bg-[#E4402A] text-white text-[10px] font-mono font-bold uppercase tracking-wider border border-[#14120F] shadow-[2px_2px_0px_0px_#14120F]">
                             {displayCategory}
                           </span>
                         </div>
@@ -206,7 +206,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                       {/* Prominent High-Contrast Play Button in Center */}
                       <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
                         <div
-                          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FFC93C] text-[#14120F] flex items-center justify-center border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4,0_4px_20px_rgba(0,0,0,0.6)] group-hover:scale-115 group-hover:bg-[#F4EFE4] transition-all"
+                          className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#FFC93C] text-[#14120F] flex items-center justify-center border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A,0_4px_20px_rgba(0,0,0,0.6)] group-hover:scale-115 group-hover:bg-white transition-all"
                           title="Play Video"
                           aria-label={`Play ${vid.title}`}
                         >
@@ -217,7 +217,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                       {/* Duration Tag in Bottom-Right Corner */}
                       {vid.duration && (
                         <div className="absolute bottom-2.5 right-2.5 z-20 pointer-events-none">
-                          <span className="px-2 py-0.5 text-[10px] sm:text-xs font-mono font-bold text-[#F4EFE4] bg-black/85 border border-white/20 backdrop-blur-xs flex items-center gap-1 shadow-sm">
+                          <span className="px-2 py-0.5 text-[10px] sm:text-xs font-mono font-bold text-white bg-black/85 border border-white/20 backdrop-blur-xs flex items-center gap-1 shadow-sm">
                             <Clock className="w-3 h-3 text-[#FFC93C]" />
                             {vid.duration}
                           </span>
@@ -234,12 +234,12 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                     <div className="p-5 sm:p-6 flex flex-col justify-between flex-1 gap-4 bg-[#181512]">
                       <div className="space-y-2">
                         {/* Venue & Community Views Line */}
-                        <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C] gap-2">
+                        <div className="flex items-center justify-between text-xs font-mono text-white/80 gap-2">
                           <div className="flex items-center gap-1.5 truncate">
                             <MapPin className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
                             <span className="truncate">{vid.venue}</span>
                           </div>
-                          <span className="text-[#F4EFE4]/60 text-[11px] shrink-0 font-medium">
+                          <span className="text-white/60 text-[11px] shrink-0 font-medium">
                             {vid.viewsEstimate}
                           </span>
                         </div>
@@ -247,28 +247,28 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                         {/* Video Title */}
                         <h3
                           onClick={() => setActiveVideo(vid)}
-                          className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-snug cursor-pointer line-clamp-2"
+                          className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-white group-hover:text-white transition-colors leading-snug cursor-pointer line-clamp-2"
                           title={vid.title}
                         >
                           {vid.title}
                         </h3>
 
                         {/* Performer Info */}
-                        <p className="text-xs font-mono text-[#F4EFE4]/80 flex items-center gap-1.5 pt-0.5">
+                        <p className="text-xs font-mono text-white/80 flex items-center gap-1.5 pt-0.5">
                           <User className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
                           <span>
                             Featuring:{' '}
-                            <strong className="text-[#FFC93C] font-semibold">{vid.performer}</strong>
+                            <strong className="text-white font-semibold">{vid.performer}</strong>
                           </span>
                         </p>
                       </div>
 
                       {/* Play Action Footer */}
-                      <div className="pt-3 border-t border-[#F4EFE4]/15 flex items-center gap-2">
+                      <div className="pt-3 border-t border-white/15 flex items-center gap-2">
                         <button
                           type="button"
                           onClick={() => setActiveVideo(vid)}
-                          className="flex-1 py-2.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] hover:shadow-[4px_4px_0px_0px_#E4402A] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                          className="flex-1 py-2.5 bg-[#FFC93C] hover:bg-white text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] hover:shadow-[4px_4px_0px_0px_#E4402A] transition-all flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <Play className="w-3.5 h-3.5 fill-current" />
                           <span>Play Video</span>
@@ -279,7 +279,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                             href={vid.videoUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2.5 bg-[#14120F] hover:bg-[#E4402A] text-[#F4EFE4] border-2 border-[#F4EFE4]/20 hover:border-[#E4402A] transition-colors cursor-pointer flex items-center justify-center"
+                            className="p-2.5 bg-[#14120F] hover:bg-[#FFC93C] text-white hover:text-[#14120F] border-2 border-white/20 hover:border-[#FFC93C] transition-colors cursor-pointer flex items-center justify-center"
                             title="Open video source link"
                             aria-label="Open source link in new tab"
                           >
@@ -304,29 +304,29 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
           onClick={() => setActiveVideo(null)}
         >
           <div 
-            className="bg-[#14120F] text-[#F4EFE4] border-3 border-[#FFC93C] p-4 sm:p-6 max-w-3xl w-full shadow-[4px_4px_0px_0px_#E4402A] sm:shadow-[8px_8px_0px_0px_#E4402A] relative max-h-[92vh] overflow-y-auto"
+            className="bg-[#14120F] text-white border-3 border-[#E4402A] p-4 sm:p-6 max-w-3xl w-full shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[8px_8px_0px_0px_#FFC93C] relative max-h-[92vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
               type="button"
               onClick={() => setActiveVideo(null)}
-              className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 bg-[#FFC93C] text-[#14120F] hover:bg-[#E4402A] hover:text-[#F4EFE4] transition-colors border border-[#14120F] cursor-pointer z-20"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 bg-[#FFC93C] text-[#14120F] hover:bg-white transition-colors border border-[#14120F] cursor-pointer z-20"
               aria-label="Close video player"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 font-mono text-xs text-[#FFC93C] font-bold uppercase mb-2">
+            <div className="flex items-center gap-2 font-mono text-xs text-white font-bold uppercase mb-2">
               <Flame className="w-4 h-4 text-[#E4402A]" />
               <span>{activeVideo.category} // VIDEO STREAM</span>
             </div>
 
-            <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#F4EFE4] mb-3 pr-10">
+            <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-white mb-3 pr-10">
               {activeVideo.title}
             </h3>
 
             {/* Video Stage Frame: Plays video from URL */}
-            <div className="aspect-video bg-[#000] border-2 border-[#FFC93C]/40 flex items-center justify-center relative overflow-hidden mb-4">
+            <div className="aspect-video bg-[#000] border-2 border-[#E4402A]/40 flex items-center justify-center relative overflow-hidden mb-4">
               {parsedActiveVideo?.type === 'youtube' || parsedActiveVideo?.type === 'vimeo' ? (
                 <iframe
                   src={parsedActiveVideo.embedUrl}
@@ -347,10 +347,10 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                   Your browser does not support HTML video playback.
                 </video>
               ) : (
-                <div className="p-6 text-center font-mono text-xs text-[#F4EFE4]/70 space-y-2">
+                <div className="p-6 text-center font-mono text-xs text-white/70 space-y-2">
                   <Video className="w-10 h-10 text-[#FFC93C] mx-auto mb-2 opacity-60" />
-                  <p className="text-sm font-bold text-[#F4EFE4]">No video URL configured yet for this item.</p>
-                  <p className="text-[11px] text-[#F4EFE4]/50">
+                  <p className="text-sm font-bold text-white">No video URL configured yet for this item.</p>
+                  <p className="text-[11px] text-white/50">
                     Add a YouTube link or direct video URL in the Admin Panel &gt; Videos tab.
                   </p>
                 </div>
@@ -359,15 +359,15 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
 
             {/* Prominent Video Link Display */}
             {activeVideo.videoUrl && (
-              <div className="mb-4 p-3 bg-[#1A1713] border border-[#FFC93C]/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+              <div className="mb-4 p-3 bg-[#1A1713] border border-white/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
                 <div className="flex items-center gap-2 overflow-hidden">
                   <Link2 className="w-4 h-4 text-[#FFC93C] shrink-0" />
-                  <span className="text-[#F4EFE4]/60 shrink-0">Video Link:</span>
+                  <span className="text-white/60 shrink-0">Video Link:</span>
                   <a
                     href={activeVideo.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-[#FFC93C] hover:underline truncate font-medium"
+                    className="text-white hover:underline truncate font-medium"
                     title={activeVideo.videoUrl}
                   >
                     {activeVideo.videoUrl}
@@ -378,7 +378,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                   <button
                     type="button"
                     onClick={() => copyLink(activeVideo.videoUrl || '')}
-                    className="px-2.5 py-1 bg-[#14120F] text-[#F4EFE4] hover:text-[#FFC93C] border border-[#F4EFE4]/30 text-[11px] font-mono flex items-center gap-1 cursor-pointer transition-colors"
+                    className="px-2.5 py-1 bg-[#14120F] text-white hover:text-[#FFC93C] border border-white/30 text-[11px] font-mono flex items-center gap-1 cursor-pointer transition-colors"
                   >
                     {copiedUrl ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
                     <span>{copiedUrl ? 'Copied' : 'Copy Link'}</span>
@@ -387,7 +387,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                     href={activeVideo.videoUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1 bg-[#FFC93C] text-[#14120F] hover:bg-[#F4EFE4] text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors"
+                    className="px-3 py-1 bg-[#FFC93C] text-[#14120F] hover:bg-white text-[11px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors border border-[#14120F]"
                   >
                     <span>Open in New Tab</span>
                     <ExternalLink className="w-3 h-3" />
@@ -397,9 +397,9 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
             )}
 
             {/* Video Metadata Footer */}
-            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-[#F4EFE4]/70 border-t border-[#F4EFE4]/15 pt-3">
-              <span>Location: <strong className="text-[#F4EFE4]">{activeVideo.venue}</strong></span>
-              <span>Performer: <strong className="text-[#FFC93C]">{activeVideo.performer}</strong></span>
+            <div className="flex flex-wrap items-center justify-between gap-2 text-xs font-mono text-white/70 border-t border-white/15 pt-3">
+              <span>Location: <strong className="text-white">{activeVideo.venue}</strong></span>
+              <span>Performer: <strong className="text-white">{activeVideo.performer}</strong></span>
             </div>
 
           </div>

@@ -44,20 +44,24 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
   size = 'md',
   inverted = false,
 }) => {
-  const textColor = inverted ? 'text-[#14120F]' : 'text-[#F4EFE4]';
-  const accentColor = inverted ? 'text-[#E4402A]' : 'text-[#FFC93C]';
+  const textColor = inverted ? 'text-[#14120F]' : 'text-white';
+  const accentColor = inverted ? 'text-[#14120F]' : 'text-[#FFC93C]';
 
   if (variant === 'mark') {
     const sizeClasses = {
-      sm: 'w-6 h-4',
-      md: 'w-10 h-6',
-      lg: 'w-14 h-8',
-      xl: 'w-20 h-12',
+      sm: 'h-5 max-w-[50px]',
+      md: 'h-8 max-w-[80px]',
+      lg: 'h-12 max-w-[120px]',
+      xl: 'h-16 max-w-[160px]',
     }[size];
 
     return (
       <div className={`inline-flex items-center ${className}`}>
-        <MbhSoundwaveIcon className={`${sizeClasses} ${accentColor}`} />
+        <img
+          src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+          alt="MBH Logo Mark"
+          className={`${sizeClasses} w-auto object-contain drop-shadow-[0_2px_8px_rgba(228,64,42,0.4)]`}
+        />
       </div>
     );
   }
@@ -65,9 +69,13 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
   if (variant === 'badge') {
     return (
       <div
-        className={`relative inline-flex items-center justify-center bg-[#FFC93C] text-[#14120F] border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#F4EFE4] px-2.5 py-1.5 gap-1.5 font-bold ${className}`}
+        className={`relative inline-flex items-center justify-center bg-[#FFC93C] text-[#14120F] border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] px-2.5 py-1.5 gap-2 font-bold ${className}`}
       >
-        <MbhSoundwaveIcon className="w-5 h-3 text-[#14120F]" />
+        <img
+          src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+          alt="MBH Logo"
+          className="h-6 w-auto max-w-[45px] object-contain"
+        />
         <span className="font-['Anton'] text-lg tracking-wider leading-none">MBH</span>
         <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-[#E4402A] rounded-full ring-2 ring-[#14120F]" />
       </div>
@@ -77,13 +85,17 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
   if (variant === 'compact') {
     return (
       <div className={`inline-flex items-center gap-2.5 ${className}`}>
-        <MbhSoundwaveIcon className="w-7 h-5 text-[#FFC93C]" />
+        <img
+          src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+          alt="MBH Logo"
+          className="h-6 w-auto max-w-[50px] object-contain drop-shadow-[0_2px_6px_rgba(228,64,42,0.4)]"
+        />
         <div className="flex flex-col leading-none">
-          <span className="font-mono text-[9px] tracking-[0.25em] text-[#FFC93C] uppercase font-bold">
+          <span className="font-mono text-[9px] tracking-[0.25em] text-white/80 uppercase font-bold">
             MUMBAI
           </span>
           <span className={`font-['Anton'] text-lg tracking-wide uppercase ${textColor}`}>
-            BEATBOX <span className="text-[#FFC93C]">HUB</span>
+            BEATBOX <span className="text-white">HUB</span>
           </span>
         </div>
       </div>
@@ -96,40 +108,44 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
       sub: 'text-[9px] tracking-[0.25em]',
       main: 'text-lg tracking-wider',
       hub: 'text-[11px] tracking-widest',
-      icon: 'w-8 h-5',
+      icon: 'h-6 max-w-[50px]',
     },
     md: {
       sub: 'text-[11px] tracking-[0.3em]',
       main: 'text-2xl sm:text-3xl tracking-wider',
       hub: 'text-xs sm:text-sm tracking-widest',
-      icon: 'w-11 h-7',
+      icon: 'h-8 sm:h-9 max-w-[75px]',
     },
     lg: {
       sub: 'text-xs sm:text-sm tracking-[0.35em]',
       main: 'text-4xl sm:text-5xl tracking-wide',
       hub: 'text-sm sm:text-base tracking-widest',
-      icon: 'w-16 h-10',
+      icon: 'h-12 sm:h-14 max-w-[110px]',
     },
     xl: {
       sub: 'text-sm sm:text-base tracking-[0.4em]',
       main: 'text-5xl sm:text-6xl md:text-7xl tracking-wide',
       hub: 'text-base sm:text-lg tracking-widest',
-      icon: 'w-24 h-15',
+      icon: 'h-16 sm:h-20 max-w-[150px]',
     },
   }[size];
 
   return (
     <div className={`inline-flex items-center gap-3 sm:gap-4 ${className}`}>
-      <MbhSoundwaveIcon className={`${fontSizes.icon} ${accentColor} shrink-0`} />
+      <img
+        src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+        alt="MBH Logo"
+        className={`${fontSizes.icon} w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(228,64,42,0.4)]`}
+      />
       <div className="flex flex-col leading-none">
-        <span className={`font-mono ${fontSizes.sub} text-[#FFC93C] uppercase font-bold`}>
+        <span className={`font-mono ${fontSizes.sub} text-white/80 uppercase font-bold`}>
           MUMBAI
         </span>
         <div className="flex items-baseline gap-2">
           <span className={`font-serif font-black ${fontSizes.main} uppercase ${textColor}`}>
             BEATBOX
           </span>
-          <span className={`font-mono font-bold ${fontSizes.hub} ${accentColor} uppercase`}>
+          <span className={`font-mono font-bold ${fontSizes.hub} text-white uppercase`}>
             HUB
           </span>
         </div>

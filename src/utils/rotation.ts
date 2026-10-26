@@ -1,7 +1,7 @@
 /**
  * Sequence rotation utility for Mumbai Beatbox Hub
  * Enables cyclic rotation on page refresh so that all community members
- * and all gallery mosaic items receive equal spotlight across visits.
+ * and all gallery photo wall items receive equal spotlight across visits.
  */
 
 function gcd(a: number, b: number): number {

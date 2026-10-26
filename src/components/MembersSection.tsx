@@ -209,9 +209,9 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
   ];
 
   return (
-    <section id="members" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative overflow-hidden">
+    <section id="members" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#E4402A]/20 relative overflow-hidden">
       {/* Background Graphic Lines */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-[#FFC93C]/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute top-0 right-0 w-96 h-96 bg-[#E4402A]/5 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-[#E4402A]/5 rounded-full blur-3xl pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -219,17 +219,17 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
         {/* Section Header */}
         <ScrollReveal direction="up" delay={0.05} className="flex flex-col lg:flex-row lg:items-end justify-between mb-8 gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
-              <Radio className="w-3.5 h-3.5 animate-pulse text-[#FFC93C]" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] border border-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 shadow-[2px_2px_0px_0px_#E4402A]">
+              <Radio className="w-3.5 h-3.5 animate-pulse text-[#14120F]" />
               <span>ROSTER & AUDIO ARCHIVE // ROTATING SPOTLIGHT</span>
             </div>
             
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
+            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
               Members of the Community
             </h2>
             
-            <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-2 max-w-2xl leading-relaxed">
-              Meet the vocal percussionists representing Mumbai's streets. Roster sequence rotates on every refresh to give equal spotlight to all artists. Tap <span className="text-[#FFC93C] font-bold">START</span> on any card below to listen to their showcase voice notes.
+            <p className="text-sm sm:text-base text-white/75 font-mono mt-2 max-w-2xl leading-relaxed">
+              Meet the vocal percussionists representing Mumbai's streets. Roster sequence rotates on every refresh to give equal spotlight to all artists. Tap <span className="text-white font-bold underline decoration-[#FFC93C] decoration-2">PLAY AUDIO</span> on any card below to listen to their showcase voice notes.
             </p>
           </div>
 
@@ -239,7 +239,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               id="members-scroll-left-btn"
               onClick={handleScrollLeft}
               aria-label="Scroll members left"
-              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 cursor-pointer"
+              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-white hover:text-[#14120F] border border-white/20 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 cursor-pointer"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
@@ -247,7 +247,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               id="members-scroll-right-btn"
               onClick={handleScrollRight}
               aria-label="Scroll members right"
-              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#FFC93C]/40 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 cursor-pointer"
+              className="p-3 bg-[#1E1B16] hover:bg-[#FFC93C] text-white hover:text-[#14120F] border border-white/20 hover:border-[#FFC93C] transition-colors shadow-md active:scale-95 cursor-pointer"
             >
               <ChevronRight className="w-5 h-5" />
             </button>
@@ -255,9 +255,9 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
         </ScrollReveal>
 
         {/* Category Filters for fast navigation */}
-        <ScrollReveal direction="up" delay={0.1} className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 scrollbar-thin scrollbar-thumb-[#FFC93C]/20 text-xs font-mono">
-          <span className="flex items-center gap-1 text-[#FFC93C] font-bold uppercase tracking-wider pr-2 whitespace-nowrap">
-            <Filter className="w-3.5 h-3.5" /> Filter Sound:
+        <ScrollReveal direction="up" delay={0.1} className="flex items-center gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar touch-scroll text-xs font-mono">
+          <span className="flex items-center gap-1 text-white font-bold uppercase tracking-wider pr-2 whitespace-nowrap">
+            <Filter className="w-3.5 h-3.5 text-[#FFC93C]" /> Filter Sound:
           </span>
           {filterOptions.map((opt) => (
             <button
@@ -266,7 +266,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               className={`px-3 py-1.5 whitespace-nowrap font-mono transition-all border ${
                 selectedFilter === opt.value
                   ? 'bg-[#FFC93C] text-[#14120F] border-[#FFC93C] font-bold shadow'
-                  : 'bg-[#1E1B16] text-[#F4EFE4]/70 border-[#FFC93C]/20 hover:border-[#FFC93C]/60 hover:text-[#F4EFE4]'
+                  : 'bg-[#1E1B16] text-white/70 border-white/20 hover:border-[#FFC93C] hover:text-white'
               }`}
             >
               {opt.label}
@@ -278,16 +278,16 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
         <div
           ref={scrollContainerRef}
           id="members-scroll-container"
-          className="flex gap-6 overflow-x-auto pb-8 pt-2 scroll-smooth snap-x snap-mandatory overscroll-x-contain focus:outline-none scrollbar-thin scrollbar-track-[#1E1B16] scrollbar-thumb-[#FFC93C]/40 hover:scrollbar-thumb-[#FFC93C]"
+          className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 sm:pb-8 pt-2 scroll-smooth snap-x snap-mandatory overscroll-x-contain focus:outline-none no-scrollbar touch-scroll"
           tabIndex={0}
           role="region"
           aria-label="Community members showcase list"
         >
           {filteredMembers.length === 0 ? (
-            <div className="w-full py-16 text-center border-2 border-dashed border-[#FFC93C]/30 bg-[#181512] p-8">
-              <Headphones className="w-10 h-10 text-[#FFC93C]/60 mx-auto mb-3" />
-              <h3 className="font-['Anton'] text-xl text-[#F4EFE4] tracking-wide uppercase">Community Roster</h3>
-              <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-md mx-auto">
+            <div className="w-full py-16 text-center border-2 border-dashed border-[#E4402A]/30 bg-[#181512] p-8">
+              <Headphones className="w-10 h-10 text-[#E4402A]/60 mx-auto mb-3" />
+              <h3 className="font-['Anton'] text-xl text-white tracking-wide uppercase">Community Roster</h3>
+              <p className="font-mono text-xs text-white/60 mt-1 max-w-md mx-auto">
                 Beatboxer profiles added by the crew will appear here.
               </p>
             </div>
@@ -311,7 +311,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                   className={`snap-start shrink-0 w-[84vw] max-w-[320px] sm:w-[320px] bg-[#1A1713] border-2 transition-all duration-300 flex flex-col justify-between group ${
                     isPlaying
                       ? 'border-[#FFC93C] shadow-[0_0_25px_rgba(255,201,60,0.25)] scale-[1.01]'
-                    : 'border-[#FFC93C]/25 hover:border-[#FFC93C]/70 hover:shadow-lg'
+                    : 'border-white/20 hover:border-[#FFC93C] hover:shadow-lg'
                 }`}
               >
                 {/* Top Section: Photo of the Member */}
@@ -330,63 +330,63 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                   ) : null}
 
                   {/* Fallback Initials Avatar Box in case image is missing or empty */}
-                  <div className={`absolute inset-0 ${(member.photo_url || member.photoUrl) ? '-z-10' : 'z-0'} flex flex-col items-center justify-center bg-gradient-to-br from-[#1E1B16] to-[#2B261F] text-[#FFC93C]`}>
+                  <div className={`absolute inset-0 ${(member.photo_url || member.photoUrl) ? '-z-10' : 'z-0'} flex flex-col items-center justify-center bg-gradient-to-br from-[#1E1B16] to-[#2B261F] text-white`}>
                     <span className="font-['Anton'] text-4xl">{member.avatarInitials}</span>
-                    <span className="font-mono text-[10px] text-[#F4EFE4]/60 mt-1 uppercase tracking-widest">
+                    <span className="font-mono text-[10px] text-white/60 mt-1 uppercase tracking-widest">
                       MBH ARTIST #{index + 1}
                     </span>
                   </div>
 
                   {/* Badge: Member Index & Area */}
                   <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5">
-                    <span className="px-2 py-0.5 bg-[#14120F]/90 text-[#FFC93C] border border-[#FFC93C]/60 text-[10px] font-mono font-bold uppercase tracking-wider backdrop-blur-sm">
+                    <span className="px-2 py-0.5 bg-[#14120F]/90 text-white border border-white/40 text-[10px] font-mono font-bold uppercase tracking-wider backdrop-blur-sm">
                       #{String(index + 1).padStart(2, '0')}
                     </span>
-                    <span className="px-2 py-0.5 bg-[#14120F]/90 text-[#F4EFE4] text-[10px] font-mono flex items-center gap-1 backdrop-blur-sm">
-                      <MapPin className="w-2.5 h-2.5 text-[#FFC93C]" />
+                    <span className="px-2 py-0.5 bg-[#14120F]/90 text-white text-[10px] font-mono flex items-center gap-1 backdrop-blur-sm">
+                      <MapPin className="w-2.5 h-2.5 text-[#E4402A]" />
                       {member.area}
                     </span>
                   </div>
 
                   {/* Specialty Ribbon */}
                   <div className="absolute bottom-2.5 left-2.5 right-2.5">
-                    <span className="inline-block px-2.5 py-1 bg-[#14120F]/95 text-[#FFC93C] text-[11px] font-mono font-bold uppercase tracking-wider border border-[#FFC93C]/40 truncate max-w-full">
+                    <span className="inline-block px-2.5 py-1 bg-[#14120F]/95 text-white text-[11px] font-mono font-bold uppercase tracking-wider border border-white/30 truncate max-w-full">
                       ★ {member.specialty}
                     </span>
                   </div>
 
                   {/* Live Pulse Indicator if Playing */}
                   {isPlaying && (
-                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 animate-pulse shadow">
-                      <span className="w-1.5 h-1.5 rounded-full bg-[#F4EFE4]" />
+                    <div className="absolute top-2.5 right-2.5 px-2 py-0.5 bg-[#E4402A] text-white text-[10px] font-mono font-bold uppercase tracking-widest flex items-center gap-1.5 animate-pulse shadow">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white" />
                       PLAYING AUDIO
                     </div>
                   )}
                 </div>
 
                 {/* Middle Section: Member Name & Bio */}
-                <div className="p-4 border-b border-[#FFC93C]/15 bg-[#171410] flex-grow">
+                <div className="p-4 border-b border-white/15 bg-[#171410] flex-grow">
                   <div className="flex items-start justify-between gap-2">
                     <div className="w-full">
-                      <h3 className="font-['Anton'] text-xl uppercase tracking-wide text-[#F4EFE4] group-hover:text-[#FFC93C] transition-colors leading-tight">
+                      <h3 className="font-['Anton'] text-xl uppercase tracking-wide text-white group-hover:text-white transition-colors leading-tight">
                         {member.name}
                       </h3>
                       
                       {/* Mention Instagram then the username under the name */}
                       <div className="flex items-center gap-1.5 mt-1.5 text-xs font-mono">
-                        <span className="text-[#F4EFE4]/60 font-medium">Instagram:</span>
+                        <span className="text-white/60 font-medium">Instagram:</span>
                         <a
                           href={`https://instagram.com/${(member.handle || '').replace('@', '')}`}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-[#FFC93C] font-semibold hover:underline inline-flex items-center gap-1 truncate"
+                          className="text-white font-semibold hover:underline inline-flex items-center gap-1 truncate"
                         >
-                          <Instagram className="w-3 h-3 text-[#FFC93C] shrink-0" />
+                          <Instagram className="w-3 h-3 text-[#E4402A] shrink-0" />
                           <span>{member.handle.startsWith('@') ? member.handle : `@${member.handle}`}</span>
                         </a>
                       </div>
 
-                      <div className="mt-1 text-[10px] font-mono text-[#F4EFE4]/50">
+                      <div className="mt-1 text-[10px] font-mono text-white/50">
                         <span>{member.experience}</span>
                       </div>
                     </div>
@@ -403,19 +403,19 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                       <div className="p-4 bg-[#14120F] space-y-3">
                         {/* Audio Info Header - Inactive */}
                         <div className="flex items-center justify-between text-xs font-mono">
-                          <span className="text-[#F4EFE4]/40 flex items-center gap-1.5">
-                            <MicOff className="w-3.5 h-3.5 text-[#F4EFE4]/40 shrink-0" />
+                          <span className="text-white/40 flex items-center gap-1.5">
+                            <MicOff className="w-3.5 h-3.5 text-white/40 shrink-0" />
                           </span>
                           <div className="flex items-center gap-1.5 shrink-0">
-                            <span className="px-1.5 py-0.5 bg-[#231F19] text-[#F4EFE4]/40 border border-[#F4EFE4]/15 text-[9px] uppercase font-bold">
+                            <span className="px-1.5 py-0.5 bg-[#231F19] text-white/40 border border-white/15 text-[9px] uppercase font-bold">
                               NO AUDIO
                             </span>
-                            <span className="text-[#F4EFE4]/30 font-mono font-bold">--:--</span>
+                            <span className="text-white/30 font-mono font-bold">--:--</span>
                           </div>
                         </div>
 
                         {/* Disabled Progress Bar */}
-                        <div className="w-full bg-[#1C1814] h-2 overflow-hidden border border-[#F4EFE4]/10">
+                        <div className="w-full bg-[#1C1814] h-2 overflow-hidden border border-white/10">
                           <div className="bg-transparent h-full w-0" />
                         </div>
 
@@ -424,10 +424,10 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                           <button
                             id={`voice-btn-${member.id}`}
                             disabled
-                            className="w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-[#1A1713] text-[#F4EFE4]/35 border border-[#F4EFE4]/10 cursor-not-allowed select-none"
+                            className="w-full py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 bg-[#1A1713] text-white/35 border border-white/10 cursor-not-allowed select-none"
                             aria-label={`No audio available for ${member.name}`}
                           >
-                            <MicOff className="w-3.5 h-3.5 text-[#F4EFE4]/30" />
+                            <MicOff className="w-3.5 h-3.5 text-white/30" />
                             <span>NO AUDIO AVAILABLE</span>
                           </button>
 
@@ -435,7 +435,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                             <button
                               type="button"
                               disabled
-                              className="py-1.5 px-2 bg-[#1A1713] text-[#F4EFE4]/30 border border-[#F4EFE4]/10 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
+                              className="py-1.5 px-2 bg-[#1A1713] text-white/30 border border-white/10 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
                             >
                               <Rewind className="w-3.5 h-3.5" />
                               <span>BACK 10s</span>
@@ -444,7 +444,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                             <button
                               type="button"
                               disabled
-                              className="py-1.5 px-2 bg-[#1A1713] text-[#F4EFE4]/30 border border-[#F4EFE4]/10 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
+                              className="py-1.5 px-2 bg-[#1A1713] text-white/30 border border-white/10 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 cursor-not-allowed"
                             >
                               <RotateCcw className="w-3.5 h-3.5" />
                               <span>REPLAY</span>
@@ -459,10 +459,10 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                     <div className="p-4 bg-[#14120F] space-y-3">
                       {/* Audio Info Header - Active Audio Uploaded (Voice note title and badge removed) */}
                       <div className="flex items-center justify-between text-xs font-mono">
-                        <span className="text-[#FFC93C] flex items-center gap-1.5">
-                          <Mic className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+                        <span className="text-white flex items-center gap-1.5">
+                          <Mic className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
                         </span>
-                        <span className="text-[#FFC93C] font-mono font-bold">
+                        <span className="text-white font-mono font-bold">
                           {isPlaying
                             ? `${Math.floor((currentTimeMap[member.id] || 0) / 60)}:${String(Math.floor((currentTimeMap[member.id] || 0) % 60)).padStart(2, '0')}`
                             : member.voiceNoteDuration || '0:15'}
@@ -470,7 +470,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                       </div>
 
                       {/* Playback Progress Bar */}
-                      <div className="w-full bg-[#231F19] h-2 overflow-hidden border border-[#FFC93C]/20">
+                      <div className="w-full bg-[#231F19] h-2 overflow-hidden border border-white/20">
                         <div
                           className="bg-[#FFC93C] h-full transition-all duration-200"
                           style={{ width: `${progress}%` }}
@@ -495,8 +495,8 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                             onClick={() => playVoiceNote(member)}
                             className={`w-full min-h-[44px] py-2.5 px-4 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition-all active:scale-95 shadow-md cursor-pointer ${
                               isPlaying
-                                ? 'bg-[#E4402A] text-[#F4EFE4] hover:bg-[#c9321e] border border-[#E4402A]'
-                                : 'bg-[#FFC93C] text-[#14120F] hover:bg-[#ffcf56] border border-[#FFC93C]'
+                                ? 'bg-[#E4402A] text-white hover:bg-[#c9321e] border border-[#E4402A]'
+                                : 'bg-[#FFC93C] text-[#14120F] hover:bg-white border border-[#14120F]'
                             }`}
                             aria-label={isPlaying ? `Stop audio of ${member.name}` : `Start audio of ${member.name}`}
                           >
@@ -519,7 +519,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                           <button
                             type="button"
                             onClick={() => rewind10Seconds(member)}
-                            className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-white hover:text-[#FFC93C] border border-[#FFC93C]/30 hover:border-[#FFC93C] text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                             title="Play back 10 seconds"
                             aria-label="Play back 10 seconds"
                           >
@@ -530,7 +530,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                           <button
                             type="button"
                             onClick={() => replayVoiceNote(member)}
-                            className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-[#F4EFE4]/90 hover:text-[#FFC93C] border border-[#FFC93C]/25 hover:border-[#FFC93C]/60 text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                            className="py-1.5 px-2 bg-[#1A1713] hover:bg-[#252018] text-white hover:text-[#FFC93C] border border-[#FFC93C]/30 hover:border-[#FFC93C] text-[11px] font-mono font-bold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                             title="Replay from start"
                             aria-label="Replay routine"
                           >

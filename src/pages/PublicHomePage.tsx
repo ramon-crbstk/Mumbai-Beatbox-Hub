@@ -54,7 +54,7 @@ export function PublicHomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#14120F] text-[#F4EFE4] font-sans selection:bg-[#FFC93C] selection:text-[#14120F]">
+    <div className="min-h-screen bg-[#14120F] text-white font-sans selection:bg-[#FFC93C] selection:text-[#14120F]">
       {/* Navigation Bar */}
       <Navbar
         onJoinCypherClick={scrollToInquiryForm}

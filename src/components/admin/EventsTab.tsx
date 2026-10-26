@@ -207,7 +207,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
       {/* Top Header and Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-[#1A1713] p-6 border border-[#F4EFE4]/15">
         <div>
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider mb-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 bg-[#E4402A] text-[#14120F] text-xs font-mono font-bold uppercase tracking-wider mb-2">
             <Calendar className="w-3.5 h-3.5" />
             <span>CALENDAR & CYPHER SCHEDULE</span>
           </div>
@@ -223,7 +223,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
           type="button"
           id="add-event-btn"
           onClick={handleOpenAdd}
-          className="px-5 py-3 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-transform active:translate-x-0.5 active:translate-y-0.5 cursor-pointer shrink-0"
+          className="px-5 py-3 bg-[#E4402A] hover:bg-[#ffe082] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-transform active:translate-x-0.5 active:translate-y-0.5 cursor-pointer shrink-0"
         >
           <Plus className="w-4 h-4" />
           <span>Add New Event</span>
@@ -270,7 +270,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
           <button
             type="button"
             onClick={handleOpenAdd}
-            className="px-4 py-2 bg-[#FFC93C] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer"
+            className="px-4 py-2 bg-[#E4402A] text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider inline-flex items-center gap-2 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Create First Event</span>
@@ -288,13 +288,13 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
               <div
                 key={event.id}
                 id={`admin-event-card-${event.id}`}
-                className="bg-[#1A1713] border-2 border-[#F4EFE4]/20 p-6 flex flex-col justify-between relative group hover:border-[#FFC93C]/50 transition-colors"
+                className="bg-[#1A1713] border-2 border-[#F4EFE4]/20 p-6 flex flex-col justify-between relative group hover:border-[#E4402A]/50 transition-colors"
               >
                 <div>
                   {/* Flyer Top Tag */}
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#F4EFE4]/15 pb-3 mb-4">
-                    <div className="flex items-center gap-2 font-mono text-xs text-[#FFC93C]">
-                      <span className="w-2 h-2 bg-[#FFC93C]" />
+                    <div className="flex items-center gap-2 font-mono text-xs text-[#E4402A]">
+                      <span className="w-2 h-2 bg-[#E4402A]" />
                       <span className="font-bold">EVENT #{idx + 1}</span>
                     </div>
 
@@ -305,7 +305,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                           Battle & Jam
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C]/40 text-[10px] font-mono font-bold uppercase tracking-wider">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#14120F] text-[#E4402A] border border-[#E4402A]/40 text-[10px] font-mono font-bold uppercase tracking-wider">
                           Open Cypher
                         </span>
                       )}
@@ -331,13 +331,13 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+                      <Clock className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
                       <span>{event.time}</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <MapPin className="w-3.5 h-3.5 text-[#FFC93C] shrink-0" />
+                      <MapPin className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
                       <span>
-                        {event.venue} — <strong className="text-[#FFC93C]">{event.location || event.area}</strong>
+                        {event.venue} — <strong className="text-[#E4402A]">{event.location || event.area}</strong>
                       </span>
                     </div>
                   </div>
@@ -346,11 +346,11 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                   <div className="p-3.5 bg-[#14120F] border border-[#F4EFE4]/15 mb-4">
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <div className="flex items-center gap-1.5 font-mono text-xs text-[#F4EFE4]">
-                        <Users className="w-3.5 h-3.5 text-[#FFC93C]" />
+                        <Users className="w-3.5 h-3.5 text-[#E4402A]" />
                         <span className="font-bold">Capacity & RSVPs:</span>
                       </div>
 
-                      <span className={`font-mono text-xs font-bold ${isFull ? 'text-amber-400' : 'text-[#FFC93C]'}`}>
+                      <span className={`font-mono text-xs font-bold ${isFull ? 'text-amber-400' : 'text-[#E4402A]'}`}>
                         {maxCap !== null && maxCap !== undefined
                           ? `${rsvpCount} / ${maxCap} RSVPs`
                           : `${rsvpCount} RSVPs (No limit)`}
@@ -362,7 +362,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                       <div className="w-full bg-[#25211B] h-2 rounded-full overflow-hidden mb-3">
                         <div 
                           className={`h-full transition-all duration-300 ${
-                            rsvpCount >= maxCap ? 'bg-amber-400' : 'bg-[#FFC93C]'
+                            rsvpCount >= maxCap ? 'bg-amber-400' : 'bg-[#E4402A]'
                           }`}
                           style={{ width: `${Math.min(100, (rsvpCount / maxCap) * 100)}%` }}
                         />
@@ -417,7 +417,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     onClick={() => handleOpenEdit(event)}
                     className="px-3 py-1.5 bg-[#14120F] hover:bg-[#25211B] text-[#F4EFE4] border border-[#F4EFE4]/20 font-mono text-xs uppercase tracking-wider flex items-center gap-1.5 cursor-pointer transition-colors"
                   >
-                    <Edit3 className="w-3.5 h-3.5 text-[#FFC93C]" />
+                    <Edit3 className="w-3.5 h-3.5 text-[#E4402A]" />
                     <span>Edit</span>
                   </button>
 
@@ -462,11 +462,11 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs">
           <div
             id="event-modal-content"
-            className="bg-[#1A1713] text-[#F4EFE4] border-2 border-[#FFC93C] w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-[10px_10px_0px_0px_#FFC93C]"
+            className="bg-[#1A1713] text-[#F4EFE4] border-2 border-[#E4402A] w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 sm:p-8 shadow-[10px_10px_0px_0px_#E4402A]"
           >
             <div className="flex items-center justify-between border-b border-[#F4EFE4]/15 pb-4 mb-6">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-[#FFC93C]" />
+                <Sparkles className="w-5 h-5 text-[#E4402A]" />
                 <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4]">
                   {editingItem ? 'Edit Upcoming Event' : 'Add Upcoming Event & Cypher'}
                 </h3>
@@ -486,7 +486,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Event Name */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                   Event Name *
                 </label>
                 <input
@@ -495,14 +495,14 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g., Bandra Carter Road Cypher #49"
-                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#E4402A] focus:outline-none"
                 />
               </div>
 
               {/* Date Picker & Time */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                     Date (Calendar Picker) *
                   </label>
                   <input
@@ -510,14 +510,14 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#FFC93C] focus:outline-none [color-scheme:dark]"
+                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#E4402A] focus:outline-none [color-scheme:dark]"
                   />
                   <span className="block text-[10px] font-mono text-[#F4EFE4]/50 mt-1">
                     Stored as ISO date: {date || 'YYYY-MM-DD'}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                     Time
                   </label>
                   <input
@@ -525,7 +525,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     value={time}
                     onChange={(e) => setTime(e.target.value)}
                     placeholder="e.g., 5:30 PM – 8:00 PM IST"
-                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#E4402A] focus:outline-none"
                   />
                 </div>
               </div>
@@ -533,7 +533,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
               {/* Venue & Area */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                     Venue *
                   </label>
                   <input
@@ -542,11 +542,11 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     value={venue}
                     onChange={(e) => setVenue(e.target.value)}
                     placeholder="e.g., Carter Road Promenade (Stairs)"
-                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#E4402A] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                     Area / City Region
                   </label>
                   <input
@@ -554,7 +554,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     value={area}
                     onChange={(e) => setArea(e.target.value)}
                     placeholder="e.g., Bandra West, Mumbai"
-                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#E4402A] focus:outline-none"
                   />
                 </div>
               </div>
@@ -562,7 +562,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
               {/* Capacity Limit & Registration Status */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#14120F] p-3.5 border border-[#F4EFE4]/15">
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                     Max Capacity / RSVP Limit
                   </label>
                   <input
@@ -572,7 +572,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     value={maxPeople}
                     onChange={(e) => setMaxPeople(e.target.value)}
                     placeholder="e.g., 30"
-                    className="w-full px-3.5 py-2.5 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#FFC93C] focus:outline-none"
+                    className="w-full px-3.5 py-2.5 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#E4402A] focus:outline-none"
                   />
                   <span className="block text-[10px] font-mono text-[#F4EFE4]/50 mt-1">
                     Leave empty for unlimited capacity
@@ -580,13 +580,13 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                     Registration Status
                   </label>
                   <select
                     value={registrationStatus}
                     onChange={(e) => setRegistrationStatus(e.target.value as RegistrationStatus)}
-                    className="w-full px-3.5 py-2.5 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#FFC93C] focus:outline-none cursor-pointer"
+                    className="w-full px-3.5 py-2.5 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#E4402A] focus:outline-none cursor-pointer"
                   >
                     <option value="open">Open (Accepting RSVPs)</option>
                     <option value="full">Full (Slots Filled)</option>
@@ -600,7 +600,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
 
               {/* Entry Details */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                   Entry Rule
                 </label>
                 <input
@@ -608,13 +608,13 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                   value={entry}
                   onChange={(e) => setEntry(e.target.value)}
                   placeholder="e.g., Free Entry / Open Mic"
-                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#E4402A] focus:outline-none"
                 />
               </div>
 
               {/* Blurb / Description */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#FFC93C] mb-1.5">
+                <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
                   Event Blurb / Instructions
                 </label>
                 <textarea
@@ -622,7 +622,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                   value={blurb}
                   onChange={(e) => setBlurb(e.target.value)}
                   placeholder="Details for attendees, warmups, sounds to practice, exact meeting spot..."
-                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#FFC93C] focus:outline-none"
+                  className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#E4402A] focus:outline-none"
                 />
               </div>
 
@@ -655,7 +655,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-6 py-2.5 bg-[#FFC93C] hover:bg-[#ffe082] disabled:opacity-50 text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] cursor-pointer"
+                  className="px-6 py-2.5 bg-[#E4402A] hover:bg-[#ffe082] disabled:opacity-50 text-[#14120F] font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] cursor-pointer"
                 >
                   {saving ? 'Saving...' : editingItem ? 'Update Event' : 'Add Event to Schedule'}
                 </button>

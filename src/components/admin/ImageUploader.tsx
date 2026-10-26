@@ -101,7 +101,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
 
       {/* Cloudinary Configuration Warning (if missing cloudName) */}
       {!isCloudinaryConfigured && (
-        <div className="p-2.5 bg-[#FFC93C]/10 border border-[#FFC93C]/40 text-[#FFC93C] text-[11px] flex items-start gap-2">
+        <div className="p-2.5 bg-[#E4402A]/10 border border-[#E4402A]/40 text-[#E4402A] text-[11px] flex items-start gap-2">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
           <div>
             <span className="font-bold block">Cloudinary Setup Notice:</span>
@@ -128,16 +128,16 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={disabled || isUploading}
-          className="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-[#1A1713] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/20 hover:border-[#FFC93C] font-bold uppercase transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+          className="inline-flex items-center justify-center gap-2 px-3.5 py-2 bg-[#1A1713] hover:bg-[#E4402A] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/20 hover:border-[#E4402A] font-bold uppercase transition-colors shrink-0 cursor-pointer disabled:opacity-50"
         >
           {isUploading ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin text-[#FFC93C]" />
+              <Loader2 className="w-4 h-4 animate-spin text-[#E4402A]" />
               <span>Uploading ({uploadProgress}%)</span>
             </>
           ) : (
             <>
-              <UploadCloud className="w-4 h-4 text-[#FFC93C]" />
+              <UploadCloud className="w-4 h-4 text-[#E4402A]" />
               <span>{value ? 'Replace Image' : 'Upload Image'}</span>
             </>
           )}
@@ -159,7 +159,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             }}
             placeholder={placeholder}
             disabled={disabled || isUploading}
-            className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none pr-8 text-xs font-mono"
+            className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none pr-8 text-xs font-mono"
           />
           {value && !isUploading && (
             <button
@@ -179,7 +179,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
         <div className="space-y-1.5 pt-1">
           <div className="w-full bg-[#14120F] border border-[#F4EFE4]/20 h-2 overflow-hidden">
             <div
-              className="bg-[#FFC93C] h-full transition-all duration-150"
+              className="bg-[#E4402A] h-full transition-all duration-150"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
@@ -229,7 +229,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             <img
               src={value}
               alt="Media Preview"
-              className="w-14 h-14 object-cover border border-[#FFC93C]/40 shrink-0 bg-[#0A0908]"
+              className="w-14 h-14 object-cover border border-[#E4402A]/40 shrink-0 bg-[#0A0908]"
               referrerPolicy="no-referrer"
               onError={(e) => {
                 (e.target as HTMLElement).style.display = 'none';
@@ -237,9 +237,9 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
             />
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[#FFC93C] font-bold text-[11px]">Preview Ready</span>
+                <span className="text-[#E4402A] font-bold text-[11px]">Preview Ready</span>
                 {value.includes('cloudinary.com') ? (
-                  <span className="px-1.5 py-0.5 bg-[#FFC93C]/20 text-[#FFC93C] border border-[#FFC93C]/40 text-[9px] uppercase font-bold">
+                  <span className="px-1.5 py-0.5 bg-[#E4402A]/20 text-[#E4402A] border border-[#E4402A]/40 text-[9px] uppercase font-bold">
                     Cloudinary CDN
                   </span>
                 ) : (
@@ -258,7 +258,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
               href={value}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-1 text-[#F4EFE4]/60 hover:text-[#FFC93C]"
+              className="p-1 text-[#F4EFE4]/60 hover:text-[#E4402A]"
               title="Open in new tab"
             >
               <ExternalLink className="w-3.5 h-3.5" />

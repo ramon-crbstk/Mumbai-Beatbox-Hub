@@ -22,25 +22,25 @@ export const WhatWeDoSection: React.FC<WhatWeDoSectionProps> = ({ onOpenJoinModa
   };
 
   return (
-    <section id="what-we-do" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative">
+    <section id="what-we-do" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#E4402A]/20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <ScrollReveal direction="up" delay={0.05} className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <span className="inline-block px-3 py-1 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C] text-xs font-mono font-bold uppercase tracking-widest mb-3">
+            <span className="inline-block px-3 py-1 bg-[#FFC93C] text-[#14120F] border border-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 shadow-[2px_2px_0px_0px_#E4402A]">
               PILLARS OF THE SCENE
             </span>
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
+            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
               What We Do
             </h2>
-            <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-1 max-w-xl">
+            <p className="text-sm sm:text-base text-white/75 font-mono mt-1 max-w-xl">
               From open seaside circles to tournament arenas — keeping Mumbai&apos;s vocal pulse alive.
             </p>
           </div>
 
           <div className="hidden md:block text-right">
-            <span className="text-xs font-mono text-[#FFC93C] uppercase tracking-widest">
+            <span className="text-xs font-mono text-white/80 uppercase tracking-widest">
               Zero Amplification Required // 100% Vocal
             </span>
           </div>
@@ -60,13 +60,13 @@ export const WhatWeDoSection: React.FC<WhatWeDoSectionProps> = ({ onOpenJoinModa
               >
                 <div
                   id={`card-${card.id}`}
-                  className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] p-5 sm:p-7 shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[6px_6px_0px_0px_#FFC93C] rotate-0 sm:${rotationClass} hover:rotate-0 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group h-full`}
+                  className={`relative bg-white text-[#14120F] border-2 border-[#14120F] p-5 sm:p-7 shadow-[4px_4px_0px_0px_#E4402A] sm:shadow-[6px_6px_0px_0px_#E4402A] rotate-0 sm:${rotationClass} hover:rotate-0 hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between group h-full`}
                 >
                   {/* Top Flyer Header & Stamp */}
                   <div>
                     <div className="flex items-center justify-between border-b-2 border-[#14120F] pb-4 mb-5">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-[#FFC93C] border-2 border-[#14120F] flex items-center justify-center shadow-[2px_2px_0px_0px_#14120F]">
+                        <div className="w-10 h-10 bg-[#FFC93C] border-2 border-[#14120F] flex items-center justify-center shadow-[2px_2px_0px_0px_#E4402A]">
                           {getIcon(card.iconName)}
                         </div>
                         <span className="font-mono text-xs font-bold uppercase tracking-wider text-[#14120F]">
@@ -85,7 +85,7 @@ export const WhatWeDoSection: React.FC<WhatWeDoSectionProps> = ({ onOpenJoinModa
                     </h3>
 
                     {/* Highlight tag */}
-                    <div className="inline-block px-2.5 py-1 bg-[#14120F] text-[#FFC93C] text-[11px] font-mono font-bold uppercase tracking-wider mb-4">
+                    <div className="inline-block px-2.5 py-1 bg-[#14120F] text-white text-[11px] font-mono font-bold uppercase tracking-wider mb-4 border-l-2 border-[#FFC93C]">
                       {card.highlight}
                     </div>
 

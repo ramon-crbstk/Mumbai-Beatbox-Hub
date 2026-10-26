@@ -13,7 +13,7 @@ export const MbhSkylineBanner: React.FC<MbhSkylineBannerProps> = ({
 }) => {
   return (
     <div
-      className={`relative w-full overflow-hidden bg-[#0A0908] border-y-2 border-[#FFC93C]/40 ${className}`}
+      className={`relative w-full overflow-hidden bg-[#0A0908] border-y-2 border-[#E4402A]/40 ${className}`}
     >
       {/* Background Banner Image: Skyline with Gateway of India and Sea Link */}
       <div className="absolute inset-0 pointer-events-none">
@@ -36,37 +36,37 @@ export const MbhSkylineBanner: React.FC<MbhSkylineBannerProps> = ({
       <div
         className="absolute inset-0 pointer-events-none opacity-5"
         style={{
-          backgroundImage: `radial-gradient(#FFC93C 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(#E4402A 1px, transparent 1px)`,
           backgroundSize: '20px 20px',
         }}
       />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 md:py-20 flex flex-col items-center text-center">
         {/* Top Landmark Strip */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-5 font-mono text-[11px] uppercase tracking-widest text-[#F4EFE4]/70">
-          <span className="flex items-center gap-1.5 text-[#E4402A]">
-            <MapPin className="w-3.5 h-3.5" />
+        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 mb-5 font-mono text-[11px] uppercase tracking-widest text-white/80">
+          <span className="flex items-center gap-1.5 text-white">
+            <MapPin className="w-3.5 h-3.5 text-[#E4402A]" />
             Gateway of India
           </span>
           <span className="text-[#FFC93C] hidden sm:inline">&bull;</span>
-          <span className="flex items-center gap-1.5 text-[#FFC93C]">
-            <Radio className="w-3.5 h-3.5 animate-pulse" />
+          <span className="flex items-center gap-1.5 text-white">
+            <Radio className="w-3.5 h-3.5 text-[#FFC93C] animate-pulse" />
             Mumbai Acoustic Pulse
           </span>
           <span className="text-[#FFC93C] hidden sm:inline">&bull;</span>
-          <span className="flex items-center gap-1.5 text-[#E4402A]">
-            <MapPin className="w-3.5 h-3.5" />
+          <span className="flex items-center gap-1.5 text-white">
+            <MapPin className="w-3.5 h-3.5 text-[#E4402A]" />
             Bandra-Worli Sea Link
           </span>
         </div>
 
         {/* Centerpiece MBH Identity Emblem */}
-        <div className="p-4 sm:p-6 bg-[#14120F]/80 backdrop-blur-sm border border-[#F4EFE4]/15 shadow-[6px_6px_0px_0px_#14120F] mb-6 max-w-2xl">
+        <div className="p-4 sm:p-6 bg-[#14120F]/80 backdrop-blur-sm border border-white/15 shadow-[6px_6px_0px_0px_#14120F] mb-6 max-w-2xl">
           <MbhLogo size="lg" className="justify-center" />
         </div>
 
         {/* Narrative Tagline */}
-        <p className="max-w-2xl text-sm sm:text-base text-[#F4EFE4]/80 font-sans leading-relaxed mb-6">
+        <p className="max-w-2xl text-sm sm:text-base text-white/85 font-sans leading-relaxed mb-6">
           Echoing across the Arabian Sea coastline — from South Bombay arches to Bandra promenades. 
           The official grassroots collective uniting Mumbai&apos;s vocal percussionists.
         </p>
@@ -76,7 +76,7 @@ export const MbhSkylineBanner: React.FC<MbhSkylineBannerProps> = ({
           <button
             type="button"
             onClick={onJoinClick}
-            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FFC93C] text-[#14120F] font-mono font-bold text-xs sm:text-sm uppercase tracking-widest border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#E4402A] hover:bg-[#F4EFE4] hover:shadow-[2px_2px_0px_0px_#E4402A] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+            className="inline-flex items-center gap-2 px-6 py-2.5 bg-[#FFC93C] text-[#14120F] font-mono font-bold text-xs sm:text-sm uppercase tracking-widest border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#E4402A] hover:bg-white hover:text-[#14120F] hover:shadow-[2px_2px_0px_0px_#E4402A] hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
           >
             <span>Enter the Cypher Circle</span>
             <span className="text-base leading-none">&rarr;</span>

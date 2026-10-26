@@ -37,39 +37,39 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
   const visibleEvents = expanded ? events : events.slice(0, 3);
 
   return (
-    <section id="events" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#FFC93C]/20 relative">
+    <section id="events" className="py-16 md:py-24 bg-[#14120F] border-b-2 border-[#E4402A]/20 relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header */}
         <ScrollReveal direction="up" delay={0.05} className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#E4402A] text-[#F4EFE4] text-xs font-mono font-bold uppercase tracking-widest mb-3 rotate-[-1deg] shadow-sm">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest mb-3 rotate-[-1deg] shadow-[2px_2px_0px_0px_#E4402A]">
               <Flame className="w-3.5 h-3.5" />
               <span>LIVE GATHERINGS</span>
             </div>
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-[#F4EFE4]">
+            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
               Upcoming Events & Cyphers
             </h2>
-            <p className="text-sm sm:text-base text-[#F4EFE4]/70 font-mono mt-1">
+            <p className="text-sm sm:text-base text-white/75 font-mono mt-1">
               Real open circles across Mumbai. Drop in, listen, or jump on the mic.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono text-[#FFC93C]">
-            <span className="w-2 h-2 rounded-full bg-[#FFC93C] animate-pulse" />
+          <div className="flex items-center gap-2 text-xs font-mono text-white/90">
+            <span className="w-2 h-2 rounded-full bg-[#E4402A] animate-pulse" />
             <span>FREE ENTRY // NO PASSES NEEDED</span>
           </div>
         </ScrollReveal>
 
         {/* Loading State or Event Cards / Street Flyers */}
         {loading ? (
-          <div className="py-16 text-center border-2 border-dashed border-[#FFC93C]/20 bg-[#1A1713] p-10">
-            <div className="w-8 h-8 border-2 border-[#FFC93C] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+          <div className="py-16 text-center border-2 border-dashed border-[#E4402A]/20 bg-[#1A1713] p-10">
+            <div className="w-8 h-8 border-2 border-[#E4402A] border-t-transparent rounded-full animate-spin mx-auto mb-3" />
             <p className="font-mono text-xs uppercase text-[#F4EFE4]/60">Checking Cypher Schedule...</p>
           </div>
         ) : events.length === 0 ? (
-          <ScrollReveal direction="up" className="bg-[#1A1713] border-2 border-dashed border-[#FFC93C]/30 p-12 text-center">
-            <Calendar className="w-12 h-12 text-[#FFC93C]/40 mx-auto mb-3" />
+          <ScrollReveal direction="up" className="bg-[#1A1713] border-2 border-dashed border-[#E4402A]/30 p-12 text-center">
+            <Calendar className="w-12 h-12 text-[#E4402A]/40 mx-auto mb-3" />
             <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4] mb-2">
               Next Cypher Date Dropping Soon
             </h3>
@@ -98,7 +98,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                 >
                   <div
                     id={`event-card-${evt.id}`}
-                    className={`relative bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[8px_8px_0px_0px_#FFC93C] rotate-0 ${
+                    className={`relative bg-white text-[#14120F] border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#E4402A] sm:shadow-[8px_8px_0px_0px_#E4402A] rotate-0 ${
                       idx % 2 === 0 ? 'sm:rotate-[-0.8deg]' : 'sm:rotate-[0.8deg]'
                     } hover:rotate-0 transition-transform duration-200 p-5 sm:p-8 flex flex-col justify-between h-full`}
                   >
@@ -113,12 +113,12 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
 
                       <div className="flex items-center gap-2">
                         {evt.isBattleOrLive ? (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-xs font-mono font-bold uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#E4402A] text-white text-xs font-mono font-bold uppercase tracking-wider">
                             <Flame className="w-3.5 h-3.5" />
                             Battle & Jam
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#14120F] text-[#FFC93C] text-xs font-mono font-bold uppercase tracking-wider">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#14120F] text-white text-xs font-mono font-bold uppercase tracking-wider border-l-2 border-[#FFC93C]">
                             Open Cypher
                           </span>
                         )}
@@ -149,7 +149,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                     </h3>
 
                     {/* Meta details list */}
-                    <div className="space-y-2.5 mb-6 text-xs sm:text-sm font-mono text-[#14120F]/90 bg-[#E5DFC8] p-3.5 sm:p-4 border border-[#14120F]/30">
+                    <div className="space-y-2.5 mb-6 text-xs sm:text-sm font-mono text-[#14120F] bg-[#F4EFE4] p-3.5 sm:p-4 border border-[#14120F]/30">
                       <div className="flex items-center gap-2.5">
                         <Calendar className="w-4 h-4 text-[#E4402A] flex-shrink-0" />
                         <span className="font-bold">{formatEventDate(evt.date)}</span>
@@ -212,7 +212,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                       <button
                         type="button"
                         disabled
-                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-amber-800 text-[#F4EFE4] px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-amber-950 opacity-80 cursor-not-allowed"
+                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-amber-800 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-amber-950 opacity-80 cursor-not-allowed"
                       >
                         <AlertTriangle className="w-4 h-4" />
                         <span>Slots Filled</span>
@@ -222,9 +222,9 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                         type="button"
                         id={`rsvp-btn-${evt.id}`}
                         onClick={() => onRsvpClick(evt)}
-                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-[#14120F] text-[#FFC93C] hover:bg-[#E4402A] hover:text-[#F4EFE4] px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
+                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-[#FFC93C] text-[#14120F] hover:bg-[#E4402A] hover:text-white px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] hover:shadow-none hover:translate-x-0.5 hover:translate-y-0.5 transition-all cursor-pointer"
                       >
-                        <Ticket className="w-4 h-4" />
+                        <Ticket className="w-4 h-4 text-[#14120F]" />
                         <span>RSVP for Jam</span>
                       </button>
                     )}
@@ -241,7 +241,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
               <button
                 type="button"
                 onClick={() => setExpanded(!expanded)}
-                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#FFC93C] hover:bg-[#F4EFE4] text-[#14120F] border-2 border-[#14120F] font-mono text-xs font-bold uppercase tracking-widest shadow-[4px_4px_0px_0px_#14120F] hover:shadow-[6px_6px_0px_0px_#FFC93C] transition-all cursor-pointer"
+                className="inline-flex items-center gap-2.5 px-8 py-3.5 bg-[#FFC93C] hover:bg-white text-[#14120F] border-2 border-[#14120F] font-mono text-xs font-bold uppercase tracking-widest shadow-[4px_4px_0px_0px_#E4402A] hover:shadow-[6px_6px_0px_0px_#E4402A] transition-all cursor-pointer"
               >
                 <span>{expanded ? 'Show Less Events' : `View More (${events.length - 3} More Events)`}</span>
                 {expanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -252,18 +252,18 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
         )}
 
         {/* Street Note Banner */}
-        <ScrollReveal direction="up" delay={0.1} className="mt-10 p-4 bg-[#181512] border border-[#FFC93C]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#F4EFE4]/80">
+        <ScrollReveal direction="up" delay={0.1} className="mt-10 p-4 bg-[#181512] border border-[#E4402A]/30 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs font-mono text-[#F4EFE4]/80">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-            <span className="text-[#FFC93C] font-bold">⚡ WEATHER / PERMIT NOTE:</span>
+            <span className="text-[#E4402A] font-bold">⚡ WEATHER / PERMIT NOTE:</span>
             <span>All sessions are acoustic. In case of unexpected rains, jams shift to nearby covered walkways.</span>
           </div>
           <a
             href={COMMUNITY_CONTACT.whatsappGroup}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-[#FFC93C] hover:text-[#ffe082] underline uppercase tracking-wider font-bold shrink-0 transition-colors"
+            className="inline-flex items-center gap-1.5 text-[#E4402A] hover:text-[#ffe082] underline uppercase tracking-wider font-bold shrink-0 transition-colors"
           >
-            <MessageCircle className="w-3.5 h-3.5 text-[#FFC93C]" />
+            <MessageCircle className="w-3.5 h-3.5 text-[#E4402A]" />
             <span>WhatsApp group gets instant live pin</span>
             <ArrowUpRight className="w-3 h-3" />
           </a>

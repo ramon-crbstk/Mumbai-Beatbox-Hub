@@ -252,18 +252,18 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
     <div className="space-y-6">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#FFC93C] text-[#14120F] px-4 py-3 font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#14120F] flex items-center gap-2 animate-bounce">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#E4402A] text-[#14120F] px-4 py-3 font-mono text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#14120F] flex items-center gap-2 animate-bounce">
           <CheckCircle2 className="w-4 h-4 text-[#14120F]" />
           <span>{successToast}</span>
         </div>
       )}
 
       {/* SQL Migration Helper Banner */}
-      <div className="p-4 bg-[#1A1713] border border-[#FFC93C]/30 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono">
+      <div className="p-4 bg-[#1A1713] border border-[#E4402A]/30 flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs font-mono">
         <div className="flex items-start sm:items-center gap-2.5">
-          <Building2 className="w-4 h-4 text-[#FFC93C] shrink-0 mt-0.5 sm:mt-0" />
+          <Building2 className="w-4 h-4 text-[#E4402A] shrink-0 mt-0.5 sm:mt-0" />
           <div>
-            <span className="text-[#FFC93C] font-bold uppercase">
+            <span className="text-[#E4402A] font-bold uppercase">
               Supabase Backend: public.collaborations
             </span>
             <span className="text-[#F4EFE4]/60 block sm:inline sm:ml-2">
@@ -275,7 +275,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
         <button
           type="button"
           onClick={copySqlMigration}
-          className="self-start md:self-auto px-3 py-1.5 bg-[#14120F] hover:bg-[#FFC93C] text-[#FFC93C] hover:text-[#14120F] border border-[#FFC93C]/40 transition-colors flex items-center gap-1.5 cursor-pointer font-bold shrink-0"
+          className="self-start md:self-auto px-3 py-1.5 bg-[#14120F] hover:bg-[#E4402A] text-[#E4402A] hover:text-[#14120F] border border-[#E4402A]/40 transition-colors flex items-center gap-1.5 cursor-pointer font-bold shrink-0"
           title="Copy SQL migration to paste into Supabase SQL Editor"
         >
           {copiedSql ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -292,13 +292,13 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
             placeholder="Search collaborations, types, short codes..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#14120F] border border-[#F4EFE4]/20 pl-9 pr-3 py-2 text-xs font-mono text-[#F4EFE4] placeholder-[#F4EFE4]/40 focus:outline-none focus:border-[#FFC93C]"
+            className="w-full bg-[#14120F] border border-[#F4EFE4]/20 pl-9 pr-3 py-2 text-xs font-mono text-[#F4EFE4] placeholder-[#F4EFE4]/40 focus:outline-none focus:border-[#E4402A]"
           />
         </div>
 
         <div className="flex items-center gap-3">
           <div className="font-mono text-xs text-[#F4EFE4]/60">
-            Total: <span className="text-[#FFC93C] font-bold">{items.length}</span> (
+            Total: <span className="text-[#E4402A] font-bold">{items.length}</span> (
             <span className="text-emerald-400 font-bold">{items.filter((i) => i.is_visible).length} visible</span>)
           </div>
 
@@ -306,7 +306,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
             type="button"
             id="admin-add-collab-btn"
             onClick={openAddModal}
-            className="px-4 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono font-bold text-xs uppercase tracking-wider border border-[#14120F] flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer"
+            className="px-4 py-2 bg-[#E4402A] hover:bg-[#ffe082] text-[#14120F] font-mono font-bold text-xs uppercase tracking-wider border border-[#14120F] flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>New Collaboration</span>
@@ -317,7 +317,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
       {/* Grid of Collaborations */}
       {filteredItems.length === 0 ? (
         <div className="p-12 text-center bg-[#1A1713] border border-dashed border-[#F4EFE4]/20 font-mono text-xs text-[#F4EFE4]/60 space-y-3">
-          <Building2 className="w-10 h-10 text-[#FFC93C]/40 mx-auto" />
+          <Building2 className="w-10 h-10 text-[#E4402A]/40 mx-auto" />
           <div className="text-sm font-bold text-[#F4EFE4]">No Collaborations Found</div>
           <div>Create a new entry above or run the SQL migration in your Supabase dashboard.</div>
         </div>
@@ -331,7 +331,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                 id={`admin-collab-card-${item.id}`}
                 className={`bg-[#1A1713] border-2 p-5 flex flex-col justify-between transition-all ${
                   item.is_visible
-                    ? 'border-[#F4EFE4]/20 hover:border-[#FFC93C]'
+                    ? 'border-[#F4EFE4]/20 hover:border-[#E4402A]'
                     : 'border-red-950/60 bg-[#15110E] opacity-75'
                 }`}
               >
@@ -339,11 +339,11 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                   {/* Top Bar: Order, Type, Visibility Badge */}
                   <div className="flex items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-1.5">
-                      <span className="px-2 py-0.5 bg-[#14120F] text-[#FFC93C] border border-[#FFC93C]/40 text-[10px] font-mono font-bold">
+                      <span className="px-2 py-0.5 bg-[#14120F] text-[#E4402A] border border-[#E4402A]/40 text-[10px] font-mono font-bold">
                         ORDER #{item.display_order}
                       </span>
                       {item.collaboration_type && (
-                        <span className="px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] text-[10px] font-mono uppercase font-bold truncate max-w-[120px]">
+                        <span className="px-2 py-0.5 bg-[#E4402A]/10 text-[#E4402A] text-[10px] font-mono uppercase font-bold truncate max-w-[120px]">
                           {item.collaboration_type}
                         </span>
                       )}
@@ -390,14 +390,14 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                             target.style.display = 'none';
                             const parent = target.parentElement;
                             if (parent) {
-                              parent.className = "w-12 h-12 bg-[#14120F] border border-[#F4EFE4]/30 flex items-center justify-center font-['Anton'] text-lg text-[#FFC93C] shrink-0";
+                              parent.className = "w-12 h-12 bg-[#14120F] border border-[#F4EFE4]/30 flex items-center justify-center font-['Anton'] text-lg text-[#E4402A] shrink-0";
                               parent.innerText = shortCode;
                             }
                           }}
                         />
                       </div>
                     ) : (
-                      <div className="w-12 h-12 bg-[#14120F] border border-[#F4EFE4]/30 flex items-center justify-center font-['Anton'] text-lg text-[#FFC93C] shrink-0">
+                      <div className="w-12 h-12 bg-[#14120F] border border-[#F4EFE4]/30 flex items-center justify-center font-['Anton'] text-lg text-[#E4402A] shrink-0">
                         {shortCode}
                       </div>
                     )}
@@ -413,7 +413,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                           </span>
                         )}
                         {item.logo_url?.includes('cloudinary.com') && (
-                          <span className="px-1.5 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/30 text-[9px] font-mono uppercase font-semibold">
+                          <span className="px-1.5 py-0.5 bg-[#E4402A]/10 text-[#E4402A] border border-[#E4402A]/30 text-[9px] font-mono uppercase font-semibold">
                             Cloudinary Logo
                           </span>
                         )}
@@ -435,7 +435,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                         href={item.website_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1 text-[11px] font-mono text-[#FFC93C] hover:underline truncate max-w-full"
+                        className="inline-flex items-center gap-1 text-[11px] font-mono text-[#E4402A] hover:underline truncate max-w-full"
                       >
                         <Globe className="w-3 h-3 shrink-0" />
                         <span className="truncate">{item.website_url.replace(/^https?:\/\//, '')}</span>
@@ -453,16 +453,16 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                     <button
                       type="button"
                       onClick={() => handleQuickOrderChange(item, -1)}
-                      className="px-2 py-0.5 bg-[#14120F] text-[#F4EFE4]/70 hover:text-[#FFC93C] border border-[#F4EFE4]/20 hover:border-[#FFC93C] cursor-pointer"
+                      className="px-2 py-0.5 bg-[#14120F] text-[#F4EFE4]/70 hover:text-[#E4402A] border border-[#F4EFE4]/20 hover:border-[#E4402A] cursor-pointer"
                       title="Decrease order index"
                     >
                       -
                     </button>
-                    <span className="px-2 text-[#FFC93C] font-bold">{item.display_order}</span>
+                    <span className="px-2 text-[#E4402A] font-bold">{item.display_order}</span>
                     <button
                       type="button"
                       onClick={() => handleQuickOrderChange(item, 1)}
-                      className="px-2 py-0.5 bg-[#14120F] text-[#F4EFE4]/70 hover:text-[#FFC93C] border border-[#F4EFE4]/20 hover:border-[#FFC93C] cursor-pointer"
+                      className="px-2 py-0.5 bg-[#14120F] text-[#F4EFE4]/70 hover:text-[#E4402A] border border-[#F4EFE4]/20 hover:border-[#E4402A] cursor-pointer"
                       title="Increase order index"
                     >
                       +
@@ -474,7 +474,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                     <button
                       type="button"
                       onClick={() => openEditModal(item)}
-                      className="p-1.5 bg-[#14120F] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/20 transition-colors cursor-pointer"
+                      className="p-1.5 bg-[#14120F] hover:bg-[#E4402A] text-[#F4EFE4] hover:text-[#14120F] border border-[#F4EFE4]/20 transition-colors cursor-pointer"
                       title="Edit collaboration details"
                     >
                       <Edit2 className="w-3.5 h-3.5" />
@@ -502,16 +502,16 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
           aria-modal="true"
           className="fixed inset-0 z-50 bg-[#14120F]/90 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto"
         >
-          <div className="bg-[#1A1713] border-2 border-[#FFC93C] max-w-xl w-full p-6 shadow-[8px_8px_0px_0px_#14120F] relative max-h-[92vh] overflow-y-auto">
+          <div className="bg-[#1A1713] border-2 border-[#E4402A] max-w-xl w-full p-6 shadow-[8px_8px_0px_0px_#14120F] relative max-h-[92vh] overflow-y-auto">
             <button
               type="button"
               onClick={() => setModalOpen(false)}
-              className="absolute top-4 right-4 text-[#F4EFE4]/60 hover:text-[#FFC93C] cursor-pointer"
+              className="absolute top-4 right-4 text-[#F4EFE4]/60 hover:text-[#E4402A] cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
 
-            <div className="flex items-center gap-2 text-[#FFC93C] font-mono text-xs uppercase tracking-widest mb-1">
+            <div className="flex items-center gap-2 text-[#E4402A] font-mono text-xs uppercase tracking-widest mb-1">
               <Building2 className="w-4 h-4" />
               <span>{editingItem ? 'EDIT COLLABORATION' : 'NEW COLLABORATION'}</span>
             </div>
@@ -529,7 +529,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
             <form onSubmit={handleSave} className="space-y-4 font-mono text-xs">
               {/* Collaboration Name */}
               <div>
-                <label className="block text-[#FFC93C] uppercase font-bold mb-1">
+                <label className="block text-[#E4402A] uppercase font-bold mb-1">
                   Partner / Brand Name *
                 </label>
                 <input
@@ -538,14 +538,14 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                   placeholder="e.g. Bandra Street Sound"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#FFC93C]"
+                  className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#E4402A]"
                 />
               </div>
 
               {/* Short Code & Type */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-[#FFC93C] uppercase font-bold mb-1">
+                  <label className="block text-[#E4402A] uppercase font-bold mb-1">
                     Short Code (Fallback initials)
                   </label>
                   <input
@@ -554,7 +554,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                     placeholder="e.g. BS"
                     value={shortCode}
                     onChange={(e) => setShortCode(e.target.value.toUpperCase())}
-                    className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#FFC93C]"
+                    className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#E4402A]"
                   />
                   <span className="text-[10px] text-[#F4EFE4]/40 mt-0.5 block">
                     Displayed inside box if logo is absent
@@ -562,7 +562,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                 </div>
 
                 <div>
-                  <label className="block text-[#FFC93C] uppercase font-bold mb-1">
+                  <label className="block text-[#E4402A] uppercase font-bold mb-1">
                     Collaboration Type / Role
                   </label>
                   <input
@@ -570,7 +570,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                     placeholder="e.g. Acoustic Partner"
                     value={collaborationType}
                     onChange={(e) => setCollaborationType(e.target.value)}
-                    className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#FFC93C]"
+                    className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#E4402A]"
                   />
                 </div>
               </div>
@@ -582,7 +582,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                     key={t}
                     type="button"
                     onClick={() => setCollaborationType(t)}
-                    className="px-2 py-0.5 bg-[#14120F] hover:bg-[#FFC93C] text-[#F4EFE4]/70 hover:text-[#14120F] text-[10px] border border-[#F4EFE4]/15 cursor-pointer"
+                    className="px-2 py-0.5 bg-[#14120F] hover:bg-[#E4402A] text-[#F4EFE4]/70 hover:text-[#14120F] text-[10px] border border-[#F4EFE4]/15 cursor-pointer"
                   >
                     {t}
                   </button>
@@ -591,7 +591,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
 
               {/* Description */}
               <div>
-                <label className="block text-[#FFC93C] uppercase font-bold mb-1">
+                <label className="block text-[#E4402A] uppercase font-bold mb-1">
                   Description / Affiliation Notes
                 </label>
                 <textarea
@@ -599,12 +599,12 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                   placeholder="e.g. Acoustic Partner in Bandra West promenade sessions"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#FFC93C]"
+                  className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#E4402A]"
                 />
               </div>
 
               {/* Logo Upload to Cloudinary & URL */}
-              <div className="p-3 bg-[#14120F] border border-[#FFC93C]/30 space-y-2">
+              <div className="p-3 bg-[#14120F] border border-[#E4402A]/30 space-y-2">
                 <ImageUploader
                   label="Collaboration Logo (Upload Image or Cloudinary URL)"
                   value={logoUrl}
@@ -621,7 +621,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
 
               {/* Website URL */}
               <div>
-                <label className="block text-[#FFC93C] uppercase font-bold mb-1">
+                <label className="block text-[#E4402A] uppercase font-bold mb-1">
                   Website URL
                 </label>
                 <input
@@ -629,14 +629,14 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                   placeholder="https://bandrastreet.in"
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
-                  className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#FFC93C]"
+                  className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#E4402A]"
                 />
               </div>
 
               {/* Display Order & Visibility */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-[#F4EFE4]/10">
                 <div>
-                  <label className="block text-[#FFC93C] uppercase font-bold mb-1">
+                  <label className="block text-[#E4402A] uppercase font-bold mb-1">
                     Display Order (ASC)
                   </label>
                   <input
@@ -644,7 +644,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                     min={0}
                     value={displayOrder}
                     onChange={(e) => setDisplayOrder(parseInt(e.target.value, 10) || 0)}
-                    className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#FFC93C]"
+                    className="w-full bg-[#14120F] border border-[#F4EFE4]/20 p-2.5 text-[#F4EFE4] focus:outline-none focus:border-[#E4402A]"
                   />
                   <span className="text-[10px] text-[#F4EFE4]/40 mt-0.5 block">
                     Lower number shows first
@@ -652,7 +652,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                 </div>
 
                 <div className="flex flex-col justify-center">
-                  <label className="block text-[#FFC93C] uppercase font-bold mb-2">
+                  <label className="block text-[#E4402A] uppercase font-bold mb-2">
                     Public Visibility
                   </label>
                   <label className="inline-flex items-center gap-2 cursor-pointer">
@@ -660,7 +660,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                       type="checkbox"
                       checked={isVisible}
                       onChange={(e) => setIsVisible(e.target.checked)}
-                      className="w-4 h-4 accent-[#FFC93C]"
+                      className="w-4 h-4 accent-[#E4402A]"
                     />
                     <span className="text-xs text-[#F4EFE4]">
                       {isVisible ? 'Visible on Public Website' : 'Hidden from Public Website'}
@@ -681,7 +681,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 bg-[#E4402A] hover:bg-[#ffe082] text-[#14120F] font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer disabled:opacity-50"
                 >
                   {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                   <span>{editingItem ? 'Save Changes' : 'Create Collaboration'}</span>
@@ -710,7 +710,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
             </h3>
 
             <p className="text-xs text-[#F4EFE4]/70 font-sans leading-relaxed">
-              This will permanently delete this collaboration record from Supabase table <code className="text-[#FFC93C]">public.collaborations</code>.
+              This will permanently delete this collaboration record from Supabase table <code className="text-[#E4402A]">public.collaborations</code>.
             </p>
 
             <div className="pt-3 border-t border-[#F4EFE4]/10 flex items-center justify-end gap-3">

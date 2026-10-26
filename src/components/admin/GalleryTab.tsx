@@ -152,7 +152,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search gallery by title, caption, location..."
-            className="w-full pl-9 pr-4 py-2 bg-[#14120F] border border-[#F4EFE4]/20 text-xs font-mono text-[#F4EFE4] placeholder-[#F4EFE4]/40 focus:border-[#FFC93C] focus:outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-[#14120F] border border-[#F4EFE4]/20 text-xs font-mono text-[#F4EFE4] placeholder-[#F4EFE4]/40 focus:border-[#E4402A] focus:outline-none"
           />
         </div>
 
@@ -163,7 +163,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
           <button
             type="button"
             onClick={openAddModal}
-            className="px-4 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono font-bold text-xs uppercase tracking-wider border border-[#14120F] flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer"
+            className="px-4 py-2 bg-[#E4402A] hover:bg-[#ffe082] text-[#14120F] font-mono font-bold text-xs uppercase tracking-wider border border-[#14120F] flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Photo</span>
@@ -174,7 +174,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
       {/* Gallery Table / Grid */}
       {filteredItems.length === 0 ? (
         <div className="py-16 text-center bg-[#1A1713] border border-dashed border-[#F4EFE4]/20 p-8">
-          <ImageIcon className="w-10 h-10 text-[#FFC93C]/50 mx-auto mb-3" />
+          <ImageIcon className="w-10 h-10 text-[#E4402A]/50 mx-auto mb-3" />
           <h3 className="font-['Anton'] text-xl uppercase tracking-wide text-[#F4EFE4]">No Gallery Records Found</h3>
           <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-sm mx-auto">
             {items.length === 0
@@ -185,7 +185,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
             <button
               type="button"
               onClick={openAddModal}
-              className="mt-4 px-4 py-2 bg-[#FFC93C] text-[#14120F] font-mono font-bold text-xs uppercase cursor-pointer"
+              className="mt-4 px-4 py-2 bg-[#E4402A] text-[#14120F] font-mono font-bold text-xs uppercase cursor-pointer"
             >
               + Create First Photo Record
             </button>
@@ -194,7 +194,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
       ) : (
         <div className="bg-[#1A1713] border border-[#F4EFE4]/15 overflow-x-auto">
           <table className="w-full text-left font-mono text-xs">
-            <thead className="bg-[#14120F] border-b border-[#F4EFE4]/15 text-[#FFC93C] uppercase text-[11px] tracking-wider">
+            <thead className="bg-[#14120F] border-b border-[#F4EFE4]/15 text-[#E4402A] uppercase text-[11px] tracking-wider">
               <tr>
                 <th className="p-3.5 w-16">Preview</th>
                 <th className="p-3.5">Title & Caption</th>
@@ -227,7 +227,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                   </td>
                   <td className="p-3.5 text-[#F4EFE4]/80 whitespace-nowrap">
                     <div className="flex items-center gap-1.5">
-                      <MapPin className="w-3 h-3 text-[#FFC93C]" />
+                      <MapPin className="w-3 h-3 text-[#E4402A]" />
                       <span>{item.location}</span>
                     </div>
                   </td>
@@ -238,7 +238,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                     </div>
                   </td>
                   <td className="p-3.5 whitespace-nowrap">
-                    <span className="inline-block px-2 py-0.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[10px] uppercase text-[#FFC93C]">
+                    <span className="inline-block px-2 py-0.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[10px] uppercase text-[#E4402A]">
                       {item.aspect}
                     </span>
                   </td>
@@ -247,7 +247,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                       <button
                         type="button"
                         onClick={() => openEditModal(item)}
-                        className="p-1.5 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] border border-[#F4EFE4]/20 transition-colors cursor-pointer"
+                        className="p-1.5 bg-[#14120F] hover:bg-[#E4402A] hover:text-[#14120F] border border-[#F4EFE4]/20 transition-colors cursor-pointer"
                         title="Edit Record"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -272,7 +272,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
       {/* Add / Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#1A1713] border-2 border-[#FFC93C] shadow-[8px_8px_0px_0px_#14120F] p-6 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-xl bg-[#1A1713] border-2 border-[#E4402A] shadow-[8px_8px_0px_0px_#14120F] p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#F4EFE4]/15 pb-3 mb-4">
               <h3 className="font-['Anton'] text-2xl uppercase tracking-wide text-[#F4EFE4]">
                 {editingItem ? 'Edit Gallery Photo' : 'Add New Gallery Photo'}
@@ -280,7 +280,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
               <button 
                 type="button" 
                 onClick={() => setModalOpen(false)}
-                className="text-[#F4EFE4]/60 hover:text-[#FFC93C] cursor-pointer"
+                className="text-[#F4EFE4]/60 hover:text-[#E4402A] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -301,7 +301,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   placeholder="e.g. Bandra Cypher Circle"
-                  className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                 />
               </div>
 
@@ -313,7 +313,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
                   placeholder="Vocal percussionists battling in a tight acoustic circle..."
-                  className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none resize-y"
+                  className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none resize-y"
                 />
               </div>
 
@@ -326,7 +326,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
                     placeholder="e.g. Carter Rd Promenade"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
 
@@ -337,7 +337,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                     value={dateStr}
                     onChange={(e) => setDateStr(e.target.value)}
                     placeholder="e.g. Monsoon Jam 2025"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
               </div>
@@ -347,7 +347,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                 <select
                   value={aspect}
                   onChange={(e) => setAspect(e.target.value as 'square' | 'portrait' | 'landscape')}
-                  className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                  className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                 >
                   <option value="square">Square (1:1)</option>
                   <option value="portrait">Portrait (3:4 / 4:5)</option>
@@ -377,7 +377,7 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 bg-[#E4402A] hover:bg-[#ffe082] text-[#14120F] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {saving ? (
                     <>
@@ -407,8 +407,8 @@ export function GalleryTab({ items, onRefresh }: GalleryTabProps) {
 
             <p className="text-xs text-[#F4EFE4]/80 leading-relaxed mb-4">
               Are you sure you want to permanently delete gallery photo:
-              <strong className="block text-[#FFC93C] text-sm mt-1">{deleteModalItem.title}</strong>
-              This will remove the row from the Supabase <code className="text-[#FFC93C]">gallery</code> table immediately.
+              <strong className="block text-[#E4402A] text-sm mt-1">{deleteModalItem.title}</strong>
+              This will remove the row from the Supabase <code className="text-[#E4402A]">gallery</code> table immediately.
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#F4EFE4]/15 text-xs">

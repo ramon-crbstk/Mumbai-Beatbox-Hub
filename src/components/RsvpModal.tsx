@@ -83,14 +83,14 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
       onClick={onClose}
     >
       <div 
-        className="bg-[#F4EFE4] text-[#14120F] border-4 border-[#14120F] p-5 sm:p-8 max-w-lg w-full shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[8px_8px_0px_0px_#FFC93C] relative max-h-[90vh] overflow-y-auto"
+        className="bg-white text-[#14120F] border-4 border-[#14120F] p-5 sm:p-8 max-w-lg w-full shadow-[4px_4px_0px_0px_#E4402A] sm:shadow-[8px_8px_0px_0px_#E4402A] relative max-h-[90vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Close Button */}
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 bg-[#14120F] text-[#F4EFE4] hover:bg-[#E4402A] transition-colors border border-[#14120F] cursor-pointer z-10"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 min-w-[44px] min-h-[44px] flex items-center justify-center p-1.5 bg-[#14120F] text-white hover:bg-[#FFC93C] hover:text-[#14120F] transition-colors border border-[#14120F] cursor-pointer z-10"
           aria-label="Close modal"
         >
           <X className="w-5 h-5" />
@@ -98,11 +98,11 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
 
         {confirmed ? (
           <div className="py-6 text-center space-y-4 font-mono">
-            <div className="w-14 h-14 bg-[#FFC93C] text-[#14120F] border-2 border-[#14120F] flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_#14120F]">
+            <div className="w-14 h-14 bg-[#FFC93C] text-[#14120F] border-2 border-[#14120F] flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_#E4402A]">
               <CheckCircle2 className="w-8 h-8 text-[#14120F]" />
             </div>
 
-            <div className="inline-block px-3 py-1 bg-[#14120F] text-[#FFC93C] text-xs font-bold uppercase">
+            <div className="inline-block px-3 py-1 bg-[#FFC93C] text-[#14120F] border border-[#14120F] text-xs font-bold uppercase">
               RSVP CONFIRMED // SPOT RESERVED
             </div>
 
@@ -114,7 +114,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
               We saved your spot, <strong>{name}</strong>. Zero instruments, zero gatekeeping. Just show up ready to share vocal sound.
             </p>
 
-            <div className="p-3 bg-[#E5DFC8] border border-[#14120F]/30 text-xs text-left space-y-1.5">
+            <div className="p-3 bg-[#FAF8F5] border border-[#14120F]/30 text-xs text-left space-y-1.5">
               <div><strong>Event:</strong> {targetName}</div>
               {event?.date && (
                 <div><strong>Date:</strong> {formatEventDate(event.date)} ({event.date})</div>
@@ -136,7 +136,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                 href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC93C] hover:bg-white text-[#14120F] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] transition-all"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Join WhatsApp Cypher Group</span>
@@ -182,7 +182,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                 href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC93C] hover:bg-white text-[#14120F] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] transition-all"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Join Community WhatsApp</span>
@@ -211,7 +211,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                 href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full inline-flex items-center justify-center gap-2 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] text-[#FFC93C] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC93C] hover:bg-white text-[#14120F] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] transition-all"
               >
                 <MessageCircle className="w-4 h-4" />
                 <span>Join Waitlist via WhatsApp</span>
@@ -222,12 +222,12 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
           <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
             {/* Top Ticket Header */}
             <div className="flex items-center justify-between border-b-2 border-[#14120F] pb-3 mb-2">
-              <div className="flex items-center gap-2 text-[#E4402A] font-bold uppercase">
+              <div className="flex items-center gap-2 text-[#14120F] font-bold uppercase px-2 py-0.5 bg-[#FFC93C] border border-[#14120F]">
                 <Ticket className="w-4 h-4" />
                 <span>COMMUNITY CYPHER ENTRY PASS</span>
               </div>
               {maxCap !== null && maxCap !== undefined && (
-                <span className="text-[10px] font-mono text-[#14120F]/80 font-bold bg-[#E5DFC8] px-2 py-0.5 border border-[#14120F]/20">
+                <span className="text-[10px] font-mono text-[#14120F]/80 font-bold bg-[#FAF8F5] px-2 py-0.5 border border-[#14120F]/20">
                   {Math.max(0, maxCap - currentCount)} slots left
                 </span>
               )}
@@ -279,7 +279,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                   placeholder="e.g. Rohan"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
+                  className="w-full min-h-[44px] bg-[#FAF8F5] border-2 border-[#14120F] p-2.5 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#FFC93C]"
                 />
               </div>
 
@@ -293,7 +293,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                   placeholder="+91 98765 XXXXX"
                   value={whatsapp}
                   onChange={(e) => setWhatsapp(e.target.value)}
-                  className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#E4402A]"
+                  className="w-full min-h-[44px] bg-[#FAF8F5] border-2 border-[#14120F] p-2.5 text-base sm:text-sm text-[#14120F] placeholder-[#14120F]/40 focus:outline-none focus:border-[#FFC93C]"
                 />
               </div>
 
@@ -304,7 +304,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
                 <select
                   value={skill}
                   onChange={(e) => setSkill(e.target.value)}
-                  className="w-full min-h-[44px] bg-[#E5DFC8] border-2 border-[#14120F] p-2.5 text-base sm:text-xs text-[#14120F] focus:outline-none focus:border-[#E4402A]"
+                  className="w-full min-h-[44px] bg-[#FAF8F5] border-2 border-[#14120F] p-2.5 text-base sm:text-xs text-[#14120F] focus:outline-none focus:border-[#FFC93C]"
                 >
                   <option>Beginner (First time at a cypher)</option>
                   <option>Intermediate (Knows basics & sounds)</option>
@@ -318,7 +318,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full min-h-[48px] py-3.5 bg-[#14120F] hover:bg-[#E4402A] disabled:opacity-70 text-[#FFC93C] hover:text-[#F4EFE4] font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#14120F] transition-all cursor-pointer flex items-center justify-center gap-2"
+                className="w-full min-h-[48px] py-3.5 bg-[#FFC93C] hover:bg-[#14120F] disabled:opacity-70 text-[#14120F] hover:text-white font-mono text-xs sm:text-sm font-bold uppercase tracking-widest border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] transition-all cursor-pointer flex items-center justify-center gap-2"
               >
                 {isSubmitting ? (
                   <>

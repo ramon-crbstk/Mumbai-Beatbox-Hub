@@ -52,7 +52,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
   const [voiceNoteDuration, setVoiceNoteDuration] = useState('0:15');
   const [soundType, setSoundType] = useState<CommunityMember['soundType']>('bass-growl');
   const [avatarInitials, setAvatarInitials] = useState('');
-  const [accentBg, setAccentBg] = useState('#FFC93C');
+  const [accentBg, setAccentBg] = useState('#E4402A');
   const [photoUrl, setPhotoUrl] = useState('');
 
   // Voice Note Upload & Record State
@@ -111,7 +111,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     setVoiceNoteDuration('0:15');
     setSoundType('bass-growl');
     setAvatarInitials('');
-    setAccentBg('#FFC93C');
+    setAccentBg('#E4402A');
     setPhotoUrl('');
     setAudioUrl('');
     setAudioFileName('');
@@ -135,7 +135,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
     setVoiceNoteDuration(item.voiceNoteDuration || '0:15');
     setSoundType(item.soundType || 'bass-growl');
     setAvatarInitials(item.avatarInitials || item.name.slice(0, 2).toUpperCase());
-    setAccentBg(item.accentBg || '#FFC93C');
+    setAccentBg(item.accentBg || '#E4402A');
     const rawPhoto = item.photo_url !== undefined ? item.photo_url : item.photoUrl;
     setPhotoUrl(rawPhoto || '');
     
@@ -369,7 +369,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       voiceNoteDuration: voiceNoteDuration.trim() || '0:15',
       soundType,
       avatarInitials: initials,
-      accentBg: accentBg || '#FFC93C',
+      accentBg: accentBg || '#E4402A',
       photo_url: finalPhotoUrl,
       photoUrl: finalPhotoUrl || '',
       voice_note_url: finalVoiceNoteUrl,
@@ -441,7 +441,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search roster by name, handle, specialty, area..."
-            className="w-full pl-9 pr-4 py-2 bg-[#14120F] border border-[#F4EFE4]/20 text-xs font-mono text-[#F4EFE4] placeholder-[#F4EFE4]/40 focus:border-[#FFC93C] focus:outline-none"
+            className="w-full pl-9 pr-4 py-2 bg-[#14120F] border border-[#F4EFE4]/20 text-xs font-mono text-[#F4EFE4] placeholder-[#F4EFE4]/40 focus:border-[#E4402A] focus:outline-none"
           />
         </div>
 
@@ -452,7 +452,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
           <button
             type="button"
             onClick={openAddModal}
-            className="px-4 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-mono font-bold text-xs uppercase tracking-wider border border-[#14120F] flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer"
+            className="px-4 py-2 bg-[#E4402A] hover:bg-[#ffe082] text-[#14120F] font-mono font-bold text-xs uppercase tracking-wider border border-[#14120F] flex items-center gap-1.5 shadow-[2px_2px_0px_0px_#14120F] cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Member</span>
@@ -463,7 +463,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       {/* Members Table */}
       {filteredItems.length === 0 ? (
         <div className="py-16 text-center bg-[#1A1713] border border-dashed border-[#F4EFE4]/20 p-8">
-          <Users className="w-10 h-10 text-[#FFC93C]/50 mx-auto mb-3" />
+          <Users className="w-10 h-10 text-[#E4402A]/50 mx-auto mb-3" />
           <h3 className="font-['Anton'] text-xl uppercase tracking-wide text-[#F4EFE4]">No Community Members Found</h3>
           <p className="font-mono text-xs text-[#F4EFE4]/60 mt-1 max-w-sm mx-auto">
             {items.length === 0
@@ -474,7 +474,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
             <button
               type="button"
               onClick={openAddModal}
-              className="mt-4 px-4 py-2 bg-[#FFC93C] text-[#14120F] font-mono font-bold text-xs uppercase cursor-pointer"
+              className="mt-4 px-4 py-2 bg-[#E4402A] text-[#14120F] font-mono font-bold text-xs uppercase cursor-pointer"
             >
               + Add First Beatboxer
             </button>
@@ -483,7 +483,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       ) : (
         <div className="bg-[#1A1713] border border-[#F4EFE4]/15 overflow-x-auto">
           <table className="w-full text-left font-mono text-xs">
-            <thead className="bg-[#14120F] border-b border-[#F4EFE4]/15 text-[#FFC93C] uppercase text-[11px] tracking-wider">
+            <thead className="bg-[#14120F] border-b border-[#F4EFE4]/15 text-[#E4402A] uppercase text-[11px] tracking-wider">
               <tr>
                 <th className="p-3.5 w-14">Artist</th>
                 <th className="p-3.5">Name & Handle</th>
@@ -502,7 +502,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                       return (
                         <div 
                           className="w-10 h-10 border border-[#F4EFE4]/20 flex items-center justify-center font-['Anton'] text-base overflow-hidden"
-                          style={{ backgroundColor: displayPhoto ? 'transparent' : (item.accentBg || '#FFC93C'), color: '#14120F' }}
+                          style={{ backgroundColor: displayPhoto ? 'transparent' : (item.accentBg || '#E4402A'), color: '#14120F' }}
                         >
                           {displayPhoto ? (
                             <img 
@@ -520,7 +520,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   </td>
                   <td className="p-3.5">
                     <div className="font-bold text-[#F4EFE4] text-sm">{item.name}</div>
-                    <div className="text-[#FFC93C] text-[11px] font-bold">{item.handle}</div>
+                    <div className="text-[#E4402A] text-[11px] font-bold">{item.handle}</div>
                   </td>
                   <td className="p-3.5 text-[#F4EFE4]/90 whitespace-nowrap">
                     <div>{item.specialty}</div>
@@ -530,7 +530,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   </td>
                   <td className="p-3.5 text-[#F4EFE4]/80 whitespace-nowrap">
                     <div className="flex items-center gap-1">
-                      <MapPin className="w-3 h-3 text-[#FFC93C]" />
+                      <MapPin className="w-3 h-3 text-[#E4402A]" />
                       <span>{item.area}</span>
                     </div>
                     <div className="text-[11px] text-[#F4EFE4]/50 mt-0.5">{item.experience}</div>
@@ -554,8 +554,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                             onClick={() => handleSoundTest(item)}
                             className={`px-2.5 py-1 border text-[11px] flex items-center gap-1.5 transition-colors cursor-pointer ${
                               activeSoundId === item.id
-                                ? 'bg-[#FFC93C] text-[#14120F] border-[#FFC93C]'
-                                : 'bg-[#14120F] text-[#F4EFE4]/80 border-[#F4EFE4]/20 hover:border-[#FFC93C]'
+                                ? 'bg-[#E4402A] text-[#14120F] border-[#E4402A]'
+                                : 'bg-[#14120F] text-[#F4EFE4]/80 border-[#F4EFE4]/20 hover:border-[#E4402A]'
                             }`}
                           >
                             {activeSoundId === item.id ? (
@@ -582,7 +582,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                       <button
                         type="button"
                         onClick={() => openEditModal(item)}
-                        className="p-1.5 bg-[#14120F] hover:bg-[#FFC93C] hover:text-[#14120F] border border-[#F4EFE4]/20 transition-colors cursor-pointer"
+                        className="p-1.5 bg-[#14120F] hover:bg-[#E4402A] hover:text-[#14120F] border border-[#F4EFE4]/20 transition-colors cursor-pointer"
                         title="Edit Record"
                       >
                         <Edit2 className="w-3.5 h-3.5" />
@@ -607,7 +607,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
       {/* Add / Edit Modal */}
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-xs p-4 overflow-y-auto">
-          <div className="w-full max-w-xl bg-[#1A1713] border-2 border-[#FFC93C] shadow-[8px_8px_0px_0px_#14120F] p-6 max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-xl bg-[#1A1713] border-2 border-[#E4402A] shadow-[8px_8px_0px_0px_#14120F] p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-[#F4EFE4]/15 pb-3 mb-4">
               <h3 className="font-['Anton'] text-2xl uppercase tracking-wide text-[#F4EFE4]">
                 {editingItem ? 'Edit Member Profile' : 'Add Community Beatboxer'}
@@ -615,7 +615,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
               <button 
                 type="button" 
                 onClick={() => setModalOpen(false)}
-                className="text-[#F4EFE4]/60 hover:text-[#FFC93C] cursor-pointer"
+                className="text-[#F4EFE4]/60 hover:text-[#E4402A] cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -637,7 +637,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="e.g. Karan Shinde"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
 
@@ -649,7 +649,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={handle}
                     onChange={(e) => setHandle(e.target.value)}
                     placeholder="@subzero_mumbai"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
               </div>
@@ -663,7 +663,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={specialty}
                     onChange={(e) => setSpecialty(e.target.value)}
                     placeholder="e.g. Inward Bass / Liproll"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
 
@@ -675,7 +675,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={area}
                     onChange={(e) => setArea(e.target.value)}
                     placeholder="e.g. Dadar West / Carter Rd"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
               </div>
@@ -688,7 +688,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={experience}
                     onChange={(e) => setExperience(e.target.value)}
                     placeholder="e.g. 4 Years"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
 
@@ -697,7 +697,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   <select
                     value={soundType}
                     onChange={(e) => setSoundType(e.target.value as CommunityMember['soundType'])}
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   >
                     <option value="bass-growl">bass-growl (Inward & Sub Bass)</option>
                     <option value="liproll">liproll (Liproll & Glitch)</option>
@@ -717,7 +717,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={voiceNoteTitle}
                     onChange={(e) => setVoiceNoteTitle(e.target.value)}
                     placeholder="e.g. Bassline Routine"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
 
@@ -728,7 +728,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={voiceNoteDuration}
                     onChange={(e) => setVoiceNoteDuration(e.target.value)}
                     placeholder="0:15"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
               </div>
@@ -742,7 +742,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     value={avatarInitials}
                     onChange={(e) => setAvatarInitials(e.target.value.toUpperCase())}
                     placeholder="KS"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
 
@@ -752,8 +752,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     type="text"
                     value={accentBg}
                     onChange={(e) => setAccentBg(e.target.value)}
-                    placeholder="#FFC93C or #E4402A"
-                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] focus:outline-none"
+                    placeholder="#E4402A or #E4402A"
+                    className="w-full px-3 py-2 bg-[#14120F] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] focus:outline-none"
                   />
                 </div>
               </div>
@@ -761,14 +761,14 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
               {/* =========================================================================
                   UPLOAD SECTION 1: MEMBER PROFILE PHOTO (Cloudinary mumbai-beatbox-hub/members/photos/)
                   ========================================================================= */}
-              <div className="p-4 bg-[#14120F] border border-[#FFC93C]/40 space-y-3">
+              <div className="p-4 bg-[#14120F] border border-[#E4402A]/40 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#FFC93C] uppercase">
-                    <Upload className="w-4 h-4 text-[#FFC93C]" />
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E4402A] uppercase">
+                    <Upload className="w-4 h-4 text-[#E4402A]" />
                     <span>1. Member Profile Photo</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/30 text-[9px] font-mono uppercase font-bold">
+                    <span className="px-2 py-0.5 bg-[#E4402A]/10 text-[#E4402A] border border-[#E4402A]/30 text-[9px] font-mono uppercase font-bold">
                       Folder: mumbai-beatbox-hub/members/photos/
                     </span>
                     <span className="px-2 py-0.5 bg-[#F4EFE4]/10 text-[#F4EFE4]/70 border border-[#F4EFE4]/20 text-[9px] font-mono uppercase font-bold">
@@ -783,7 +783,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                 </div>
 
                 <p className="text-[11px] text-[#F4EFE4]/70 leading-relaxed">
-                  Upload an artist photo (JPG, PNG, WEBP, AVIF). Uploads directly to Cloudinary folder <code className="text-[#FFC93C] font-mono">mumbai-beatbox-hub/members/photos/</code> and writes the secure HTTPS URL to <code className="text-[#FFC93C] font-mono">members.photo_url</code>. If cleared, sets photo_url to NULL and displays initials avatar on public card.
+                  Upload an artist photo (JPG, PNG, WEBP, AVIF). Uploads directly to Cloudinary folder <code className="text-[#E4402A] font-mono">mumbai-beatbox-hub/members/photos/</code> and writes the secure HTTPS URL to <code className="text-[#E4402A] font-mono">members.photo_url</code>. If cleared, sets photo_url to NULL and displays initials avatar on public card.
                 </p>
 
                 <ImageUploader
@@ -800,14 +800,14 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
               {/* =========================================================================
                   UPLOAD SECTION 2: MEMBER VOICE NOTE (Cloudinary mumbai-beatbox-hub/members/voice-notes/)
                   ========================================================================= */}
-              <div className="p-4 bg-[#14120F] border border-[#FFC93C]/40 space-y-3">
+              <div className="p-4 bg-[#14120F] border border-[#E4402A]/40 space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#FFC93C] uppercase">
-                    <Mic className="w-4 h-4 text-[#FFC93C]" />
+                  <div className="flex items-center gap-2 text-xs font-mono font-bold text-[#E4402A] uppercase">
+                    <Mic className="w-4 h-4 text-[#E4402A]" />
                     <span>2. Member Voice Note / Audio</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 bg-[#FFC93C]/10 text-[#FFC93C] border border-[#FFC93C]/30 text-[9px] font-mono uppercase font-bold">
+                    <span className="px-2 py-0.5 bg-[#E4402A]/10 text-[#E4402A] border border-[#E4402A]/30 text-[9px] font-mono uppercase font-bold">
                       Folder: mumbai-beatbox-hub/members/voice-notes/
                     </span>
                     <span className="px-2 py-0.5 bg-[#F4EFE4]/10 text-[#F4EFE4]/70 border border-[#F4EFE4]/20 text-[9px] font-mono uppercase font-bold">
@@ -822,7 +822,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                 </div>
 
                 <p className="text-[11px] text-[#F4EFE4]/70 leading-relaxed">
-                  Upload an audio file (MP3, WAV, M4A, OGG, WebM) or record live via your microphone. Uploads directly to Cloudinary folder <code className="text-[#FFC93C] font-mono">mumbai-beatbox-hub/members/voice-notes/</code> and writes the secure HTTPS URL to <code className="text-[#FFC93C] font-mono">members.voice_note_url</code>. If removed, sets voice_note_url to NULL and public card will show &quot;NO VOICE NOTE&quot; with zero audio played.
+                  Upload an audio file (MP3, WAV, M4A, OGG, WebM) or record live via your microphone. Uploads directly to Cloudinary folder <code className="text-[#E4402A] font-mono">mumbai-beatbox-hub/members/voice-notes/</code> and writes the secure HTTPS URL to <code className="text-[#E4402A] font-mono">members.voice_note_url</code>. If removed, sets voice_note_url to NULL and public card will show &quot;NO VOICE NOTE&quot; with zero audio played.
                 </p>
 
                 {/* Upload & Record Buttons */}
@@ -830,10 +830,10 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                   <label className={`px-3.5 py-2 border transition-colors flex items-center gap-2 font-mono text-xs font-bold uppercase ${
                     isUploadingAudio
                       ? 'bg-[#1A1713] text-[#F4EFE4]/40 border-[#F4EFE4]/10 cursor-not-allowed'
-                      : 'bg-[#1A1713] hover:bg-[#FFC93C] text-[#F4EFE4] hover:text-[#14120F] border-[#F4EFE4]/30 hover:border-[#FFC93C] cursor-pointer'
+                      : 'bg-[#1A1713] hover:bg-[#E4402A] text-[#F4EFE4] hover:text-[#14120F] border-[#F4EFE4]/30 hover:border-[#E4402A] cursor-pointer'
                   }`}>
                     {isUploadingAudio ? (
-                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#FFC93C]" />
+                      <Loader2 className="w-3.5 h-3.5 animate-spin text-[#E4402A]" />
                     ) : (
                       <Upload className="w-3.5 h-3.5" />
                     )}
@@ -871,8 +871,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
 
                 {/* Cloudinary Audio Upload Progress */}
                 {isUploadingAudio && (
-                  <div className="p-3 bg-[#1A1713] border border-[#FFC93C]/40 space-y-1.5">
-                    <div className="flex items-center justify-between text-xs font-mono text-[#FFC93C]">
+                  <div className="p-3 bg-[#1A1713] border border-[#E4402A]/40 space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-mono text-[#E4402A]">
                       <span className="flex items-center gap-1.5 font-bold">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         Uploading Voice Note to Cloudinary...
@@ -881,7 +881,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                     </div>
                     <div className="w-full bg-[#14120F] h-1.5 overflow-hidden">
                       <div
-                        className="bg-[#FFC93C] h-full transition-all duration-150"
+                        className="bg-[#E4402A] h-full transition-all duration-150"
                         style={{ width: `${uploadAudioProgress}%` }}
                       />
                     </div>
@@ -904,7 +904,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                       setAudioFileName(e.target.value ? 'Custom Hosted Audio URL' : '');
                     }}
                     placeholder="https://res.cloudinary.com/.../voice_notes/...mp3"
-                    className="w-full px-3 py-1.5 bg-[#1A1713] border border-[#F4EFE4]/20 focus:border-[#FFC93C] text-[#F4EFE4] text-[11px] focus:outline-none font-mono"
+                    className="w-full px-3 py-1.5 bg-[#1A1713] border border-[#F4EFE4]/20 focus:border-[#E4402A] text-[#F4EFE4] text-[11px] focus:outline-none font-mono"
                   />
                 </div>
 
@@ -927,7 +927,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                       <button
                         type="button"
                         onClick={togglePreviewAudio}
-                        className="px-3 py-1 bg-[#FFC93C] text-[#14120F] hover:bg-[#ffe082] font-bold uppercase text-[11px] flex items-center gap-1.5 cursor-pointer font-mono"
+                        className="px-3 py-1 bg-[#E4402A] text-[#14120F] hover:bg-[#ffe082] font-bold uppercase text-[11px] flex items-center gap-1.5 cursor-pointer font-mono"
                       >
                         {isPreviewPlaying ? (
                           <>
@@ -977,7 +977,7 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
                 <button
                   type="submit"
                   disabled={saving}
-                  className="px-5 py-2 bg-[#FFC93C] hover:bg-[#ffe082] text-[#14120F] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                  className="px-5 py-2 bg-[#E4402A] hover:bg-[#ffe082] text-[#14120F] font-bold uppercase tracking-wider flex items-center gap-2 cursor-pointer disabled:opacity-50"
                 >
                   {saving ? (
                     <>
@@ -1007,8 +1007,8 @@ export function MembersTab({ items, onRefresh }: MembersTabProps) {
 
             <p className="text-xs text-[#F4EFE4]/80 leading-relaxed mb-4">
               Are you sure you want to permanently delete beatboxer:
-              <strong className="block text-[#FFC93C] text-sm mt-1">{deleteModalItem.name} ({deleteModalItem.handle})</strong>
-              This will remove the artist from Supabase <code className="text-[#FFC93C]">members</code> table.
+              <strong className="block text-[#E4402A] text-sm mt-1">{deleteModalItem.name} ({deleteModalItem.handle})</strong>
+              This will remove the artist from Supabase <code className="text-[#E4402A]">members</code> table.
             </p>
 
             <div className="flex items-center justify-end gap-3 pt-3 border-t border-[#F4EFE4]/15 text-xs">

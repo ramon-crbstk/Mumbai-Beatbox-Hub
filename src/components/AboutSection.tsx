@@ -5,20 +5,20 @@ import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/Motion
 
 export const AboutSection: React.FC = () => {
   return (
-    <section id="about" className="py-16 md:py-24 bg-[#14120F] relative border-b-2 border-[#FFC93C]/20">
+    <section id="about" className="py-16 md:py-24 bg-[#14120F] relative border-b-2 border-[#E4402A]/20">
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Section Header: Poster Flyer Style */}
         <ScrollReveal direction="up" delay={0.05} className="max-w-3xl mb-12">
-          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest border border-[#14120F] -rotate-1 mb-4 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#FFC93C] text-[#14120F] text-xs font-mono font-bold uppercase tracking-widest border border-[#14120F] -rotate-1 mb-4 shadow-[2px_2px_0px_0px_#E4402A]">
             <Compass className="w-3.5 h-3.5" />
             <span>Who We Are</span>
           </div>
 
-          <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-[#F4EFE4] leading-[1.05]">
+          <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-[1.05]">
             Building Mumbai&apos;s beatbox scene, <br className="hidden sm:inline" />
-            <span className="text-[#FFC93C] underline decoration-4 decoration-[#FFC93C]/60 underline-offset-8">
+            <span className="text-white underline decoration-4 decoration-[#FFC93C] underline-offset-8">
               one cypher at a time
             </span>
           </h2>
@@ -28,25 +28,25 @@ export const AboutSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start mb-16">
           
           {/* Narrative Paragraphs */}
-          <ScrollReveal direction="right" delay={0.1} className="lg:col-span-8 space-y-6 text-[#F4EFE4]/90 text-base sm:text-lg leading-relaxed font-sans">
+          <ScrollReveal direction="right" delay={0.1} className="lg:col-span-8 space-y-6 text-white/90 text-base sm:text-lg leading-relaxed font-sans">
             <p className="border-l-4 border-[#FFC93C] pl-5 py-1">
               What began as a handful of vocal percussionists trading beats on the breezy benches of{' '}
-              <strong className="text-[#FFC93C] font-semibold">Carter Road</strong>, the seaside steps of{' '}
-              <strong className="text-[#FFC93C] font-semibold">Bandstand</strong>, and Mumbai&apos;s iconic college festival corridors has grown into a vibrant, city-wide collective. No studios, no audio plugins, no instruments — strictly the human mouth, throat, and lungs pushing the boundaries of acoustic physics.
+              <strong className="text-white font-semibold">Carter Road</strong>, the seaside steps of{' '}
+              <strong className="text-white font-semibold">Bandstand</strong>, and Mumbai&apos;s iconic college festival corridors has grown into a vibrant, city-wide collective. No studios, no audio plugins, no instruments — strictly the human mouth, throat, and lungs pushing the boundaries of acoustic physics.
             </p>
 
             <p>
-              Today, <strong className="text-[#F4EFE4]">Mumbai Beatbox Hub (MBH)</strong> is an open-door sanctuary for anyone fascinated by the art of vocal drumming. Whether you are picking up your very first &lsquo;B-T-K&rsquo; pattern or you are a battle-tested routine architect rehearsing inward bass combinations for national qualifiers, our cyphers are designed to be respectful, ego-free spaces.
+              Today, <strong className="text-white">Mumbai Beatbox Hub (MBH)</strong> is an open-door sanctuary for anyone fascinated by the art of vocal drumming. Whether you are picking up your very first &lsquo;B-T-K&rsquo; pattern or you are a battle-tested routine architect rehearsing inward bass combinations for national qualifiers, our cyphers are designed to be respectful, ego-free spaces.
             </p>
 
-            <p className="text-sm sm:text-base text-[#F4EFE4]/75 font-mono">
+            <p className="text-sm sm:text-base text-white/75 font-mono">
               We gather across suburbs, exchange techniques in real-time, document local talent, and establish Mumbai as one of South Asia’s most formidable grassroots vocal percussion hubs.
             </p>
           </ScrollReveal>
 
           {/* Asymmetric Side Bulletin Box */}
           <ScrollReveal direction="left" delay={0.2} className="lg:col-span-4">
-            <div className="bg-[#F4EFE4] text-[#14120F] p-5 sm:p-6 border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#FFC93C] sm:shadow-[6px_6px_0px_0px_#FFC93C] rotate-0 sm:rotate-1 hover:rotate-0 transition-transform">
+            <div className="bg-white text-[#14120F] p-5 sm:p-6 border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#E4402A] sm:shadow-[6px_6px_0px_0px_#E4402A] rotate-0 sm:rotate-1 hover:rotate-0 transition-transform">
               <div className="flex items-center justify-between border-b border-[#14120F]/20 pb-3 mb-4">
                 <span className="font-['Anton'] text-lg tracking-wider uppercase text-[#14120F]">
                   MANIFESTO BULLETIN
@@ -56,7 +56,7 @@ export const AboutSection: React.FC = () => {
                 </span>
               </div>
 
-              <ul className="space-y-3 text-xs sm:text-sm font-mono text-[#14120F]/90">
+              <ul className="space-y-3 text-xs sm:text-sm font-mono text-[#14120F]">
                 <li className="flex items-start gap-2">
                   <span className="font-bold text-[#E4402A] text-base leading-none">✕</span>
                   <span>Zero hardware required. Just bring your voice.</span>
@@ -85,21 +85,21 @@ export const AboutSection: React.FC = () => {
         </div>
 
         {/* Stats Row (4 Stat Blocks with Staggered Entrance) */}
-        <div className="border-t-2 border-b-2 border-[#FFC93C]/40 py-6 sm:py-8 bg-[#181512]/70">
-          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-8 md:divide-x-2 md:divide-[#F4EFE4]/15">
+        <div className="border-t-2 border-b-2 border-[#E4402A]/40 py-6 sm:py-8 bg-[#181512]/70">
+          <StaggerContainer staggerDelay={0.1} className="grid grid-cols-2 md:grid-cols-4 gap-5 sm:gap-8 md:divide-x-2 md:divide-white/15">
             {COMMUNITY_STATS.map((stat, idx) => (
               <StaggerItem
                 key={stat.label}
                 direction="up"
                 className={`space-y-1 ${idx > 0 ? 'md:pl-6' : ''}`}
               >
-                <div className="font-['Anton'] text-3xl sm:text-5xl md:text-6xl text-[#FFC93C] tracking-tight leading-none">
+                <div className="font-['Anton'] text-3xl sm:text-5xl md:text-6xl text-white tracking-tight leading-none">
                   {stat.number}
                 </div>
-                <div className="font-['Anton'] text-base sm:text-xl uppercase text-[#F4EFE4] tracking-wide pt-1">
+                <div className="font-['Anton'] text-base sm:text-xl uppercase text-white tracking-wide pt-1">
                   {stat.label}
                 </div>
-                <p className="text-xs sm:text-sm font-mono text-[#F4EFE4]/60 leading-snug">
+                <p className="text-xs sm:text-sm font-mono text-white/70 leading-snug">
                   {stat.subtext}
                 </p>
               </StaggerItem>
