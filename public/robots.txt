@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /mbh-admin
+Disallow: /mhb-admin
+
+Sitemap: https://mumbaibeatboxhub.vercel.app/sitemap.xml
