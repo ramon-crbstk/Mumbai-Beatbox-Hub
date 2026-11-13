@@ -17,6 +17,24 @@ export function AdminRouteHandler({ mode }: AdminRouteHandlerProps) {
   const adminBase = location.pathname.startsWith('/mhb-admin') ? '/mhb-admin' : '/mbh-admin';
 
   useEffect(() => {
+    // Keep private admin screens out of search results without changing the public site's indexability.
+    const robotsMeta = document.querySelector('meta[name="robots"]');
+    const previousRobots = robotsMeta?.getAttribute('content');
+    if (robotsMeta) robotsMeta.setAttribute('content', 'noindex, nofollow, noarchive');
+    else {
+      const meta = document.createElement('meta');
+      meta.name = 'robots';
+      meta.content = 'noindex, nofollow, noarchive';
+      document.head.appendChild(meta);
+    }
+    return () => {
+      const current = document.querySelector('meta[name="robots"]');
+      if (previousRobots && current) current.setAttribute('content', previousRobots);
+      else current?.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (!loading) {
       if (mode === 'login' && adminUser) {
         // If already logged in with admin privileges, send to dashboard
