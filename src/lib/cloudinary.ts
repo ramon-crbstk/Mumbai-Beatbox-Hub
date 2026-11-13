@@ -677,10 +677,39 @@ export function getCloudinaryVideoThumbnailUrl(
   const quality = options?.quality ?? 'auto';
   const format = options?.format ?? 'auto';
   const crop = options?.crop ?? 'fill';
-  const gravity = options?.gravity ?? 'auto';
+
+  // Cloudinary rejects g_auto with non-cropping modes like c_limit, c_fit, c_scale, c_pad (HTTP 400)
+  const cropsSupportingAutoGravity = new Set([
+    'crop',
+    'fill',
+    'thumb',
+    'lfill',
+    'fill_pad',
+    'auto',
+    'auto_pad',
+  ]);
+  const cropsSupportingDirectionalGravity = new Set([
+    ...cropsSupportingAutoGravity,
+    'fit',
+    'mfit',
+    'pad',
+    'lpad',
+    'mpad',
+  ]);
+
+  let gravity = '';
+  if (options?.gravity) {
+    if (options.gravity === 'auto' || options.gravity.startsWith('auto:')) {
+      gravity = cropsSupportingAutoGravity.has(crop) ? options.gravity : '';
+    } else if (cropsSupportingDirectionalGravity.has(crop)) {
+      gravity = options.gravity;
+    }
+  } else if (cropsSupportingAutoGravity.has(crop)) {
+    gravity = 'auto';
+  }
 
   // Construct Cloudinary transformation segment
-  // e.g. "w_640,c_fill,g_auto,f_auto,q_auto"
+  // e.g. "w_640,c_fill,g_auto,f_auto,q_auto" or "w_900,c_limit,f_auto,q_auto"
   const transformParts: string[] = [
     `w_${width}`,
     options?.height ? `h_${options.height}` : '',
