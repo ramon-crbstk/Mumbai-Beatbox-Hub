@@ -188,7 +188,7 @@ export function Championship2026Page() {
             </h1>
 
             <p className="text-base sm:text-lg text-white/85 font-sans leading-relaxed max-w-3xl">
-              Organized by <strong className="text-white">{SITE_BRAND.name}</strong>, Mumbai Beatbox Championship 2026 brings Indian beatboxers, vocal bassists, and hip-hop audiences together for head-to-head beatbox battles in Mumbai, Maharashtra, India.
+              Organized by <strong className="text-white">{SITE_BRAND.name}</strong>, the flagship <strong className="text-white">Mumbai Beatbox Hub championship</strong> brings vocal percussionists from across the country together for <strong className="text-white">Beatbox Battle Mumbai 2026</strong>—elevating every local Mumbai beatbox competition and strengthening the national beatbox championship India scene.
             </p>
           </div>
 
@@ -245,7 +245,7 @@ export function Championship2026Page() {
                 Confirmed Battle Dates &amp; Venue Dropping Soon
               </h2>
               <p className="text-sm sm:text-base text-white/80 font-sans leading-relaxed">
-                Official battle dates, registration rules, showcase venue details (across hubs such as Andheri, Mumbai and Bandra when finalized), and entry guidelines for Mumbai Beatbox Championship 2026 will be published right here as soon as confirmed by Mumbai Beatbox Hub organizers.
+                Looking for verified beatbox events December 2026 updates, a beatbox competition Mumbai December 2026 schedule, or beatbox competitions near me? Confirmed dates, rules, and showcase venues (including hubs such as Andheri, Mumbai when finalized) will be published right here first.
               </p>
 
               <div className="flex flex-wrap gap-3 pt-2 font-mono text-xs">
@@ -273,17 +273,17 @@ export function Championship2026Page() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
             <div className="bg-[#181512] border border-white/15 p-6 space-y-3">
               <h2 className="font-['Anton'] text-2xl uppercase text-white">
-                About Beatbox Battles in Mumbai
+                How to Participate in Beatbox Battles
               </h2>
               <p className="text-sm text-white/75 leading-relaxed">
-                From open promenade cyphers to structured 1v1 and 7-to-smoke elimination rounds, Mumbai&apos;s vocal percussion circuit welcomes solo artists across India—judged on musicality, technical precision, and original sound design.
+                Whether entering structured 1v1 brackets, beatbox competitions in Mumbai, or nationwide beatbox events and competitions in India, learn how elimination wildcards and live rounds are judged on musicality, technical precision, and stage presence.
               </p>
               <Link
-                to="/blog/mumbai-beatbox-championship-2026"
+                to="/blog"
                 className="inline-flex items-center gap-1.5 text-xs font-mono font-bold uppercase text-[#FFC93C] hover:underline"
               >
                 <BookOpen className="w-3.5 h-3.5" />
-                <span>Read: How to Prepare for Championship 2026</span>
+                <span>Explore the MBH Journal</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </Link>
             </div>
@@ -293,7 +293,7 @@ export function Championship2026Page() {
                 Warm Up at Weekly Cyphers
               </h2>
               <p className="text-sm text-white/75 leading-relaxed">
-                New to battles or refining your routine before qualifiers? Drop by our open community sessions and workshops across Mumbai, Maharashtra.
+                New to beatbox competitions or refining a 90-second battle routine before qualifiers? Drop by our upcoming beatbox events in Mumbai and beatbox workshops in Mumbai.
               </p>
               <div className="flex flex-wrap gap-4 pt-1 font-mono text-xs font-bold uppercase">
                 <Link to="/events" className="text-[#FFC93C] hover:underline inline-flex items-center gap-1">
@@ -301,7 +301,7 @@ export function Championship2026Page() {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
                 <Link to="/videos" className="text-white hover:text-[#FFC93C] inline-flex items-center gap-1">
-                  <span>Watch Routine Drops</span>
+                  <span>Watch Live Performances</span>
                   <ArrowRight className="w-3.5 h-3.5" />
                 </Link>
               </div>

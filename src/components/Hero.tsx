@@ -87,7 +87,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenJoinModal }) => {
               <div className="space-y-2">
                 <div className="flex items-center gap-2 text-xs font-mono tracking-widest uppercase text-white/80">
                   <span className="w-2 h-2 bg-[#FFC93C]" />
-                  <span>MBH Official Grassroots Movement</span>
+                  <span>MBH Official Beatbox Community in Mumbai</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <h1 className="font-['Anton'] text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-8xl tracking-tight text-white uppercase leading-[0.92]">
@@ -110,7 +110,7 @@ export const Hero: React.FC<HeroProps> = ({ onOpenJoinModal }) => {
                   &ldquo;One mic. One breath. A city of rhythm.&rdquo;
                 </p>
                 <p className="text-sm sm:text-base md:text-lg text-white/85 max-w-2xl leading-relaxed font-sans">
-                  A grassroots, instrument-free community uniting beatboxers, vocal bassists, and mouth percussionists across Mumbai. From first-time clickers to tournament battlers — the circle is open to all.
+                  A grassroots <strong className="text-white font-semibold">Mumbai Beatbox Community</strong> driving <strong className="text-white font-semibold">beatboxing in Mumbai</strong> and across the <strong className="text-white font-semibold">Indian Beatbox Community</strong>. Connecting local artists for open cyphers, workshops, and live battles — zero instruments required.
                 </p>
               </div>
             </ScrollReveal>

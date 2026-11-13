@@ -23,7 +23,7 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ headingTag = 'h2' })
           </div>
 
           <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-[1.05]">
-            Building Mumbai&apos;s beatbox scene, <br className="hidden sm:inline" />
+            Building Mumbai&apos;s beatbox culture, <br className="hidden sm:inline" />
             <span className="text-white underline decoration-4 decoration-[#FFC93C] underline-offset-8">
               one cypher at a time
             </span>
@@ -36,17 +36,17 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ headingTag = 'h2' })
           {/* Narrative Paragraphs */}
           <ScrollReveal direction="right" delay={0.1} className="lg:col-span-8 space-y-6 text-white/90 text-base sm:text-lg leading-relaxed font-sans">
             <p className="border-l-4 border-[#FFC93C] pl-5 py-1">
-              What began as a handful of vocal percussionists trading beats on the breezy benches of{' '}
+              What began as a handful of vocal percussionists trading rhythms at a weekend beatbox cypher in Mumbai—on the benches of{' '}
               <strong className="text-white font-semibold">Carter Road</strong>, the seaside steps of{' '}
-              <strong className="text-white font-semibold">Bandstand</strong>, and Mumbai&apos;s iconic college festival corridors has grown into a vibrant, city-wide collective. No studios, no audio plugins, no instruments — strictly the human mouth, throat, and lungs pushing the boundaries of acoustic physics.
+              <strong className="text-white font-semibold">Bandstand</strong>, and local college festivals—has grown into a city-wide beatbox music community shaping beatbox culture in India. No gear or plugins—just the mouth, throat, and lungs.
             </p>
 
             <p>
-              Today, <strong className="text-white">Mumbai Beatbox Hub (MBH)</strong> is an open-door sanctuary for anyone fascinated by the art of vocal drumming. Whether you are picking up your very first &lsquo;B-T-K&rsquo; pattern or you are a battle-tested routine architect rehearsing inward bass combinations for national qualifiers, our cyphers are designed to be respectful, ego-free spaces.
+              Today, the <strong className="text-white">Mumbai Beatbox Hub (MBH)</strong> community welcomes everyone—whether you are figuring out where to learn beatboxing in Mumbai at beatbox workshops for beginners in Mumbai, or rehearsing inward bass routines for regional battles and national qualifiers.
             </p>
 
             <p className="text-sm sm:text-base text-white/75 font-mono">
-              We gather across suburbs, exchange techniques in real-time, document local talent, and establish Mumbai as one of South Asia’s most formidable grassroots vocal percussion hubs.
+              Through Mumbai Beatbox Hub workshops and regular beatbox meetups in the city, we help newcomers meet beatboxers in Mumbai in person while linking Mumbai beatbox culture with the broader beatboxing India movement.
             </p>
           </ScrollReveal>
 
@@ -54,9 +54,9 @@ export const AboutSection: React.FC<AboutSectionProps> = ({ headingTag = 'h2' })
           <ScrollReveal direction="left" delay={0.2} className="lg:col-span-4">
             <div className="bg-white text-[#14120F] p-5 sm:p-6 border-2 border-[#14120F] shadow-[4px_4px_0px_0px_#E4402A] sm:shadow-[6px_6px_0px_0px_#E4402A] rotate-0 sm:rotate-1 hover:rotate-0 transition-transform">
               <div className="flex items-center justify-between border-b border-[#14120F]/20 pb-3 mb-4">
-                <span className="font-['Anton'] text-lg tracking-wider uppercase text-[#14120F]">
+                <h3 className="font-['Anton'] text-lg tracking-wider uppercase text-[#14120F]">
                   MANIFESTO BULLETIN
-                </span>
+                </h3>
                 <span className="text-[10px] font-mono uppercase bg-[#14120F] text-[#FFC93C] px-2 py-0.5 font-bold">
                   EST. MUMBAI
                 </span>

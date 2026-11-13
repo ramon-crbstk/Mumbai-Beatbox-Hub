@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import { EventItem, RegistrationStatus } from '../types';
 import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2, ChevronDown, ChevronUp, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { fetchUpcomingEvents, formatEventDate, fetchAllEventRsvpCounts } from '../lib/supabase';
@@ -23,6 +22,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
   const [expanded, setExpanded] = useState(false);
 
   const Heading = headingTag;
+  const SubHeading = headingTag === 'h1' ? 'h2' : 'h3';
 
   useEffect(() => {
     let isMounted = true;
@@ -60,25 +60,11 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
               <span>LIVE GATHERINGS</span>
             </div>
             <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
-              Upcoming Events &amp; Cyphers
+              Upcoming Beatbox Events in Mumbai
             </Heading>
-            <p className="text-sm sm:text-base text-white/75 font-mono mt-1">
-              Real open circles across Mumbai, Maharashtra. Drop in, listen, or jump on the mic.
+            <p className="text-sm sm:text-base text-white/75 font-mono mt-1 max-w-2xl">
+              Official Mumbai Beatbox Hub events — open cyphers, weekend jams, beginner workshops, and beatbox competitions in Mumbai &amp; India.
             </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-white/90">
-            <span className="inline-flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#E4402A] animate-pulse" />
-              <span>FREE ENTRY // NO PASSES NEEDED</span>
-            </span>
-            <Link
-              to="/mumbai-beatbox-championship-2026"
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#181512] border border-[#FFC93C]/50 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] font-bold uppercase tracking-wider transition-colors"
-            >
-              <span>Championship 2026</span>
-              <ArrowUpRight className="w-3.5 h-3.5" />
-            </Link>
           </div>
         </ScrollReveal>
 
@@ -91,9 +77,9 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
         ) : events.length === 0 ? (
           <ScrollReveal direction="up" className="bg-[#1A1713] border-2 border-dashed border-[#E4402A]/30 p-12 text-center">
             <Calendar className="w-12 h-12 text-[#E4402A]/40 mx-auto mb-3" />
-            <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4] mb-2">
+            <SubHeading className="font-['Anton'] text-2xl uppercase tracking-tight text-[#F4EFE4] mb-2">
               Next Cypher Date Dropping Soon
-            </h3>
+            </SubHeading>
             <p className="text-xs sm:text-sm font-mono text-[#F4EFE4]/70 max-w-md mx-auto">
               Our organizers are scouting outdoor spots across South Bombay & suburbs. Keep notifications on or RSVP below to receive the venue drop first.
             </p>
@@ -166,9 +152,9 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                     </div>
 
                     {/* Event Name */}
-                    <h3 className="font-['Anton'] text-2xl sm:text-3xl lg:text-4xl uppercase tracking-tight text-[#14120F] mb-4 leading-tight">
+                    <SubHeading className="font-['Anton'] text-2xl sm:text-3xl lg:text-4xl uppercase tracking-tight text-[#14120F] mb-4 leading-tight">
                       {evt.title || evt.name}
-                    </h3>
+                    </SubHeading>
 
                     {/* Meta details list */}
                     <div className="space-y-2.5 mb-6 text-xs sm:text-sm font-mono text-[#14120F] bg-[#F4EFE4] p-3.5 sm:p-4 border border-[#14120F]/30">

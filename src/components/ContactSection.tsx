@@ -11,6 +11,7 @@ interface ContactSectionProps {
 
 export const ContactSection: React.FC<ContactSectionProps> = ({ headingTag = 'h2' }) => {
   const Heading = headingTag;
+  const SubHeading = headingTag === 'h1' ? 'h2' : 'h3';
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -51,10 +52,10 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ headingTag = 'h2
             <span>CONTACT & JOIN</span>
           </div>
           <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
-            Plug into the Mumbai Beatbox Community
+            Join a Beatbox Community in Mumbai
           </Heading>
           <p className="text-sm sm:text-base text-white/70 font-mono mt-1">
-            Looking to join the weekend circle in Mumbai, Maharashtra, book a workshop, or suggest a new spot? Send a dispatch.
+            Looking for beginner sessions, workshop inquiries, or live beatbox performances? Connect with our organizers or message Mumbai Beatbox Hub Instagram.
           </p>
         </ScrollReveal>
 
@@ -70,9 +71,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ headingTag = 'h2
                   <MessageCircle className="w-5 h-5 text-[#14120F]" />
                 </div>
                 <div>
-                  <h3 className="font-['Anton'] text-xl uppercase tracking-wider text-white">
+                  <SubHeading className="font-['Anton'] text-xl uppercase tracking-wider text-white">
                     Official WhatsApp Hub
-                  </h3>
+                  </SubHeading>
                   <span className="text-[11px] font-mono text-[#FFC93C] font-semibold">
                     Active Mumbai Cypher Circles
                   </span>
@@ -182,7 +183,7 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ headingTag = 'h2
                     <Instagram className="w-4 h-4 text-[#FFC93C]" />
                     <div>
                       <div className="font-bold">@mumbai.beatbox.hub</div>
-                      <div className="text-[10px] text-white/50">Reels, stories & jam updates</div>
+                      <div className="text-[10px] text-white/50">Mumbai Beatbox Hub Instagram · Reels &amp; jams</div>
                     </div>
                   </div>
                   <span className="text-[10px] text-white uppercase group-hover:underline flex items-center gap-0.5 shrink-0">
@@ -246,9 +247,9 @@ export const ContactSection: React.FC<ContactSectionProps> = ({ headingTag = 'h2
                 <div className="w-14 h-14 bg-[#FFC93C] text-[#14120F] border-2 border-[#14120F] flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_#E4402A]">
                   <CheckCircle2 className="w-8 h-8 text-[#14120F]" />
                 </div>
-                <h3 className="font-['Anton'] text-3xl uppercase tracking-tight text-[#14120F]">
+                <SubHeading className="font-['Anton'] text-3xl uppercase tracking-tight text-[#14120F]">
                   Vocal Dispatch Received!
-                </h3>
+                </SubHeading>
                 <p className="text-sm font-sans text-[#14120F]/80 max-w-md mx-auto">
                   Thanks for reaching out, <strong>{formData.name}</strong>. A community mentor will ping you on WhatsApp with the upcoming cypher location and meetup details.
                 </p>

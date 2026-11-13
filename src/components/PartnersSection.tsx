@@ -32,9 +32,9 @@ export const PartnersSection: React.FC = () => {
         
         {/* Section Header */}
         <ScrollReveal direction="up" delay={0.05} className="text-center mb-8">
-          <span className="font-mono text-xs uppercase tracking-widest text-white/70 font-semibold">
+          <h2 className="font-mono text-xs uppercase tracking-widest text-white/70 font-semibold">
             COLLABORATED WITH // COMMUNITY ROSTER
-          </span>
+          </h2>
         </ScrollReveal>
 
         {/* Muted Grayscale Logo Strip Placeholder Boxes */}

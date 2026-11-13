@@ -64,99 +64,99 @@ export function buildAssetUrl(assetPath: string, baseUrl: string = getSiteBaseUr
 export const PAGE_SEO: Record<string, PageSeoMeta> = {
   home: {
     path: '/',
-    title: "Mumbai Beatbox Hub | Mumbai's Beatboxing Community & Events",
+    title: 'Mumbai Beatbox Hub | Beatboxing in Mumbai & Community',
     description:
-      'Discover Mumbai Beatbox Hub, a community dedicated to growing beatboxing culture in Mumbai through beatbox battles, events, workshops, artist showcases and community initiatives.',
+      'Discover Mumbai Beatbox Hub, the Mumbai beatbox community for beatboxing in Mumbai, beatbox events, battles, workshops, and live performances in India.',
     keywords:
-      'Mumbai Beatbox Hub, Beatboxing Mumbai, Mumbai Beatbox Championship 2026, Beatbox battles Mumbai, Beatbox community India, Beatbox events Mumbai, Indian beatbox culture, Hip-hop events Mumbai, Beatbox workshops Mumbai',
+      'Mumbai Beatbox Hub, Beatboxing in Mumbai, Mumbai Beatbox Community, Beatbox Community in Mumbai, Beatboxers in Mumbai, Beatbox Events in Mumbai, Beatbox Battles in Mumbai, Indian Beatbox Community, Beatboxing India, Beatbox Championship Mumbai',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: "Mumbai Beatbox Hub - Mumbai's Beatboxing Community, Cyphers & Events",
+    ogImageAlt: 'Mumbai Beatbox Hub - Mumbai Beatbox Community, Cyphers & Events',
   },
   about: {
     path: '/about',
-    title: 'About Mumbai Beatbox Hub | Vocal Percussion Collective',
+    title: 'About Mumbai Beatbox Community | Mumbai Beatbox Hub',
     description:
-      'Learn about Mumbai Beatbox Hub (MBH), our grassroots beatboxing community in Mumbai, Maharashtra, weekly cyphers, workshops, and hip-hop culture.',
+      'Learn about the Mumbai Beatbox Hub community driving Mumbai beatbox culture, beatboxing India, weekly cyphers, and beginner beatbox workshops in Mumbai.',
     keywords:
-      'About Mumbai Beatbox Hub, Beatboxing community in Mumbai, Mumbai hip-hop community, Beatbox community India, Indian beatboxers, vocal percussion Mumbai',
+      'Mumbai Beatbox Community, Beatbox Community in Mumbai, Mumbai Beatbox Hub community, Beatbox music community, Beatbox culture in India, Mumbai beatbox culture, Beatboxing India, Mumbai Beatbox Hub workshops, Beatbox workshops for beginners in Mumbai',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: 'About Mumbai Beatbox Hub - Grassroots Vocal Percussion Collective',
+    ogImageAlt: 'Mumbai Beatbox Hub Community & Mumbai Beatbox Culture',
   },
   events: {
     path: '/events',
-    title: 'Beatbox Events & Cyphers in Mumbai | Mumbai Beatbox Hub',
+    title: 'Upcoming Beatbox Events in Mumbai | Mumbai Beatbox Hub',
     description:
-      'Explore upcoming beatbox events, open cyphers, beatbox battles, and beatbox workshops in Mumbai, Maharashtra. RSVP online to join the circle.',
+      'Explore Mumbai Beatbox Hub events: upcoming beatbox events in Mumbai, beatbox battles, meetups, cyphers, and beatbox competitions in India.',
     keywords:
-      'Beatbox events Mumbai, Beatbox events India, Beatbox battles Mumbai, Beatbox workshops Mumbai, Hip-hop events Mumbai, Mumbai Beatbox Championship 2026',
+      'Beatbox Events in Mumbai, Upcoming beatbox events in Mumbai, Mumbai Beatbox Hub events, Beatbox Battles in Mumbai, Beatbox competitions in Mumbai, Beatbox workshops in Mumbai, Beatbox meetups Mumbai, Beatbox competitions near me, Beatbox events and competitions in India',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: 'Upcoming Beatbox Events, Cyphers & Workshops in Mumbai',
+    ogImageAlt: 'Upcoming Beatbox Events, Meetups & Competitions in Mumbai',
   },
   championship2026: {
     path: '/mumbai-beatbox-championship-2026',
-    title: 'Mumbai Beatbox Championship 2026 | Official MBH Page',
+    title: 'Mumbai Beatbox Championship 2026 | Beatbox Battle Mumbai',
     description:
-      'Official hub for Mumbai Beatbox Championship 2026. Stay updated on verified battle dates, Mumbai venue announcements, rules, and registrations.',
+      'Official Mumbai Beatbox Hub championship page for Mumbai Beatbox Championship 2026 — a premier beatbox competition and tournament in India.',
     keywords:
-      'Mumbai Beatbox Championship 2026, Beatbox competitions in India, Beatbox battles in Mumbai, Mumbai Beatbox Hub, Indian beatboxers, Andheri Mumbai beatbox',
+      'Mumbai Beatbox Championship 2026, Beatbox Championship Mumbai, Beatbox Championship India, Mumbai Beatbox Competition, Beatbox Battle Mumbai 2026, Beatbox Tournament India, Beatbox Events December 2026, Beatbox Competition Mumbai December 2026, Mumbai Beatbox Hub championship',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: 'Mumbai Beatbox Championship 2026 - Official Mumbai Beatbox Hub Page',
+    ogImageAlt: 'Mumbai Beatbox Championship 2026 - Beatbox Battle Mumbai & Tournament India',
   },
   gallery: {
     path: '/gallery',
-    title: 'Mumbai Beatbox Gallery | Cypher & Battle Photo Archive',
+    title: 'Beatbox Cypher Mumbai Gallery | Mumbai Beatbox Hub',
     description:
-      'Browse authentic street photography from Mumbai Beatbox Hub cyphers, live beatbox battles, workshops, and hip-hop events across Mumbai, India.',
+      'Explore live photography from Mumbai beatbox meetups, beatbox cypher Mumbai sessions, live beatbox battles, and Mumbai beatbox culture highlights.',
     keywords:
-      'Mumbai Beatbox Gallery, Beatboxing in Mumbai photos, Mumbai hip-hop culture, Beatbox battles Mumbai, Carter Road beatbox cypher',
+      'Beatbox cypher Mumbai, Beatbox meetups Mumbai, Mumbai beatbox culture, Beatbox Battles in Mumbai, Beatboxers in Mumbai, Beatboxing in Mumbai',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: 'Mumbai Beatbox Hub 35mm Cypher & Battle Photo Archive',
+    ogImageAlt: 'Mumbai Beatbox Hub Cypher & Live Beatbox Performance Photo Archive',
   },
   videos: {
     path: '/videos',
-    title: 'Beatbox Videos & Battle Routines | Mumbai Beatbox Hub',
+    title: 'Live Beatbox Performances & Battles | Mumbai Beatbox Hub',
     description:
-      'Watch live beatbox battles, vocal percussion showcases, and technical routine drops featuring Indian beatboxers and the Mumbai community.',
+      'Watch live beatbox performances in Mumbai, showcase routines by Indian beatboxers, and filmed beatbox battles from the Indian beatbox community.',
     keywords:
-      'Indian beatboxers videos, Beatbox battles Mumbai, Beatboxing in Mumbai routines, Mumbai Beatbox Hub videos, vocal percussion showcase',
+      'Beatbox performances Mumbai, Live beatbox performances, Beatbox Battles in Mumbai, Indian beatboxers, Beatbox artists in Mumbai, Indian Beatbox Community',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: 'Mumbai Beatbox Hub Featured Videos & Battle Routines',
+    ogImageAlt: 'Live Beatbox Performances & Battle Videos — Mumbai Beatbox Hub',
   },
   members: {
     path: '/members',
-    title: 'Mumbai Beatboxers & Community Roster | MBH Artists',
+    title: 'Meet Beatboxers in Mumbai | Mumbai Beatbox Artists Roster',
     description:
-      'Meet Indian beatboxers and vocal percussionists from the Mumbai Beatbox Hub community. Listen to artist voice notes and explore sound styles.',
+      'Meet beatboxers in Mumbai and Indian beatboxers in the Mumbai Beatbox Hub community. Discover beatbox artists in Mumbai and hear live voice notes.',
     keywords:
-      'Indian beatboxers, Mumbai beatboxers, Beatbox community in India, Mumbai Beatbox Hub members, inward bass, liproll artists Mumbai',
+      'Beatboxers in Mumbai, Beatbox artists in Mumbai, Meet beatboxers in Mumbai, Indian beatboxers, Mumbai Beatbox Community, Beatbox music community',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: 'Mumbai Beatbox Hub Community Roster & Vocal Artists',
+    ogImageAlt: 'Beatboxers and Vocal Percussion Artists in Mumbai',
   },
   contact: {
     path: '/contact',
-    title: 'Contact Mumbai Beatbox Hub | Join Cyphers & Book',
+    title: 'Join Beatbox Community in Mumbai | Mumbai Beatbox Hub',
     description:
-      'Connect with Mumbai Beatbox Hub in Mumbai, Maharashtra. Join weekend cyphers, inquire about workshops, or email mumbai.beatbox.hub@gmail.com.',
+      'Join a beatbox community in Mumbai, discover where to learn beatboxing in Mumbai, attend workshops, or connect with Mumbai Beatbox Hub Instagram.',
     keywords:
-      'Contact Mumbai Beatbox Hub, Join beatbox community Mumbai, Beatbox workshops Mumbai booking, mumbai.beatbox.hub@gmail.com',
+      'Join a beatbox community in Mumbai, Where to learn beatboxing in Mumbai, Beatbox workshops for beginners in Mumbai, Mumbai Beatbox Hub Instagram, Mumbai Beatbox Hub workshops',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
-    ogImageAlt: 'Contact Mumbai Beatbox Hub - Join Mumbai Cyphers & Book Workshops',
+    ogImageAlt: 'Join Mumbai Beatbox Hub Community & Workshops',
   },
   blog: {
     path: '/blog',
-    title: 'Mumbai Beatbox Blog | Beatboxing Guides & Scene News',
+    title: 'Beatboxing in Mumbai & India Blog | Mumbai Beatbox Hub',
     description:
-      'Read original guides on beatboxing in Mumbai, beginner vocal percussion techniques, Indian beatboxers, and beatbox events across India.',
+      'Guides on where to learn beatboxing in Mumbai, how to participate in beatbox battles, Indian beatboxers, and upcoming beatbox events in India.',
     keywords:
-      'Beatboxing Mumbai blog, Growth of Beatboxing Culture in Mumbai, What is beatboxing beginners guide, Indian beatboxers, Mumbai Beatbox Championship 2026',
+      'Beatboxing in Mumbai, Where to learn beatboxing in Mumbai, How to participate in beatbox battles, Beatbox culture in India, Indian beatboxers, Beatbox events and competitions in India',
     ogType: 'website',
     ogImage: '/assets/og-mumbai-beatbox-hub.jpg',
     ogImageAlt: 'Mumbai Beatbox Hub Blog - Guides, Culture & Scene Updates',

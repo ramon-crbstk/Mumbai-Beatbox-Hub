@@ -35,6 +35,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({
   headingTag = 'h2',
 }) => {
   const Heading = headingTag;
+  const SubHeading = headingTag === 'h1' ? 'h2' : 'h3';
   const [membersList, setMembersList] = useState<(CommunityMember & { photoUrl: string })[]>([]);
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [completedMemberId, setCompletedMemberId] = useState<string | null>(null);
@@ -231,11 +232,11 @@ export const MembersSection: React.FC<MembersSectionProps> = ({
             </div>
             
             <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
-              Members of the Community
+              Beatboxers &amp; Artists in Mumbai
             </Heading>
             
             <p className="text-sm sm:text-base text-white/75 font-mono mt-2 max-w-2xl leading-relaxed">
-              Meet the vocal percussionists representing Mumbai's streets. Roster sequence rotates on every refresh to give equal spotlight to all artists. Tap <span className="text-white font-bold underline decoration-[#FFC93C] decoration-2">PLAY AUDIO</span> on any card below to listen to their showcase voice notes.
+              Discover beatboxers in Mumbai alongside Indian beatboxers representing the underground scene. All beatbox artists in Mumbai rotate cyclically so everyone shares the spotlight—tap <span className="text-white font-bold underline decoration-[#FFC93C] decoration-2">PLAY AUDIO</span> below to hear live voice notes.
             </p>
           </div>
 
@@ -292,7 +293,7 @@ export const MembersSection: React.FC<MembersSectionProps> = ({
           {filteredMembers.length === 0 ? (
             <div className="w-full py-16 text-center border-2 border-dashed border-[#E4402A]/30 bg-[#181512] p-8">
               <Headphones className="w-10 h-10 text-[#E4402A]/60 mx-auto mb-3" />
-              <h3 className="font-['Anton'] text-xl text-white tracking-wide uppercase">Community Roster</h3>
+              <SubHeading className="font-['Anton'] text-xl text-white tracking-wide uppercase">Community Roster</SubHeading>
               <p className="font-mono text-xs text-white/60 mt-1 max-w-md mx-auto">
                 Beatboxer profiles added by the crew will appear here.
               </p>
@@ -382,9 +383,9 @@ export const MembersSection: React.FC<MembersSectionProps> = ({
                 <div className="p-4 border-b border-white/15 bg-[#171410] flex-grow">
                   <div className="flex items-start justify-between gap-2">
                     <div className="w-full">
-                      <h3 className="font-['Anton'] text-xl uppercase tracking-wide text-white group-hover:text-white transition-colors leading-tight">
+                      <SubHeading className="font-['Anton'] text-xl uppercase tracking-wide text-white group-hover:text-white transition-colors leading-tight">
                         {member.name}
-                      </h3>
+                      </SubHeading>
                       
                       {/* Mention Instagram then the username under the name */}
                       <div className="flex items-center gap-1.5 mt-1.5 text-xs font-mono">

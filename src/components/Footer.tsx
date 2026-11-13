@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
             </p>
 
             <p className="text-xs sm:text-sm font-sans text-white/70 max-w-md leading-relaxed">
-              Mumbai&apos;s grassroots home for vocal percussionists, beatboxers, and mouth drummers in Mumbai, Maharashtra, India. Built by the streets, fueled by human breath.
+              The official Mumbai Beatbox Hub community — powering beatboxing in Mumbai, Indian beatbox community meetups, beatbox workshops in Mumbai, and beatbox events and competitions in India.
             </p>
           </div>
 

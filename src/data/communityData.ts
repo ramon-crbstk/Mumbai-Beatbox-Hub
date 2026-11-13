@@ -27,10 +27,10 @@ export const PILLARS: PillarCard[] = [
   {
     id: 'cyphers',
     number: '01',
-    title: 'Cyphers & Jams',
+    title: 'Beatbox Cyphers & Meetups',
     blurb:
-      'Casual weekend circles popping up across the city—from sea-breeze sessions at Carter Road to sunset steps at Bandstand. Pass the mic, exchange counter-rhythms, and lock into spontaneous tempo switches.',
-    highlight: 'Weekend Circles · All Skill Levels',
+      'Casual weekend beatbox meetups Mumbai sessions at Carter Road and Bandstand steps. Join a beatbox community in Mumbai to pass the mic, trade rhythms, and build real-time stage chemistry.',
+    highlight: 'Beatbox Cypher Mumbai · All Skill Levels',
     iconName: 'Users',
   },
   {
@@ -38,17 +38,17 @@ export const PILLARS: PillarCard[] = [
     number: '02',
     title: 'Workshops & Mentorship',
     blurb:
-      'From foundational kick-drum physics and tongue-click precision to inward bass control, polyphonic throat singing, and building coherent 90-second tournament routines.',
-    highlight: 'Technique Drills · Sound Design',
+      'Hands-on beatbox workshops in Mumbai covering foundational kick-drum physics, inward bass control, polyphonic vocals, and building coherent 90-second battle routines with peer mentors.',
+    highlight: 'Mumbai Beatbox Hub Workshops · Sound Design',
     iconName: 'Mic',
   },
   {
     id: 'battles',
     number: '03',
-    title: 'Battles & Showcases',
+    title: 'Beatbox Battles & Showcases',
     blurb:
-      'Raw underground 7-to-smoke face-offs, crew battles, filmed YouTube cyphers, and stage slots at collegiate cultural festivals across Mumbai.',
-    highlight: '7-to-Smoke · Live Showcases',
+      'Underground 7-to-smoke beatbox battles in Mumbai, beatbox performances Mumbai stages love, and qualifiers preparing artists for beatbox competitions in Mumbai and every major beatbox tournament India hosts.',
+    highlight: 'Live Beatbox Performances · Beatbox Championship Mumbai',
     iconName: 'Trophy',
   },
 ];

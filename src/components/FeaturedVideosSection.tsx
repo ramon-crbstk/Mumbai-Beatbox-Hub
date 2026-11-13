@@ -86,6 +86,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({
   const [copiedUrl, setCopiedUrl] = useState(false);
 
   const Heading = headingTag;
+  const SubHeading = headingTag === 'h1' ? 'h2' : 'h3';
 
   const handleOpenVideo = (vid: VideoItem) => {
     setActiveVideo(vid);
@@ -131,10 +132,10 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({
               <span>COMMUNITY FOOTAGE // ROUTINE DROPS</span>
             </div>
             <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
-              Featured Videos &amp; Routine Drops
+              Live Beatbox Performances &amp; Routine Drops
             </Heading>
             <p className="text-sm sm:text-base text-white/75 font-mono mt-1 max-w-xl">
-              Recorded cypher battles, routine drops, and technical breakdown sessions.
+              Filmed beatbox battles in Mumbai, showcase rounds by Indian beatboxers, and live vocal percussion drops across India.
             </p>
           </div>
 
@@ -148,7 +149,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({
           <div className="grid grid-cols-1 gap-8">
             <div className="col-span-full py-16 text-center border-2 border-dashed border-[#E4402A]/30 bg-[#181512] p-8">
               <Video className="w-10 h-10 text-[#E4402A]/60 mx-auto mb-3" />
-              <h3 className="font-['Anton'] text-xl text-white tracking-wide uppercase">Routine Drops Archive</h3>
+              <SubHeading className="font-['Anton'] text-xl text-white tracking-wide uppercase">Routine Drops Archive</SubHeading>
               <p className="font-mono text-xs text-white/60 mt-1 max-w-md mx-auto">
                 Video drops added by the community will appear here.
               </p>
@@ -270,13 +271,13 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({
                         </div>
 
                         {/* Video Title */}
-                        <h3
+                        <SubHeading
                           onClick={() => handleOpenVideo(vid)}
                           className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-white group-hover:text-white transition-colors leading-snug cursor-pointer line-clamp-2"
                           title={vid.title}
                         >
                           {vid.title}
-                        </h3>
+                        </SubHeading>
 
                         {/* Performer Info */}
                         <p className="text-xs font-mono text-white/80 flex items-center gap-1.5 pt-0.5">
@@ -346,9 +347,9 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({
               <span>{activeVideo.category} // VIDEO STREAM</span>
             </div>
 
-            <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-white mb-3 pr-10">
+            <SubHeading className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-white mb-3 pr-10">
               {activeVideo.title}
-            </h3>
+            </SubHeading>
 
             {/* Video Stage Frame: Plays video from URL */}
             <div className="aspect-video bg-[#000] border-2 border-[#E4402A]/40 flex items-center justify-center relative overflow-hidden mb-4">

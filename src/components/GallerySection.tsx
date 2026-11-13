@@ -45,6 +45,7 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
   headingTag = 'h2',
 }) => {
   const Heading = headingTag;
+  const SubHeading = headingTag === 'h1' ? 'h2' : 'h3';
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -186,10 +187,10 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                 <span>CYPHER 35MM DARKROOM ARCHIVE</span>
               </div>
               <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-none">
-                The Cypher Photo Archive
+                Mumbai Beatbox Cypher Archive
               </Heading>
               <p className="text-sm sm:text-base text-white/75 font-mono mt-2 max-w-2xl leading-relaxed">
-                Raw, uncut moments from Carter Road, Shivaji Park, Bandstand & underground battles. Choose your layout or click any frame to inspect in full resolution.
+                Unfiltered frames from beatbox cypher Mumbai sessions, seaside jams, and underground battles at Carter Road, Shivaji Park &amp; Bandstand.
               </p>
             </div>
 
@@ -270,9 +271,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
               <Camera className="w-8 h-8 text-[#E4402A]" />
             </div>
             
-            <h3 className="font-['Anton'] text-2xl sm:text-3xl text-[#F4EFE4] tracking-wide uppercase">
+            <SubHeading className="font-['Anton'] text-2xl sm:text-3xl text-[#F4EFE4] tracking-wide uppercase">
               Photo Archive Empty
-            </h3>
+            </SubHeading>
             <p className="font-mono text-xs sm:text-sm text-[#F4EFE4]/70 mt-2 max-w-md mx-auto leading-relaxed">
               Authentic cypher moments and battle frames uploaded through the Admin Studio will appear here.
             </p>
@@ -389,9 +390,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                           <span className="truncate">{item.location}</span>
                         </div>
 
-                        <h3 className="font-['Anton'] text-xl uppercase tracking-tight text-white leading-tight line-clamp-1 group-hover:text-[#FFC93C] transition-colors">
+                        <SubHeading className="font-['Anton'] text-xl uppercase tracking-tight text-white leading-tight line-clamp-1 group-hover:text-[#FFC93C] transition-colors">
                           {item.title}
-                        </h3>
+                        </SubHeading>
 
                         {item.caption && (
                           <p className="text-xs font-mono text-white/60 line-clamp-2 mt-1.5 leading-relaxed">
@@ -513,9 +514,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                               <MapPin className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
                               <span className="truncate">{item.location}</span>
                             </div>
-                            <h3 className="font-['Anton'] text-lg uppercase tracking-tight text-white line-clamp-1 group-hover:text-[#FFC93C] transition-colors">
+                            <SubHeading className="font-['Anton'] text-lg uppercase tracking-tight text-white line-clamp-1 group-hover:text-[#FFC93C] transition-colors">
                               {item.title}
-                            </h3>
+                            </SubHeading>
                           </div>
 
                           <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between text-[10px] font-mono text-white/50">
@@ -599,9 +600,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                         <span>{currentSpotlight.location || 'Mumbai Cypher Arena'}</span>
                       </div>
 
-                      <h3 className="font-['Anton'] text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight text-white leading-tight mb-3">
+                      <SubHeading className="font-['Anton'] text-2xl sm:text-3xl md:text-4xl uppercase tracking-tight text-white leading-tight mb-3">
                         {currentSpotlight.title}
-                      </h3>
+                      </SubHeading>
 
                       <p className="text-sm text-white/80 font-sans leading-relaxed mb-6 whitespace-pre-line">
                         {currentSpotlight.caption || 'Authentic vocal percussion capture from Mumbai Beatbox Hub community cyphers.'}
@@ -762,9 +763,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({
                   <span>{selectedItem.location || 'Mumbai Cypher'}</span>
                 </div>
 
-                <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-white leading-tight mb-2">
+                <SubHeading className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-white leading-tight mb-2">
                   {selectedItem.title}
-                </h3>
+                </SubHeading>
 
                 <p className="text-xs sm:text-sm text-white/80 font-sans leading-relaxed mb-4 whitespace-pre-line">
                   {selectedItem.caption || 'Acoustic cypher capture from the Mumbai Beatbox Hub community archives.'}
