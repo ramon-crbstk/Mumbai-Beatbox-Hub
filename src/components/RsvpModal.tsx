@@ -122,8 +122,11 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
 
             <div className="p-3 bg-[#FAF8F5] border border-[#14120F]/30 text-xs text-left space-y-1.5">
               <div><strong>Event:</strong> {targetName}</div>
-              {event?.date && (
-                <div><strong>Date:</strong> {formatEventDate(event.date)} ({event.date})</div>
+              {event && (
+                <div>
+                  <strong>Date:</strong> {formatEventDate(event.date)}
+                  {event.date && event.date.toUpperCase() !== 'TBA' ? ` (${event.date})` : ''}
+                </div>
               )}
               {event?.time && <div><strong>Time:</strong> {event.time}</div>}
               {event?.venue && (
@@ -269,7 +272,7 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
               <h3 className="font-['Anton'] text-2xl sm:text-3xl uppercase tracking-tight text-[#14120F] leading-tight">
                 {targetName}
               </h3>
-              {event?.date && (
+              {event && (
                 <div className="flex flex-wrap items-center gap-3 text-xs text-[#14120F]/80 mt-1 font-mono">
                   <span className="inline-flex items-center gap-1">
                     <Calendar className="w-3.5 h-3.5 text-[#E4402A]" />

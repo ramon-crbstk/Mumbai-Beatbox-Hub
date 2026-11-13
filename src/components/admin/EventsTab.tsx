@@ -67,12 +67,6 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
 
   const handleOpenAdd = () => {
     resetForm();
-    // Default date to upcoming Saturday if empty
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
-    const nextSat = new Date(now.getTime() + daysUntilSaturday * 24 * 60 * 60 * 1000);
-    setDate(nextSat.toISOString().split('T')[0]);
     setModalOpen(true);
   };
 
@@ -93,8 +87,8 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !date.trim() || !venue.trim()) {
-      setNotification({ type: 'error', message: 'Event Name, Date, and Venue are required.' });
+    if (!name.trim() || !venue.trim()) {
+      setNotification({ type: 'error', message: 'Event Name and Venue are required.' });
       return;
     }
 
@@ -102,13 +96,14 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
     setNotification(null);
 
     const parsedMaxPeople = maxPeople.trim() === '' ? null : Math.max(1, parseInt(maxPeople, 10));
+    const trimmedDate = date.trim();
 
     const payload: Omit<EventItem, 'id'> & { id?: string } = {
       title: name.trim(),
       name: name.trim(),
       eventType: isBattleOrLive ? 'battle' : 'cypher',
       event_type: isBattleOrLive ? 'battle' : 'cypher',
-      date: date.trim(), // YYYY-MM-DD
+      date: trimmedDate || 'TBA', // YYYY-MM-DD or TBA when omitted
       time: time.trim() || '5:30 PM – 8:00 PM IST',
       venue: venue.trim(),
       location: area.trim() || 'Mumbai',
@@ -339,9 +334,11 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                       <span className="font-bold text-[#F4EFE4]">
                         {formatEventDate(event.date)}
                       </span>
-                      <span className="text-[10px] text-[#F4EFE4]/40 font-sans ml-1">
-                        ({event.date})
-                      </span>
+                      {event.date && event.date.toUpperCase() !== 'TBA' && (
+                        <span className="text-[10px] text-[#F4EFE4]/40 font-sans ml-1">
+                          ({event.date})
+                        </span>
+                      )}
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="w-3.5 h-3.5 text-[#E4402A] shrink-0" />
@@ -517,18 +514,28 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
               {/* Date Picker & Time */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
-                    Date (Calendar Picker) *
-                  </label>
+                  <div className="flex items-center justify-between mb-1.5">
+                    <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A]">
+                      Date (Optional)
+                    </label>
+                    {date && (
+                      <button
+                        type="button"
+                        onClick={() => setDate('')}
+                        className="text-[10px] font-mono uppercase tracking-wider text-[#F4EFE4]/60 hover:text-[#FFC93C] underline cursor-pointer"
+                      >
+                        Clear / Set TBA
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="date"
-                    required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                     className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#E4402A] focus:outline-none [color-scheme:dark]"
                   />
                   <span className="block text-[10px] font-mono text-[#F4EFE4]/50 mt-1">
-                    Stored as ISO date: {date || 'YYYY-MM-DD'}
+                    {date ? `Stored as ISO date: ${date}` : 'Leave empty to display as TBA'}
                   </span>
                 </div>
                 <div>

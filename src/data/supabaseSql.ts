@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS public.events (
     description TEXT,
     blurb TEXT,
     event_type TEXT DEFAULT 'cypher',
-    date TEXT NOT NULL, -- Stored as ISO YYYY-MM-DD
+    date TEXT NOT NULL DEFAULT 'TBA', -- Stored as ISO YYYY-MM-DD or TBA
     time TEXT NOT NULL DEFAULT '5:30 PM – 8:00 PM IST',
     venue TEXT NOT NULL,
     location TEXT DEFAULT 'Mumbai',

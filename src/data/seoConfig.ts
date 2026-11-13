@@ -239,7 +239,8 @@ export function buildBreadcrumbSchema(baseUrl: string, entries: BreadcrumbEntry[
  * Never fabricates dates, street addresses, prices, or ratings.
  */
 export function buildEventSchema(baseUrl: string, event: EventItem, pagePath: string = '/events') {
-  if (!event.date || !event.venue || !(event.title || event.name)) {
+  const hasConfirmedDate = Boolean(event.date && /^\d{4}-\d{2}-\d{2}/.test(event.date.trim()));
+  if (!hasConfirmedDate || !event.venue || !(event.title || event.name)) {
     return null;
   }
 

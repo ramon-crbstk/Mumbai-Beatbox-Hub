@@ -1130,7 +1130,7 @@ export async function submitEventRsvp(rsvp: {
             description: data.description || data.blurb || '',
             blurb: data.description || data.blurb || '',
             eventType: data.event_type || 'cypher',
-            date: data.date,
+            date: data.date || 'TBA',
             time: data.time || '5:30 PM',
             venue: data.venue,
             location: data.location || data.area || 'Mumbai',
@@ -1156,7 +1156,7 @@ export async function submitEventRsvp(rsvp: {
             description: data.description || data.blurb || '',
             blurb: data.description || data.blurb || '',
             eventType: data.event_type || 'cypher',
-            date: data.date,
+            date: data.date || 'TBA',
             time: data.time || '5:30 PM',
             venue: data.venue,
             location: data.location || data.area || 'Mumbai',
@@ -1630,9 +1630,12 @@ export function isFakeOrDemoEvent(e: { id?: string; title?: string; name?: strin
   return DEMO_EVENT_IDS.has(e.id);
 }
 
-export function formatEventDate(dateStr: string): string {
-  if (!dateStr) return '';
+export function formatEventDate(dateStr?: string | null): string {
+  if (!dateStr) return 'TBA';
   const trimmed = dateStr.trim();
+  if (!trimmed || trimmed.toUpperCase() === 'TBA') {
+    return 'TBA';
+  }
   // Check if date is in ISO format: YYYY-MM-DD
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
     const [year, month, day] = trimmed.split('-').map(Number);
@@ -1646,16 +1649,19 @@ export function formatEventDate(dateStr: string): string {
       });
     }
   }
-  return dateStr;
+  return trimmed;
 }
 
-export function toIsoDate(dateStr: string): string {
+export function toIsoDate(dateStr?: string | null): string {
   if (!dateStr) return '';
   const trimmed = dateStr.trim();
+  if (!trimmed || trimmed.toUpperCase() === 'TBA') {
+    return '';
+  }
   if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
     return trimmed;
   }
-  const parsed = new Date(dateStr);
+  const parsed = new Date(trimmed);
   if (!isNaN(parsed.getTime())) {
     return parsed.toISOString().split('T')[0];
   }
@@ -1751,7 +1757,8 @@ export async function fetchUpcomingEvents(): Promise<EventItem[]> {
           const title = d.title || d.name || 'Upcoming Cypher';
           const desc = d.description || d.blurb || '';
           const loc = d.location || d.area || 'Mumbai';
-          const dateIso = toIsoDate(d.date) || d.date;
+          const rawDate = (d.date || '').trim();
+          const dateIso = !rawDate || rawDate.toUpperCase() === 'TBA' ? 'TBA' : toIsoDate(rawDate) || rawDate;
           const status = (d.registration_status || 'open') as RegistrationStatus;
           const maxP = d.max_people !== undefined ? d.max_people : null;
           const count = rsvpCounts[d.id] ?? (title ? rsvpCounts[title] : 0) ?? 0;
@@ -1814,10 +1821,13 @@ export async function fetchUpcomingEvents(): Promise<EventItem[]> {
     }
   }
 
-  // Sort events chronologically by date
+  // Sort events chronologically by date, keeping TBA events at the end
   dbEvents.sort((a, b) => {
-    const timeA = new Date(a.date).getTime() || 0;
-    const timeB = new Date(b.date).getTime() || 0;
+    const parsedA = a.date && a.date.toUpperCase() !== 'TBA' ? new Date(a.date).getTime() : NaN;
+    const parsedB = b.date && b.date.toUpperCase() !== 'TBA' ? new Date(b.date).getTime() : NaN;
+    const timeA = Number.isNaN(parsedA) ? Number.POSITIVE_INFINITY : parsedA;
+    const timeB = Number.isNaN(parsedB) ? Number.POSITIVE_INFINITY : parsedB;
+    if (timeA === timeB) return 0;
     return timeA - timeB;
   });
 
@@ -1862,7 +1872,8 @@ export async function saveUpcomingEvent(
   const title = item.title || item.name || 'Community Cypher';
   const desc = item.description || item.blurb || '';
   const loc = item.location || item.area || 'Mumbai';
-  const isoDate = toIsoDate(item.date) || item.date;
+  const rawDate = (item.date || '').trim();
+  const isoDate = !rawDate || rawDate.toUpperCase() === 'TBA' ? 'TBA' : toIsoDate(rawDate) || rawDate;
   const status = (item.registrationStatus || item.registration_status || 'open') as RegistrationStatus;
   const maxP = item.maxPeople !== undefined ? item.maxPeople : item.max_people ?? null;
   const slug = item.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
