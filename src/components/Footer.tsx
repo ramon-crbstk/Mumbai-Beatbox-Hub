@@ -1,5 +1,6 @@
 import React from 'react';
-import { Instagram, MessageCircle, Youtube, ArrowUp, Phone, Headphones } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Instagram, MessageCircle, Youtube, ArrowUp, Phone, Headphones, Mail } from 'lucide-react';
 import { COMMUNITY_CONTACT } from '../data/communityData';
 import { ScrollReveal } from './animations/MotionComponents';
 
@@ -27,11 +28,18 @@ export const Footer: React.FC = () => {
                 {/* Soft ambient pulse glow */}
                 <div className="absolute inset-0 bg-[#E4402A]/15 rounded-full blur-md animate-pulse pointer-events-none" />
 
-                <img
-                  src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
-                  alt="Mumbai Beatbox Hub Logo"
-                  className="relative z-10 h-12 sm:h-14 w-auto max-w-[110px] sm:max-w-[130px] object-contain animate-logo-pulse-glow"
-                />
+                <picture>
+                  <source srcSet="/assets/mbh-logo-optimized.webp" type="image/webp" />
+                  <img
+                    src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+                    alt="Mumbai Beatbox Hub official emblem"
+                    width={128}
+                    height={56}
+                    loading="lazy"
+                    decoding="async"
+                    className="relative z-10 h-12 sm:h-14 w-auto max-w-[110px] sm:max-w-[130px] object-contain animate-logo-pulse-glow"
+                  />
+                </picture>
               </div>
               <span className="font-['Anton'] text-2xl uppercase tracking-wider text-white">
                 Mumbai Beatbox Hub
@@ -43,7 +51,7 @@ export const Footer: React.FC = () => {
             </p>
 
             <p className="text-xs sm:text-sm font-sans text-white/70 max-w-md leading-relaxed">
-              Mumbai&apos;s grassroots home for vocal percussionists, beatboxers, and mouth drummers. Built by the streets, fueled by human breath.
+              Mumbai&apos;s grassroots home for vocal percussionists, beatboxers, and mouth drummers in Mumbai, Maharashtra, India. Built by the streets, fueled by human breath.
             </p>
           </div>
 
@@ -53,13 +61,15 @@ export const Footer: React.FC = () => {
               QUICK INDEX
             </span>
             <ul className="space-y-2 text-white/75">
-              <li><a href="#home" className="hover:text-white transition-colors">Home & Frequency</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">Who We Are</a></li>
-              <li><a href="#events" className="hover:text-white transition-colors">Upcoming Cyphers</a></li>
-              <li><a href="#gallery" className="hover:text-white transition-colors">Visual Archive</a></li>
-              <li><a href="#videos" className="hover:text-white transition-colors">Routine Drops</a></li>
-              <li><a href="#members" className="hover:text-white transition-colors">Community Members</a></li>
-              <li><a href="#contact" className="hover:text-white transition-colors">Contact & Join</a></li>
+              <li><Link to="/" onClick={scrollToTop} className="hover:text-white transition-colors">Home &amp; Frequency</Link></li>
+              <li><Link to="/about" onClick={scrollToTop} className="hover:text-white transition-colors">Who We Are (About MBH)</Link></li>
+              <li><Link to="/events" onClick={scrollToTop} className="hover:text-white transition-colors">Upcoming Cyphers &amp; Events</Link></li>
+              <li><Link to="/mumbai-beatbox-championship-2026" onClick={scrollToTop} className="hover:text-[#FFC93C] transition-colors">Mumbai Beatbox Championship 2026</Link></li>
+              <li><Link to="/gallery" onClick={scrollToTop} className="hover:text-white transition-colors">Visual Archive</Link></li>
+              <li><Link to="/videos" onClick={scrollToTop} className="hover:text-white transition-colors">Routine Drops &amp; Videos</Link></li>
+              <li><Link to="/members" onClick={scrollToTop} className="hover:text-white transition-colors">Community Members</Link></li>
+              <li><Link to="/blog" onClick={scrollToTop} className="hover:text-white transition-colors">Guides &amp; Culture Blog</Link></li>
+              <li><Link to="/contact" onClick={scrollToTop} className="hover:text-white transition-colors">Contact &amp; Join</Link></li>
             </ul>
           </div>
 
@@ -70,6 +80,16 @@ export const Footer: React.FC = () => {
             </span>
 
             <div className="flex flex-col gap-2">
+              <a
+                href={COMMUNITY_CONTACT.emailHref}
+                className="inline-flex items-center gap-2 text-white/80 hover:text-white transition-colors"
+              >
+                <div className="w-7 h-7 bg-[#181512] border border-[#FFC93C]/40 flex items-center justify-center shrink-0">
+                  <Mail className="w-3.5 h-3.5 text-[#FFC93C]" />
+                </div>
+                <span className="truncate">{COMMUNITY_CONTACT.email}</span>
+              </a>
+
               <a
                 href={COMMUNITY_CONTACT.whatsappGroup}
                 target="_blank"
@@ -136,7 +156,7 @@ export const Footer: React.FC = () => {
             </div>
 
             <div className="pt-2 text-[11px] text-white/50">
-              Carter Road · Bandstand · Shivaji Park · Marine Drive
+              Mumbai, Maharashtra, India · Carter Road · Bandstand · Shivaji Park · Marine Drive
             </div>
           </div>
 

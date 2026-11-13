@@ -1,4 +1,4 @@
-export type RegistrationStatus = 'open' | 'full' | 'closed';
+export type RegistrationStatus = 'open' | 'coming_soon' | 'full' | 'closed';
 
 export interface EventItem {
   id: string;

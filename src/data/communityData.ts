@@ -115,6 +115,9 @@ export const COMMUNITY_MEMBERS: (CommunityMember & { photoUrl: string })[] = [
 ];
 
 export const COMMUNITY_CONTACT = {
+  email: 'mumbai.beatbox.hub@gmail.com',
+  emailHref: 'mailto:mumbai.beatbox.hub@gmail.com',
+  instagramHandle: '@mumbai.beatbox.hub',
   discord: 'https://discord.gg/9ftX9HzFKr',
   whatsappGroup: 'https://chat.whatsapp.com/EkNK2AVQnQ6E1ZsgUtbULS',
   youtube: 'https://www.youtube.com/@mumbaibeatboxhub',

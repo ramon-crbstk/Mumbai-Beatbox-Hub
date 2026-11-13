@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /mbh-admin
+Disallow: /mbh-admin/
+Disallow: /mhb-admin
+Disallow: /mhb-admin/
+
+Sitemap: https://mumbaibeatboxhub.com/sitemap.xml

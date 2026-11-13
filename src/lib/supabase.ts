@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
-import { CommunityMember, GalleryItem, VideoItem, EventItem, CollaborationItem } from '../types';
+import { CommunityMember, GalleryItem, VideoItem, EventItem, CollaborationItem, RegistrationStatus } from '../types';
 import { COMMUNITY_MEMBERS, GALLERY_ITEMS, FEATURED_VIDEOS } from '../data/communityData';
 
 // Retrieve environment variables safely
@@ -1185,8 +1185,15 @@ export async function submitEventRsvp(rsvp: {
       };
     }
 
-    // Verify registration status is not closed
-    const status = targetEvent.registrationStatus || targetEvent.registration_status;
+    // Verify registration status is open
+    const status = (targetEvent.registrationStatus || targetEvent.registration_status) as RegistrationStatus | undefined;
+    if (status === 'coming_soon') {
+      return {
+        success: false,
+        error: 'COMING SOON: Registration for this event has not opened yet.',
+        source: 'supabase',
+      };
+    }
     if (status === 'closed') {
       return {
         success: false,
@@ -1678,13 +1685,13 @@ export function setLocalEvents(_events: EventItem[]): void {
   }
 }
 
-export function updateLocalEventStatus(_eventId: string, _newStatus: 'open' | 'full' | 'closed'): void {
+export function updateLocalEventStatus(_eventId: string, _newStatus: RegistrationStatus): void {
   // No-op: all event status updates must happen on Supabase
 }
 
 export async function updateEventRegistrationStatus(
   eventId: string,
-  newStatus: 'open' | 'full' | 'closed'
+  newStatus: RegistrationStatus
 ): Promise<boolean> {
   const supabase = getSupabase();
   if (supabase) {
@@ -1745,7 +1752,7 @@ export async function fetchUpcomingEvents(): Promise<EventItem[]> {
           const desc = d.description || d.blurb || '';
           const loc = d.location || d.area || 'Mumbai';
           const dateIso = toIsoDate(d.date) || d.date;
-          const status = (d.registration_status || 'open') as 'open' | 'full' | 'closed';
+          const status = (d.registration_status || 'open') as RegistrationStatus;
           const maxP = d.max_people !== undefined ? d.max_people : null;
           const count = rsvpCounts[d.id] ?? (title ? rsvpCounts[title] : 0) ?? 0;
 
@@ -1856,7 +1863,7 @@ export async function saveUpcomingEvent(
   const desc = item.description || item.blurb || '';
   const loc = item.location || item.area || 'Mumbai';
   const isoDate = toIsoDate(item.date) || item.date;
-  const status = (item.registrationStatus || item.registration_status || 'open') as 'open' | 'full' | 'closed';
+  const status = (item.registrationStatus || item.registration_status || 'open') as RegistrationStatus;
   const maxP = item.maxPeople !== undefined ? item.maxPeople : item.max_people ?? null;
   const slug = item.slug || title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   const nowIso = new Date().toISOString();

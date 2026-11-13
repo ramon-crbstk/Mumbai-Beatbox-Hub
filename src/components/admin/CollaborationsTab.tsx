@@ -380,7 +380,7 @@ CREATE POLICY "Allow admin delete collaborations" ON public.collaborations
                   <div className="flex items-start gap-3 mb-3">
                     {/* Logo Box or Short Code Fallback */}
                     {item.logo_url && item.logo_url.trim() ? (
-                      <div className="w-12 h-12 bg-black border border-[#F4EFE4]/30 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                      <div className="w-12 h-12 bg-transparent border border-[#F4EFE4]/30 flex items-center justify-center p-1 shrink-0 overflow-hidden">
                         <img
                           src={item.logo_url}
                           alt={item.name}

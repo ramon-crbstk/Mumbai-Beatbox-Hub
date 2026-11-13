@@ -17,11 +17,13 @@ import {
   ArrowLeft
 } from 'lucide-react';
 import { fetchGalleryItems } from '../lib/supabase';
+import { getCloudinaryVideoThumbnailUrl } from '../lib/cloudinary';
 import { COMMUNITY_CONTACT } from '../data/communityData';
 import { ScrollReveal } from './animations/MotionComponents';
 
 interface GallerySectionProps {
   refreshTrigger?: number;
+  headingTag?: 'h1' | 'h2';
 }
 
 type GalleryViewMode = 'contact' | 'filmstrip' | 'spotlight';
@@ -38,7 +40,11 @@ function shuffleArray<T>(items: T[]): T[] {
   return arr;
 }
 
-export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger = 0 }) => {
+export const GallerySection: React.FC<GallerySectionProps> = ({
+  refreshTrigger = 0,
+  headingTag = 'h2',
+}) => {
+  const Heading = headingTag;
   const [galleryList, setGalleryList] = useState<GalleryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isShuffling, setIsShuffling] = useState(false);
@@ -179,9 +185,9 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                 <Film className="w-3.5 h-3.5" />
                 <span>CYPHER 35MM DARKROOM ARCHIVE</span>
               </div>
-              <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-none">
+              <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-none">
                 The Cypher Photo Archive
-              </h2>
+              </Heading>
               <p className="text-sm sm:text-base text-white/75 font-mono mt-2 max-w-2xl leading-relaxed">
                 Raw, uncut moments from Carter Road, Shivaji Park, Bandstand & underground battles. Choose your layout or click any frame to inspect in full resolution.
               </p>
@@ -326,9 +332,17 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                     {/* Photo Container */}
                     <div className="relative overflow-hidden bg-black aspect-[4/3] sm:aspect-[16/11]">
                       <img
-                        src={item.photoUrl}
-                        alt={item.title}
+                        src={getCloudinaryVideoThumbnailUrl(item.photoUrl, {
+                          width: 900,
+                          crop: 'limit',
+                          format: 'auto',
+                          quality: 'auto',
+                        })}
+                        alt={`${item.title} — ${item.location || 'Mumbai'} beatbox cypher | Mumbai Beatbox Hub`}
+                        width={800}
+                        height={600}
                         loading="lazy"
+                        decoding="async"
                         draggable={false}
                         className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05] pointer-events-none select-none"
                       />
@@ -471,9 +485,17 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                         {/* Image */}
                         <div className="relative aspect-[16/10] bg-black overflow-hidden">
                           <img
-                            src={item.photoUrl}
-                            alt={item.title}
+                            src={getCloudinaryVideoThumbnailUrl(item.photoUrl, {
+                              width: 840,
+                              crop: 'limit',
+                              format: 'auto',
+                              quality: 'auto',
+                            })}
+                            alt={`${item.title} — ${item.location || 'Mumbai'} beatbox frame`}
+                            width={840}
+                            height={525}
                             loading="lazy"
+                            decoding="async"
                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 pointer-events-none select-none"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
@@ -536,8 +558,16 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                     className="lg:col-span-8 bg-black relative min-h-[320px] sm:min-h-[460px] md:min-h-[540px] flex items-center justify-center cursor-pointer group overflow-hidden"
                   >
                     <img
-                      src={currentSpotlight.photoUrl}
-                      alt={currentSpotlight.title}
+                      src={getCloudinaryVideoThumbnailUrl(currentSpotlight.photoUrl, {
+                        width: 1200,
+                        crop: 'limit',
+                        format: 'auto',
+                        quality: 'auto',
+                      })}
+                      alt={`${currentSpotlight.title} — ${currentSpotlight.location || 'Mumbai'} beatbox spotlight`}
+                      width={1200}
+                      height={800}
+                      decoding="async"
                       className="w-full h-full object-contain max-h-[600px] transition-transform duration-700 group-hover:scale-[1.02]"
                     />
                     
@@ -636,8 +666,17 @@ export const GallerySection: React.FC<GallerySectionProps> = ({ refreshTrigger =
                         }`}
                       >
                         <img
-                          src={item.photoUrl}
-                          alt={item.title}
+                          src={getCloudinaryVideoThumbnailUrl(item.photoUrl, {
+                            width: 240,
+                            crop: 'limit',
+                            format: 'auto',
+                            quality: 'auto',
+                          })}
+                          alt={`${item.title} thumbnail`}
+                          width={96}
+                          height={72}
+                          loading="lazy"
+                          decoding="async"
                           className="w-full h-full object-cover"
                         />
                         <div className="absolute top-1 left-1 px-1 bg-black/80 font-mono text-[8px] text-white font-bold">

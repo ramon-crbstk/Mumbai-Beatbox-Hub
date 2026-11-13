@@ -153,12 +153,18 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
     setUpdatingStatusId(eventId);
     const ok = await updateEventRegistrationStatus(eventId, newStatus);
     setUpdatingStatusId(null);
+    const label = newStatus === 'coming_soon' ? 'COMING SOON' : newStatus.toUpperCase();
     if (ok) {
       setNotification({
         type: 'success',
-        message: `Registration status changed to "${newStatus.toUpperCase()}".`,
+        message: `Registration status changed to "${label}".`,
       });
       onRefresh();
+    } else {
+      setNotification({
+        type: 'error',
+        message: `Failed to update status to "${label}". Ensure Supabase session is active and the events table allows '${newStatus}'.`,
+      });
     }
   };
 
@@ -183,6 +189,13 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 text-[10px] font-mono font-bold uppercase tracking-wider">
             <CheckCircle2 className="w-3 h-3 text-emerald-400" />
             Registration Open
+          </span>
+        );
+      case 'coming_soon':
+        return (
+          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-sky-950/60 text-sky-300 border border-sky-500/40 text-[10px] font-mono font-bold uppercase tracking-wider">
+            <Clock className="w-3 h-3 text-sky-400" />
+            Coming Soon
           </span>
         );
       case 'full':
@@ -370,13 +383,13 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     )}
 
                     {/* Quick Registration Status Switcher */}
-                    <div className="flex items-center justify-between pt-2 border-t border-[#F4EFE4]/10">
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#F4EFE4]/10">
                       <span className="text-[11px] font-mono text-[#F4EFE4]/60">
                         Quick Status:
                       </span>
 
-                      <div className="flex items-center gap-1">
-                        {(['open', 'full', 'closed'] as RegistrationStatus[]).map((st) => (
+                      <div className="flex flex-wrap items-center gap-1">
+                        {(['open', 'coming_soon', 'full', 'closed'] as RegistrationStatus[]).map((st) => (
                           <button
                             key={st}
                             type="button"
@@ -386,13 +399,15 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                               status === st
                                 ? st === 'open'
                                   ? 'bg-emerald-600 text-white border-emerald-500 font-bold'
+                                  : st === 'coming_soon'
+                                  ? 'bg-sky-600 text-white border-sky-500 font-bold'
                                   : st === 'full'
                                   ? 'bg-amber-600 text-white border-amber-500 font-bold'
                                   : 'bg-red-600 text-white border-red-500 font-bold'
                                 : 'bg-[#14120F] text-[#F4EFE4]/60 border-[#F4EFE4]/15 hover:text-[#F4EFE4]'
                             }`}
                           >
-                            {st}
+                            {st === 'coming_soon' ? 'coming soon' : st}
                           </button>
                         ))}
                       </div>
@@ -589,6 +604,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     className="w-full px-3.5 py-2.5 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] font-mono text-sm focus:border-[#E4402A] focus:outline-none cursor-pointer"
                   >
                     <option value="open">Open (Accepting RSVPs)</option>
+                    <option value="coming_soon">Coming Soon (Registration Opening Soon)</option>
                     <option value="full">Full (Slots Filled)</option>
                     <option value="closed">Closed (Registration Ended)</option>
                   </select>

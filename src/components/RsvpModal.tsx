@@ -17,6 +17,7 @@ import {
 import { EventItem, RegistrationStatus } from '../types';
 import { submitEventRsvp, formatEventDate } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
+import { trackSeoEvent } from '../lib/analytics';
 
 interface RsvpModalProps {
   isOpen: boolean;
@@ -41,8 +42,9 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
   const status = (event?.registrationStatus || event?.registration_status || 'open') as RegistrationStatus;
   const maxCap = event?.maxPeople !== undefined ? event?.maxPeople : event?.max_people;
   const currentCount = event?.rsvpCount || 0;
-  const isPreFull = status === 'full' || (maxCap !== null && maxCap !== undefined && currentCount >= maxCap);
+  const isPreComingSoon = status === 'coming_soon';
   const isPreClosed = status === 'closed';
+  const isPreFull = !isPreComingSoon && !isPreClosed && (status === 'full' || (maxCap !== null && maxCap !== undefined && currentCount >= maxCap));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +71,10 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
 
       setSaveSource(res.source);
       setConfirmed(true);
+      trackSeoEvent('rsvp_submit', {
+        event_name: targetName,
+        skill_level: skill,
+      });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err);
       setErrorMessage(msg || 'An unexpected error occurred. Please try again.');
@@ -162,6 +168,32 @@ export const RsvpModal: React.FC<RsvpModalProps> = ({ isOpen, onClose, event, ev
             >
               Done & Close
             </button>
+          </div>
+        ) : isPreComingSoon ? (
+          <div className="py-6 text-center space-y-4 font-mono">
+            <div className="w-14 h-14 bg-sky-700 text-white border-2 border-[#14120F] flex items-center justify-center mx-auto shadow-[3px_3px_0px_0px_#14120F]">
+              <Clock className="w-8 h-8" />
+            </div>
+            <div className="inline-block px-3 py-1 bg-sky-700 text-white text-xs font-bold uppercase">
+              REGISTRATION COMING SOON
+            </div>
+            <h3 className="font-['Anton'] text-2xl uppercase tracking-tight text-[#14120F]">
+              Registration Opening Soon
+            </h3>
+            <p className="text-xs font-sans text-[#14120F]/80 max-w-sm mx-auto">
+              RSVPs for <strong>{targetName}</strong> will open soon. Join our WhatsApp group to get notified the moment slots go live!
+            </p>
+            <div className="pt-2">
+              <a
+                href={COMMUNITY_CONTACT.whatsappGroup}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full inline-flex items-center justify-center gap-2 bg-[#FFC93C] hover:bg-white text-[#14120F] py-3 text-xs font-bold uppercase tracking-wider border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] transition-all"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Get Alerts on WhatsApp</span>
+              </a>
+            </div>
           </div>
         ) : isPreClosed ? (
           <div className="py-6 text-center space-y-4 font-mono">

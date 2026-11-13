@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, X, Mic2, ArrowUpRight } from 'lucide-react';
 
 interface NavbarProps {
@@ -8,24 +9,35 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherClick }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const location = useLocation();
+  const navigate = useNavigate();
 
   const navLinks = [
-    { label: 'Home', href: '#home' },
-    { label: 'About', href: '#about' },
-    { label: 'Events', href: '#events' },
-    { label: 'Gallery', href: '#gallery' },
-    { label: 'Videos', href: '#videos' },
-    { label: 'Members', href: '#members' },
-    { label: 'Contact', href: '#contact' },
+    { label: 'Home', href: '#home', route: '/' },
+    { label: 'About', href: '#about', route: '/about' },
+    { label: 'Events', href: '#events', route: '/events' },
+    { label: 'Gallery', href: '#gallery', route: '/gallery' },
+    { label: 'Videos', href: '#videos', route: '/videos' },
+    { label: 'Members', href: '#members', route: '/members' },
+    { label: 'Contact', href: '#contact', route: '/contact' },
   ];
 
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+  const handleLinkClick = (
+    e: React.MouseEvent<HTMLAnchorElement>,
+    href: string,
+    route: string
+  ) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    const target = document.querySelector(href);
-    if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
+    if (location.pathname === '/') {
+      const target = document.querySelector(href);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
     }
+    navigate(route);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleJoinCypherClick = (e?: React.MouseEvent) => {
@@ -46,7 +58,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
       if (nameInput) {
         setTimeout(() => nameInput.focus(), 600);
       }
+      return;
     }
+
+    if (onOpenJoinModal) {
+      onOpenJoinModal();
+      return;
+    }
+
+    navigate('/contact');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -59,18 +80,25 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
           
           {/* Logo Mark & Wordmark */}
           <a
-            href="#home"
+            href="/"
             id="nav-logo"
             className="group flex items-center gap-2.5 sm:gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#FFC93C] min-w-0"
-            onClick={(e) => handleLinkClick(e, '#home')}
+            onClick={(e) => handleLinkClick(e, '#home', '/')}
           >
             {/* Official MBH Logo Mark */}
             <div className="relative flex items-center justify-center shrink-0">
-              <img
-                src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
-                alt="Mumbai Beatbox Hub Logo"
-                className="h-[39px] w-auto object-contain group-hover:scale-105 transition-transform duration-200"
-              />
+              <picture>
+                <source srcSet="/assets/mbh-logo-optimized.webp" type="image/webp" />
+                <img
+                  src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+                  alt="Mumbai Beatbox Hub official logo"
+                  width={89}
+                  height={39}
+                  decoding="async"
+                  fetchPriority="high"
+                  className="h-[39px] w-auto object-contain group-hover:scale-105 transition-transform duration-200"
+                />
+              </picture>
             </div>
 
             <div className="flex flex-col min-w-0">
@@ -85,13 +113,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
           </a>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1 xl:gap-2">
+          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-1 xl:gap-2">
             {navLinks.map((link) => (
               <a
                 key={link.label}
-                href={link.href}
+                href={link.route}
                 id={`nav-link-${link.label.toLowerCase()}`}
-                onClick={(e) => handleLinkClick(e, link.href)}
+                onClick={(e) => handleLinkClick(e, link.href, link.route)}
                 className="px-3.5 py-1.5 text-xs font-bold uppercase tracking-widest text-white/80 hover:text-[#14120F] hover:bg-[#FFC93C] transition-all rounded-sm border border-transparent hover:border-[#14120F]"
               >
                 {link.label}
@@ -139,9 +167,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenJoinModal, onJoinCypherCli
             {navLinks.map((link) => (
               <a
                 key={link.label}
-                href={link.href}
+                href={link.route}
                 id={`mobile-nav-link-${link.label.toLowerCase()}`}
-                onClick={(e) => handleLinkClick(e, link.href)}
+                onClick={(e) => handleLinkClick(e, link.href, link.route)}
                 className="flex items-center px-3 py-2.5 text-xs sm:text-sm font-bold uppercase tracking-wider text-white bg-[#181512] border border-white/20 hover:border-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] transition-all min-h-[44px]"
               >
                 {link.label}

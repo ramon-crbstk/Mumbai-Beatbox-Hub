@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS public.events (
     registration_url TEXT,
     is_published BOOLEAN NOT NULL DEFAULT true,
     max_people INTEGER,
-    registration_status TEXT NOT NULL DEFAULT 'open' CHECK (registration_status IN ('open', 'full', 'closed')),
+    registration_status TEXT NOT NULL DEFAULT 'open' CHECK (registration_status IN ('open', 'coming_soon', 'full', 'closed')),
     is_battle_or_live BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -144,6 +144,8 @@ ALTER TABLE public.events ADD COLUMN IF NOT EXISTS registration_url TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS is_published BOOLEAN NOT NULL DEFAULT true;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS max_people INTEGER;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS registration_status TEXT NOT NULL DEFAULT 'open';
+ALTER TABLE public.events DROP CONSTRAINT IF EXISTS events_registration_status_check;
+ALTER TABLE public.events ADD CONSTRAINT events_registration_status_check CHECK (registration_status IN ('open', 'coming_soon', 'full', 'closed'));
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS is_battle_or_live BOOLEAN NOT NULL DEFAULT false;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT timezone('utc'::text, now());
 
@@ -181,6 +183,10 @@ BEGIN
 
     IF v_event.is_published IS FALSE THEN
         RETURN jsonb_build_object('success', false, 'error', 'Registration not available for this event');
+    END IF;
+
+    IF v_event.registration_status = 'coming_soon' THEN
+        RETURN jsonb_build_object('success', false, 'error', 'Registration for this event is coming soon');
     END IF;
 
     IF v_event.registration_status = 'closed' THEN

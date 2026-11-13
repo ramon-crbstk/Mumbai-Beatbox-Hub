@@ -3,7 +3,13 @@ import { COMMUNITY_STATS } from '../data/communityData';
 import { Sparkles, MapPin, Compass, ShieldCheck } from 'lucide-react';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
 
-export const AboutSection: React.FC = () => {
+interface AboutSectionProps {
+  headingTag?: 'h1' | 'h2';
+}
+
+export const AboutSection: React.FC<AboutSectionProps> = ({ headingTag = 'h2' }) => {
+  const Heading = headingTag;
+
   return (
     <section id="about" className="py-16 md:py-24 bg-[#14120F] relative border-b-2 border-[#E4402A]/20">
       
@@ -16,12 +22,12 @@ export const AboutSection: React.FC = () => {
             <span>Who We Are</span>
           </div>
 
-          <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-[1.05]">
+          <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl lg:text-6xl uppercase tracking-tight text-white leading-[1.05]">
             Building Mumbai&apos;s beatbox scene, <br className="hidden sm:inline" />
             <span className="text-white underline decoration-4 decoration-[#FFC93C] underline-offset-8">
               one cypher at a time
             </span>
-          </h2>
+          </Heading>
         </ScrollReveal>
 
         {/* 2-3 Short Paragraphs & Contextual Flyer Aside */}

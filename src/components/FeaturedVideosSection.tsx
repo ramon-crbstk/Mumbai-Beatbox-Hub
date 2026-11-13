@@ -3,10 +3,13 @@ import { VideoItem } from '../types';
 import { Play, Video, X, Flame, ExternalLink, Link2, Copy, Check, Clock, MapPin, User } from 'lucide-react';
 import { fetchVideos } from '../lib/supabase';
 import { getCloudinaryVideoThumbnailUrl } from '../lib/cloudinary';
+import { trackSeoEvent } from '../lib/analytics';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
 
 interface FeaturedVideosSectionProps {
   refreshTrigger?: number;
+  headingTag?: 'h1' | 'h2';
+  onVideosLoaded?: (videos: VideoItem[]) => void;
 }
 
 // Helper to extract embeddable video URL or direct video stream
@@ -73,10 +76,25 @@ function resolveVideoThumbnail(vid: VideoItem): string {
   return '';
 }
 
-export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ refreshTrigger = 0 }) => {
+export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({
+  refreshTrigger = 0,
+  headingTag = 'h2',
+  onVideosLoaded,
+}) => {
   const [videosList, setVideosList] = useState<VideoItem[]>([]);
   const [activeVideo, setActiveVideo] = useState<VideoItem | null>(null);
   const [copiedUrl, setCopiedUrl] = useState(false);
+
+  const Heading = headingTag;
+
+  const handleOpenVideo = (vid: VideoItem) => {
+    setActiveVideo(vid);
+    trackSeoEvent('video_play', {
+      video_title: vid.title,
+      performer: vid.performer || 'MBH Artist',
+      category: vid.category || 'Routine',
+    });
+  };
 
   useEffect(() => {
     let active = true;
@@ -84,13 +102,14 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
       const items = await fetchVideos();
       if (active) {
         setVideosList(items);
+        onVideosLoaded?.(items);
       }
     }
     loadVideos();
     return () => {
       active = false;
     };
-  }, [refreshTrigger]);
+  }, [refreshTrigger, onVideosLoaded]);
 
   const copyLink = (url: string) => {
     navigator.clipboard.writeText(url);
@@ -111,9 +130,9 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
               <Video className="w-3.5 h-3.5" />
               <span>COMMUNITY FOOTAGE // ROUTINE DROPS</span>
             </div>
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
-              Featured Videos & Routine Drops
-            </h2>
+            <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
+              Featured Videos &amp; Routine Drops
+            </Heading>
             <p className="text-sm sm:text-base text-white/75 font-mono mt-1 max-w-xl">
               Recorded cypher battles, routine drops, and technical breakdown sessions.
             </p>
@@ -162,7 +181,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                   >
                     {/* Dedicated 16:9 Cinema Video Frame Window */}
                     <div
-                      onClick={() => setActiveVideo(vid)}
+                      onClick={() => handleOpenVideo(vid)}
                       className="relative w-full aspect-video bg-[#0B0907] border-b-2 border-white/15 overflow-hidden cursor-pointer flex items-center justify-center select-none"
                     >
                       {thumbUrl ? (
@@ -172,13 +191,19 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
                             src={thumbUrl}
                             alt=""
                             aria-hidden="true"
+                            width={640}
+                            height={360}
+                            loading="lazy"
+                            decoding="async"
                             className="absolute inset-0 w-full h-full object-cover blur-md opacity-35 scale-110 pointer-events-none"
                           />
                           {/* Foreground high-clarity thumbnail: 100% visible, zero cropping */}
                           <img
                             src={thumbUrl}
-                            alt={vid.title}
+                            alt={`${vid.title} — ${vid.performer} beatbox video`}
                             referrerPolicy="no-referrer"
+                            width={640}
+                            height={360}
                             loading="lazy"
                             decoding="async"
                             className="relative z-10 w-full h-full object-contain sm:object-cover transition-transform duration-500 group-hover:scale-105"
@@ -246,7 +271,7 @@ export const FeaturedVideosSection: React.FC<FeaturedVideosSectionProps> = ({ re
 
                         {/* Video Title */}
                         <h3
-                          onClick={() => setActiveVideo(vid)}
+                          onClick={() => handleOpenVideo(vid)}
                           className="font-['Anton'] text-xl sm:text-2xl uppercase tracking-tight text-white group-hover:text-white transition-colors leading-snug cursor-pointer line-clamp-2"
                           title={vid.title}
                         >

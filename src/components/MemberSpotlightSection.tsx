@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { CommunityMember } from '../types';
 import { fetchCommunityMembers } from '../lib/supabase';
+import { getCloudinaryVideoThumbnailUrl } from '../lib/cloudinary';
 import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { 
   Sparkles, 
@@ -252,10 +253,18 @@ export const MemberSpotlightSection: React.FC<MemberSpotlightSectionProps> = ({ 
                       />
                       {/* Crisp uncropped foreground image */}
                       <img
-                        src={photo}
-                        alt={`${currentMember.name} - Mumbai Beatbox Hub Spotlight`}
+                        src={getCloudinaryVideoThumbnailUrl(photo, {
+                          width: 900,
+                          crop: 'limit',
+                          format: 'auto',
+                          quality: 'auto',
+                        })}
+                        alt={`${currentMember.name} (${currentMember.specialty}) — Mumbai Beatbox Hub spotlight artist`}
                         referrerPolicy="no-referrer"
+                        width={640}
+                        height={500}
                         loading="lazy"
+                        decoding="async"
                         className="relative z-10 w-full h-full max-h-[500px] object-cover sm:object-contain lg:object-cover transition-transform duration-500 group-hover:scale-105"
                       />
                     </>

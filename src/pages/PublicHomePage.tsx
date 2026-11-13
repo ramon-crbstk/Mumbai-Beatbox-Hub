@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Navbar } from '../components/Navbar';
 import { Hero } from '../components/Hero';
 import { AboutSection } from '../components/AboutSection';
@@ -12,17 +12,49 @@ import { PartnersSection } from '../components/PartnersSection';
 import { ContactSection } from '../components/ContactSection';
 import { Footer } from '../components/Footer';
 import { RsvpModal } from '../components/RsvpModal';
-import { EventItem } from '../types';
+import { SeoHead } from '../components/SeoHead';
+import {
+  buildEventSchema,
+  buildVideoObjectSchema,
+  getSiteBaseUrl,
+  PAGE_SEO,
+} from '../data/seoConfig';
+import { trackSeoEvent } from '../lib/analytics';
+import { EventItem, VideoItem } from '../types';
 
 export function PublicHomePage() {
   const [rsvpModalOpen, setRsvpModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<EventItem | undefined>(undefined);
   const [selectedEventName, setSelectedEventName] = useState<string | undefined>(undefined);
+  const [loadedEvents, setLoadedEvents] = useState<EventItem[]>([]);
+  const [loadedVideos, setLoadedVideos] = useState<VideoItem[]>([]);
+
+  const handleEventsLoaded = useCallback((events: EventItem[]) => {
+    setLoadedEvents(events);
+  }, []);
+
+  const handleVideosLoaded = useCallback((videos: VideoItem[]) => {
+    setLoadedVideos(videos);
+  }, []);
+
+  const homeSchemas = useMemo(() => {
+    const baseUrl = getSiteBaseUrl();
+    const evtSchemas = loadedEvents
+      .map((evt) => buildEventSchema(baseUrl, evt, '/events'))
+      .filter((s): s is Record<string, unknown> => s !== null);
+    const vidSchemas = loadedVideos
+      .map((vid) => buildVideoObjectSchema(baseUrl, vid))
+      .filter((s): s is Record<string, unknown> => s !== null);
+    return [...evtSchemas, ...vidSchemas];
+  }, [loadedEvents, loadedVideos]);
 
   const handleOpenJoinModal = (purpose?: string) => {
     setSelectedEvent(undefined);
     setSelectedEventName(purpose || 'Next Mumbai Cypher Session');
     setRsvpModalOpen(true);
+    trackSeoEvent('rsvp_modal_open', {
+      source: purpose || 'general_cta',
+    });
   };
 
   const handleRsvpEvent = (event: EventItem) => {
@@ -55,6 +87,8 @@ export function PublicHomePage() {
 
   return (
     <div className="min-h-screen bg-[#14120F] text-white font-sans selection:bg-[#FFC93C] selection:text-[#14120F]">
+      <SeoHead meta={PAGE_SEO.home} structuredData={homeSchemas} />
+
       {/* Navigation Bar */}
       <Navbar
         onJoinCypherClick={scrollToInquiryForm}
@@ -76,13 +110,13 @@ export function PublicHomePage() {
         <MidPageCta onOpenContactModal={scrollToContact} />
 
         {/* Upcoming Events Section */}
-        <EventsSection onRsvpClick={handleRsvpEvent} />
+        <EventsSection onRsvpClick={handleRsvpEvent} onEventsLoaded={handleEventsLoaded} />
 
         {/* Gallery Section - Connected to Supabase */}
         <GallerySection />
 
         {/* Featured Videos Section - Connected to Supabase */}
-        <FeaturedVideosSection />
+        <FeaturedVideosSection onVideosLoaded={handleVideosLoaded} />
 
         {/* Members of the Community Section with Voice Notes & Audio Preview */}
         <MembersSection />

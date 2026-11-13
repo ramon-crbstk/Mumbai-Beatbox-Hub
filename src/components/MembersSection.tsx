@@ -3,12 +3,14 @@ import { COMMUNITY_MEMBERS } from '../data/communityData';
 import { CommunityMember } from '../types';
 import { Play, Square, ChevronLeft, ChevronRight, Mic, MicOff, MapPin, Radio, Headphones, Filter, Instagram, RotateCcw, Rewind } from 'lucide-react';
 import { fetchCommunityMembers } from '../lib/supabase';
+import { getCloudinaryVideoThumbnailUrl } from '../lib/cloudinary';
 import { motion } from 'motion/react';
 import { ScrollReveal } from './animations/MotionComponents';
 import { rotateSequenceOnRefresh } from '../utils/rotation';
 
 interface MembersSectionProps {
   refreshTrigger?: number;
+  headingTag?: 'h1' | 'h2';
 }
 
 /**
@@ -28,7 +30,11 @@ function isValidAudioUrl(url: unknown): boolean {
   }
 }
 
-export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger = 0 }) => {
+export const MembersSection: React.FC<MembersSectionProps> = ({
+  refreshTrigger = 0,
+  headingTag = 'h2',
+}) => {
+  const Heading = headingTag;
   const [membersList, setMembersList] = useState<(CommunityMember & { photoUrl: string })[]>([]);
   const [activeMemberId, setActiveMemberId] = useState<string | null>(null);
   const [completedMemberId, setCompletedMemberId] = useState<string | null>(null);
@@ -224,9 +230,9 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
               <span>ROSTER & AUDIO ARCHIVE // ROTATING SPOTLIGHT</span>
             </div>
             
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
+            <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
               Members of the Community
-            </h2>
+            </Heading>
             
             <p className="text-sm sm:text-base text-white/75 font-mono mt-2 max-w-2xl leading-relaxed">
               Meet the vocal percussionists representing Mumbai's streets. Roster sequence rotates on every refresh to give equal spotlight to all artists. Tap <span className="text-white font-bold underline decoration-[#FFC93C] decoration-2">PLAY AUDIO</span> on any card below to listen to their showcase voice notes.
@@ -318,8 +324,16 @@ export const MembersSection: React.FC<MembersSectionProps> = ({ refreshTrigger =
                 <div className="relative aspect-[4/3] w-full overflow-hidden bg-[#242019]">
                   {(member.photo_url || member.photoUrl) ? (
                     <img
-                      src={member.photo_url || member.photoUrl}
-                      alt={`${member.name} - Mumbai Beatboxer`}
+                      src={getCloudinaryVideoThumbnailUrl(member.photo_url || member.photoUrl, {
+                        width: 640,
+                        crop: 'limit',
+                        format: 'auto',
+                        quality: 'auto',
+                      })}
+                      alt={`${member.name} (${member.specialty}) — Mumbai Beatbox Hub beatboxer from ${member.area}`}
+                      width={640}
+                      height={480}
+                      decoding="async"
                       className="w-full h-full object-cover object-center filter grayscale contrast-125 group-hover:grayscale-0 group-hover:scale-105 transition-all duration-500"
                       loading="lazy"
                       onError={(e) => {

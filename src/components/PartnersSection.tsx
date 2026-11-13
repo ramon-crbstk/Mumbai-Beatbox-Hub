@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { CollaborationItem } from '../types';
 import { fetchCollaborations, DEFAULT_COLLABORATIONS } from '../lib/supabase';
+import { getCloudinaryVideoThumbnailUrl } from '../lib/cloudinary';
 import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/MotionComponents';
 
 export const PartnersSection: React.FC = () => {
@@ -48,10 +49,19 @@ export const PartnersSection: React.FC = () => {
               >
                 {/* Monochromatic Box Logo Placeholder or Custom Logo URL */}
                 {partner.logo_url && partner.logo_url.trim() ? (
-                  <div className="w-10 h-10 border border-white/30 flex items-center justify-center mb-2 overflow-hidden bg-black/40 group-hover:border-[#FFC93C] transition-colors p-1">
+                  <div className="w-10 h-10 border border-white/30 flex items-center justify-center mb-2 overflow-hidden bg-transparent group-hover:border-[#FFC93C] transition-colors p-1">
                     <img
-                      src={partner.logo_url}
-                      alt={partner.name}
+                      src={getCloudinaryVideoThumbnailUrl(partner.logo_url, {
+                        width: 160,
+                        crop: 'limit',
+                        format: 'auto',
+                        quality: 'auto',
+                      })}
+                      alt={`${partner.name} — Mumbai Beatbox Hub collaboration partner`}
+                      width={40}
+                      height={40}
+                      loading="lazy"
+                      decoding="async"
                       className="max-w-full max-h-full object-contain filter grayscale group-hover:grayscale-0 transition-all"
                       onError={(e) => {
                         // Fallback to text initials if image fails to load

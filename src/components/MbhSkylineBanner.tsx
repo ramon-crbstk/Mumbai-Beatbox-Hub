@@ -17,15 +17,23 @@ export const MbhSkylineBanner: React.FC<MbhSkylineBannerProps> = ({
     >
       {/* Background Banner Image: Skyline with Gateway of India and Sea Link */}
       <div className="absolute inset-0 pointer-events-none">
-        <img
-          src="/assets/mumbai_skyline_banner.jpg"
-          alt="Mumbai Beatbox Hub Skyline - Gateway of India to Bandra Worli Sea Link"
-          className="w-full h-full object-cover object-center opacity-40 mix-blend-screen scale-105 transition-transform duration-1000"
-          onError={(e) => {
-            // Fallback gradient if file loading fails
-            (e.target as HTMLElement).style.opacity = '0';
-          }}
-        />
+        <picture>
+          <source srcSet="/assets/mumbai_skyline_banner.avif" type="image/avif" />
+          <source srcSet="/assets/mumbai_skyline_banner.webp" type="image/webp" />
+          <img
+            src="/assets/mumbai_skyline_banner.jpg"
+            alt="Mumbai Beatbox Hub Skyline - Gateway of India to Bandra Worli Sea Link"
+            width={1376}
+            height={768}
+            loading="lazy"
+            decoding="async"
+            className="w-full h-full object-cover object-center opacity-40 mix-blend-screen scale-105 transition-transform duration-1000"
+            onError={(e) => {
+              // Fallback gradient if file loading fails
+              (e.target as HTMLElement).style.opacity = '0';
+            }}
+          />
+        </picture>
         {/* Subtle Crimson Vignette & Backlights corresponding to the official banner */}
         <div className="absolute inset-0 bg-radial-[circle_at_15%_50%] from-[#8B1E1E]/30 via-transparent to-transparent pointer-events-none" />
         <div className="absolute inset-0 bg-radial-[circle_at_85%_50%] from-[#8B1E1E]/30 via-transparent to-transparent pointer-events-none" />

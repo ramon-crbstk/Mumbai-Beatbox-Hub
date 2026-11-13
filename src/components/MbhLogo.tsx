@@ -57,11 +57,17 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
 
     return (
       <div className={`inline-flex items-center ${className}`}>
-        <img
-          src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
-          alt="MBH Logo Mark"
-          className={`${sizeClasses} w-auto object-contain drop-shadow-[0_2px_8px_rgba(228,64,42,0.4)]`}
-        />
+        <picture>
+          <source srcSet="/assets/mbh-logo-optimized.webp" type="image/webp" />
+          <img
+            src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+            alt="Mumbai Beatbox Hub logo mark"
+            width={120}
+            height={52}
+            decoding="async"
+            className={`${sizeClasses} w-auto object-contain drop-shadow-[0_2px_8px_rgba(228,64,42,0.4)]`}
+          />
+        </picture>
       </div>
     );
   }
@@ -71,11 +77,14 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
       <div
         className={`relative inline-flex items-center justify-center bg-[#FFC93C] text-[#14120F] border-2 border-[#14120F] shadow-[3px_3px_0px_0px_#E4402A] px-2.5 py-1.5 gap-2 font-bold ${className}`}
       >
-        <img
-          src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
-          alt="MBH Logo"
-          className="h-6 w-auto max-w-[45px] object-contain"
-        />
+        <picture>
+          <source srcSet="/assets/mbh-logo-optimized.webp" type="image/webp" />
+          <img
+            src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+            alt="MBH Logo"
+            className="h-6 w-auto max-w-[45px] object-contain"
+          />
+        </picture>
         <span className="font-['Anton'] text-lg tracking-wider leading-none">MBH</span>
         <span className="absolute -top-1.5 -right-1.5 w-2.5 h-2.5 bg-[#E4402A] rounded-full ring-2 ring-[#14120F]" />
       </div>
@@ -85,11 +94,14 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
   if (variant === 'compact') {
     return (
       <div className={`inline-flex items-center gap-2.5 ${className}`}>
-        <img
-          src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
-          alt="MBH Logo"
-          className="h-6 w-auto max-w-[50px] object-contain drop-shadow-[0_2px_6px_rgba(228,64,42,0.4)]"
-        />
+        <picture>
+          <source srcSet="/assets/mbh-logo-optimized.webp" type="image/webp" />
+          <img
+            src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+            alt="MBH Logo"
+            className="h-6 w-auto max-w-[50px] object-contain drop-shadow-[0_2px_6px_rgba(228,64,42,0.4)]"
+          />
+        </picture>
         <div className="flex flex-col leading-none">
           <span className="font-mono text-[9px] tracking-[0.25em] text-white/80 uppercase font-bold">
             MUMBAI
@@ -132,11 +144,17 @@ export const MbhLogo: React.FC<MbhLogoProps> = ({
 
   return (
     <div className={`inline-flex items-center gap-3 sm:gap-4 ${className}`}>
-      <img
-        src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
-        alt="MBH Logo"
-        className={`${fontSizes.icon} w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(228,64,42,0.4)]`}
-      />
+      <picture>
+        <source srcSet="/assets/mbh-logo-optimized.webp" type="image/webp" />
+        <img
+          src="/assets/aistudio/MBH_LOGO_NORMAL_02411e7a.png"
+          alt="Mumbai Beatbox Hub logo"
+          width={110}
+          height={48}
+          decoding="async"
+          className={`${fontSizes.icon} w-auto object-contain shrink-0 drop-shadow-[0_2px_8px_rgba(228,64,42,0.4)]`}
+        />
+      </picture>
       <div className="flex flex-col leading-none">
         <span className={`font-mono ${fontSizes.sub} text-white/80 uppercase font-bold`}>
           MUMBAI

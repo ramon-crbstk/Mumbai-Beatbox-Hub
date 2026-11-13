@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { EventItem, RegistrationStatus } from '../types';
 import { Calendar, Clock, MapPin, Ticket, Flame, Users, AlertTriangle, Ban, CheckCircle2, ChevronDown, ChevronUp, MessageCircle, ArrowUpRight } from 'lucide-react';
 import { fetchUpcomingEvents, formatEventDate, fetchAllEventRsvpCounts } from '../lib/supabase';
@@ -7,20 +8,31 @@ import { ScrollReveal, StaggerContainer, StaggerItem } from './animations/Motion
 
 interface EventsSectionProps {
   onRsvpClick: (event: EventItem) => void;
+  headingTag?: 'h1' | 'h2';
+  onEventsLoaded?: (events: EventItem[]) => void;
 }
 
-export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => {
+export const EventsSection: React.FC<EventsSectionProps> = ({
+  onRsvpClick,
+  headingTag = 'h2',
+  onEventsLoaded,
+}) => {
   const [events, setEvents] = useState<EventItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [rsvpCounts, setRsvpCounts] = useState<Record<string, number>>({});
   const [expanded, setExpanded] = useState(false);
+
+  const Heading = headingTag;
 
   useEffect(() => {
     let isMounted = true;
     Promise.all([fetchUpcomingEvents(), fetchAllEventRsvpCounts()])
       .then(([data, counts]) => {
         if (isMounted) {
-          if (data) setEvents(data);
+          if (data) {
+            setEvents(data);
+            onEventsLoaded?.(data);
+          }
           if (counts) setRsvpCounts(counts);
           setLoading(false);
         }
@@ -32,7 +44,7 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [onEventsLoaded]);
 
   const visibleEvents = expanded ? events : events.slice(0, 3);
 
@@ -47,17 +59,26 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
               <Flame className="w-3.5 h-3.5" />
               <span>LIVE GATHERINGS</span>
             </div>
-            <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
-              Upcoming Events & Cyphers
-            </h2>
+            <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
+              Upcoming Events &amp; Cyphers
+            </Heading>
             <p className="text-sm sm:text-base text-white/75 font-mono mt-1">
-              Real open circles across Mumbai. Drop in, listen, or jump on the mic.
+              Real open circles across Mumbai, Maharashtra. Drop in, listen, or jump on the mic.
             </p>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-mono text-white/90">
-            <span className="w-2 h-2 rounded-full bg-[#E4402A] animate-pulse" />
-            <span>FREE ENTRY // NO PASSES NEEDED</span>
+          <div className="flex flex-wrap items-center gap-3 text-xs font-mono text-white/90">
+            <span className="inline-flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-[#E4402A] animate-pulse" />
+              <span>FREE ENTRY // NO PASSES NEEDED</span>
+            </span>
+            <Link
+              to="/mumbai-beatbox-championship-2026"
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-[#181512] border border-[#FFC93C]/50 text-[#FFC93C] hover:bg-[#FFC93C] hover:text-[#14120F] font-bold uppercase tracking-wider transition-colors"
+            >
+              <span>Championship 2026</span>
+              <ArrowUpRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </ScrollReveal>
 
@@ -85,10 +106,10 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
               const count = rsvpCounts[evt.id] || (evt.name ? rsvpCounts[evt.name] : 0) || evt.rsvpCount || 0;
               const rawStatus = (evt.registrationStatus || evt.registration_status || 'open') as RegistrationStatus;
               
-              // If count reached or exceeded maxCap, it's effectively full
-              const isFull = rawStatus === 'full' || (maxCap !== null && maxCap !== undefined && count >= maxCap);
+              const isComingSoon = rawStatus === 'coming_soon';
               const isClosed = rawStatus === 'closed';
-              const isOpen = !isFull && !isClosed;
+              // If count reached or exceeded maxCap, it's effectively full (unless coming soon or closed)
+              const isFull = !isComingSoon && !isClosed && (rawStatus === 'full' || (maxCap !== null && maxCap !== undefined && count >= maxCap));
 
               return (
                 <StaggerItem
@@ -124,7 +145,12 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                         )}
 
                         {/* Status Pill */}
-                        {isClosed ? (
+                        {isComingSoon ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-sky-700 text-white text-xs font-mono font-bold uppercase tracking-wider border border-sky-800">
+                            <Clock className="w-3 h-3" />
+                            Coming Soon
+                          </span>
+                        ) : isClosed ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-0.5 bg-red-900 text-white text-xs font-mono font-bold uppercase tracking-wider border border-red-800">
                             <Ban className="w-3 h-3" />
                             Closed
@@ -199,7 +225,16 @@ export const EventsSection: React.FC<EventsSectionProps> = ({ onRsvpClick }) => 
                       <strong className="text-[#14120F] font-bold">{evt.entry}</strong>
                     </div>
 
-                    {isClosed ? (
+                    {isComingSoon ? (
+                      <button
+                        type="button"
+                        disabled
+                        className="w-full sm:w-auto min-h-[44px] inline-flex items-center justify-center gap-2 bg-sky-700 text-white px-6 py-3 text-xs font-bold uppercase tracking-widest font-mono border-2 border-sky-900 opacity-90 cursor-not-allowed"
+                      >
+                        <Clock className="w-4 h-4" />
+                        <span>Coming Soon</span>
+                      </button>
+                    ) : isClosed ? (
                       <button
                         type="button"
                         disabled

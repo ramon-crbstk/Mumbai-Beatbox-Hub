@@ -2,9 +2,15 @@ import React, { useState } from 'react';
 import { Send, CheckCircle2, MessageCircle, Instagram, Youtube, MapPin, Mail, ArrowUpRight, Database, Loader2, Phone, Headphones, MessageSquare } from 'lucide-react';
 import { saveContactDispatch } from '../lib/supabase';
 import { COMMUNITY_CONTACT } from '../data/communityData';
+import { trackSeoEvent } from '../lib/analytics';
 import { ScrollReveal } from './animations/MotionComponents';
 
-export const ContactSection: React.FC = () => {
+interface ContactSectionProps {
+  headingTag?: 'h1' | 'h2';
+}
+
+export const ContactSection: React.FC<ContactSectionProps> = ({ headingTag = 'h2' }) => {
+  const Heading = headingTag;
   const [formData, setFormData] = useState({
     name: '',
     contact: '',
@@ -22,6 +28,10 @@ export const ContactSection: React.FC = () => {
     try {
       const res = await saveContactDispatch(formData);
       setSaveSource(res.source);
+      trackSeoEvent('contact_dispatch', {
+        area: formData.area,
+        experience: formData.experience,
+      });
     } catch {
       // fallback handled
     } finally {
@@ -40,11 +50,11 @@ export const ContactSection: React.FC = () => {
             <Mail className="w-3.5 h-3.5" />
             <span>CONTACT & JOIN</span>
           </div>
-          <h2 className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
+          <Heading className="font-['Anton'] text-3xl sm:text-4xl md:text-5xl uppercase tracking-tight text-white">
             Plug into the Mumbai Beatbox Community
-          </h2>
+          </Heading>
           <p className="text-sm sm:text-base text-white/70 font-mono mt-1">
-            Looking to join the weekend circle, book a workshop, or suggest a new spot? Send a dispatch.
+            Looking to join the weekend circle in Mumbai, Maharashtra, book a workshop, or suggest a new spot? Send a dispatch.
           </p>
         </ScrollReveal>
 
@@ -200,11 +210,28 @@ export const ContactSection: React.FC = () => {
                     <ArrowUpRight className="w-3 h-3" />
                   </span>
                 </a>
+                {/* Official Email */}
+                <a
+                  href={COMMUNITY_CONTACT.emailHref}
+                  className="flex items-center justify-between p-3 bg-[#14120F] border border-white/10 hover:border-[#FFC93C] text-white transition-colors group"
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <Mail className="w-4 h-4 text-[#FFC93C] shrink-0" />
+                    <div className="min-w-0">
+                      <div className="font-bold truncate">{COMMUNITY_CONTACT.email}</div>
+                      <div className="text-[10px] text-white/50">Workshops, sponsorships &amp; partnerships</div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] text-white uppercase group-hover:underline flex items-center gap-0.5 shrink-0">
+                    <span>Email</span>
+                    <ArrowUpRight className="w-3 h-3" />
+                  </span>
+                </a>
               </div>
 
               <div className="pt-2 text-[11px] font-mono text-white/50 flex items-center gap-1.5">
                 <MapPin className="w-3.5 h-3.5 text-[#FFC93C]" />
-                <span>Cyphers hold at public promenades across Mumbai</span>
+                <span>Mumbai, Maharashtra, India · Public promenades &amp; open circles</span>
               </div>
             </div>
 
