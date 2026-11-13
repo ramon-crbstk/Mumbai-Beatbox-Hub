@@ -1907,6 +1907,8 @@ export async function saveUpcomingEvent(
   };
 
   try {
+    const dbDateValue = isoDate === 'TBA' ? null : isoDate;
+
     // Build candidate payload
     const candidatePayload: Record<string, any> = {
       title: newEvent.title,
@@ -1915,7 +1917,7 @@ export async function saveUpcomingEvent(
       description: newEvent.description,
       blurb: newEvent.description,
       event_type: newEvent.eventType,
-      date: newEvent.date,
+      date: dbDateValue,
       time: newEvent.time,
       venue: newEvent.venue,
       location: newEvent.location,
@@ -1969,6 +1971,24 @@ export async function saveUpcomingEvent(
           continue;
         }
 
+        // Fallback if 'date' is TEXT NOT NULL in an older deployment
+        if (
+          attemptPayload.date === null &&
+          /null value in column "?date"?/i.test(error.message)
+        ) {
+          attemptPayload.date = 'TBA';
+          continue;
+        }
+
+        if (
+          attemptPayload.date === 'TBA' &&
+          /invalid input syntax for type date/i.test(error.message)
+        ) {
+          lastErrorMessage =
+            'Database requires `events.date` to be nullable for TBA events. Run: ALTER TABLE public.events ALTER COLUMN date DROP NOT NULL;';
+          break;
+        }
+
         if (error.code === '42501' || error.message.includes('row-level security')) {
           break;
         }
@@ -2006,6 +2026,24 @@ export async function saveUpcomingEvent(
         if (error.message.includes('uuid') && 'id' in attemptPayload) {
           delete attemptPayload.id;
           continue;
+        }
+
+        // Fallback if 'date' is TEXT NOT NULL in an older deployment
+        if (
+          attemptPayload.date === null &&
+          /null value in column "?date"?/i.test(error.message)
+        ) {
+          attemptPayload.date = 'TBA';
+          continue;
+        }
+
+        if (
+          attemptPayload.date === 'TBA' &&
+          /invalid input syntax for type date/i.test(error.message)
+        ) {
+          lastErrorMessage =
+            'Database requires `events.date` to be nullable for TBA events. Run: ALTER TABLE public.events ALTER COLUMN date DROP NOT NULL;';
+          break;
         }
 
         if (error.code === '42501' || error.message.includes('row-level security')) {

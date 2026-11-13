@@ -111,7 +111,7 @@ CREATE TABLE IF NOT EXISTS public.events (
     description TEXT,
     blurb TEXT,
     event_type TEXT DEFAULT 'cypher',
-    date TEXT NOT NULL DEFAULT 'TBA', -- Stored as ISO YYYY-MM-DD or TBA
+    date TEXT DEFAULT 'TBA', -- Stored as ISO YYYY-MM-DD, NULL, or TBA
     time TEXT NOT NULL DEFAULT '5:30 PM – 8:00 PM IST',
     venue TEXT NOT NULL,
     location TEXT DEFAULT 'Mumbai',
@@ -134,6 +134,7 @@ ALTER TABLE public.events ADD COLUMN IF NOT EXISTS description TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS blurb TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS event_type TEXT DEFAULT 'cypher';
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS date TEXT;
+ALTER TABLE public.events ALTER COLUMN date DROP NOT NULL;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS time TEXT DEFAULT '5:30 PM – 8:00 PM IST';
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS venue TEXT;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS location TEXT DEFAULT 'Mumbai';
