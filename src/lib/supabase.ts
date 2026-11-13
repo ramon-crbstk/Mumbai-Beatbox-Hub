@@ -1722,6 +1722,33 @@ export async function updateEventRegistrationStatus(
   return false;
 }
 
+export async function updateEventEntry(
+  eventId: string,
+  newEntry: string
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = getSupabase();
+  if (!supabase) {
+    return { success: false, error: 'Supabase client is not available.' };
+  }
+
+  try {
+    const cleanEntry = newEntry.trim() || 'TBA';
+    const { error } = await supabase
+      .from('events')
+      .update({
+        entry: cleanEntry,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', eventId);
+
+    if (!error) return { success: true };
+    return { success: false, error: error.message };
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { success: false, error: msg };
+  }
+}
+
 export async function fetchUpcomingEvents(): Promise<EventItem[]> {
   const supabase = getSupabase();
   let rsvpCounts: Record<string, number> = {};
@@ -1783,7 +1810,7 @@ export async function fetchUpcomingEvents(): Promise<EventItem[]> {
             venue: d.venue,
             location: loc,
             area: loc,
-            entry: d.entry || 'Free Entry / Open to all',
+            entry: d.entry !== null && d.entry !== undefined && String(d.entry).trim() !== '' ? String(d.entry) : 'TBA',
             coverImageUrl: d.cover_image_url,
             cover_image_url: d.cover_image_url,
             registrationUrl: d.registration_url,
@@ -1894,7 +1921,7 @@ export async function saveUpcomingEvent(
     venue: item.venue,
     location: loc,
     area: loc,
-    entry: item.entry || 'Free Entry / Open to all',
+    entry: item.entry !== undefined && item.entry !== null && item.entry.trim() !== '' ? item.entry.trim() : 'TBA',
     isPublished: item.isPublished !== false && item.is_published !== false,
     is_published: item.isPublished !== false && item.is_published !== false,
     maxPeople: maxP,

@@ -133,14 +133,10 @@ export const EventsSection: React.FC<EventsSectionProps> = ({
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {evt.isBattleOrLive ? (
+                        {evt.isBattleOrLive && (
                           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#E4402A] text-white text-xs font-mono font-bold uppercase tracking-wider">
                             <Flame className="w-3.5 h-3.5" />
                             Battle & Jam
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 bg-[#14120F] text-white text-xs font-mono font-bold uppercase tracking-wider border-l-2 border-[#FFC93C]">
-                            Open Cypher
                           </span>
                         )}
 

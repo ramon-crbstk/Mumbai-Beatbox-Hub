@@ -20,7 +20,8 @@ import { EventItem, RegistrationStatus } from '../../types';
 import { 
   saveUpcomingEvent, 
   deleteUpcomingEvent, 
-  updateEventRegistrationStatus, 
+  updateEventRegistrationStatus,
+  updateEventEntry,
   formatEventDate, 
   toIsoDate 
 } from '../../lib/supabase';
@@ -37,6 +38,9 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [updatingStatusId, setUpdatingStatusId] = useState<string | null>(null);
+  const [editingEntryId, setEditingEntryId] = useState<string | null>(null);
+  const [inlineEntryValue, setInlineEntryValue] = useState('');
+  const [savingEntryId, setSavingEntryId] = useState<string | null>(null);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   // Form fields
@@ -78,7 +82,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
     setVenue(item.venue);
     setArea(item.location || item.area);
     setBlurb(item.description || item.blurb);
-    setEntry(item.entry || 'Free Entry / Open to all');
+    setEntry(item.entry ?? '');
     setMaxPeople(item.maxPeople !== null && item.maxPeople !== undefined ? String(item.maxPeople) : '');
     setRegistrationStatus((item.registrationStatus || item.registration_status || 'open') as RegistrationStatus);
     setIsBattleOrLive(Boolean(item.isBattleOrLive));
@@ -110,7 +114,7 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
       area: area.trim() || 'Mumbai',
       description: blurb.trim() || 'Open acoustic circle and vocal percussion cypher session.',
       blurb: blurb.trim() || 'Open acoustic circle and vocal percussion cypher session.',
-      entry: entry.trim() || 'Free Entry / Open to all',
+      entry: entry.trim() || 'TBA',
       maxPeople: parsedMaxPeople,
       max_people: parsedMaxPeople,
       registrationStatus,
@@ -159,6 +163,25 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
       setNotification({
         type: 'error',
         message: `Failed to update status to "${label}". Ensure Supabase session is active and the events table allows '${newStatus}'.`,
+      });
+    }
+  };
+
+  const handleSaveInlineEntry = async (eventId: string) => {
+    setSavingEntryId(eventId);
+    const res = await updateEventEntry(eventId, inlineEntryValue);
+    setSavingEntryId(null);
+    if (res.success) {
+      setEditingEntryId(null);
+      setNotification({
+        type: 'success',
+        message: `Entry updated to "${inlineEntryValue.trim() || 'TBA'}".`,
+      });
+      onRefresh();
+    } else {
+      setNotification({
+        type: 'error',
+        message: res.error || 'Failed to update Entry in Supabase.',
       });
     }
   };
@@ -307,14 +330,10 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     </div>
 
                     <div className="flex items-center gap-2">
-                      {event.isBattleOrLive ? (
+                      {event.isBattleOrLive && (
                         <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#E4402A] text-[#F4EFE4] text-[10px] font-mono font-bold uppercase tracking-wider">
                           <Flame className="w-3 h-3" />
                           Battle & Jam
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-[#14120F] text-[#E4402A] border border-[#E4402A]/40 text-[10px] font-mono font-bold uppercase tracking-wider">
-                          Open Cypher
                         </span>
                       )}
 
@@ -416,9 +435,54 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
                     {event.description || event.blurb}
                   </p>
 
-                  {/* Entry Badge */}
+                  {/* Inline Editable Entry Badge */}
                   <div className="text-[11px] font-mono text-[#F4EFE4]/60 mb-4">
-                    Entry: <span className="text-[#F4EFE4] font-bold">{event.entry}</span>
+                    {editingEntryId === event.id ? (
+                      <div className="flex flex-wrap items-center gap-1.5 bg-[#14120F] p-2 border border-[#E4402A]/40">
+                        <span className="text-[#E4402A] font-bold uppercase shrink-0">Entry:</span>
+                        <input
+                          type="text"
+                          value={inlineEntryValue}
+                          onChange={(e) => setInlineEntryValue(e.target.value)}
+                          placeholder="e.g. Free Entry / TBA / ₹299"
+                          className="flex-1 min-w-[140px] px-2 py-1 bg-[#1A1713] border border-[#F4EFE4]/20 text-[#F4EFE4] text-xs font-mono focus:border-[#E4402A] focus:outline-none"
+                          autoFocus
+                        />
+                        <button
+                          type="button"
+                          disabled={savingEntryId === event.id}
+                          onClick={() => handleSaveInlineEntry(event.id)}
+                          className="px-2 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-bold uppercase cursor-pointer"
+                        >
+                          {savingEntryId === event.id ? '...' : 'Save'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setEditingEntryId(null)}
+                          className="px-2 py-1 bg-[#25211B] text-[#F4EFE4]/70 hover:text-white text-[10px] uppercase cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          Entry: <span className="text-[#F4EFE4] font-bold">{event.entry || 'TBA'}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingEntryId(event.id);
+                            setInlineEntryValue(event.entry || '');
+                          }}
+                          className="inline-flex items-center gap-1 text-[10px] text-[#E4402A] hover:text-[#FFC93C] uppercase tracking-wider cursor-pointer"
+                          title="Edit Entry"
+                        >
+                          <Edit3 className="w-3 h-3" />
+                          <span>Edit Entry</span>
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -623,16 +687,37 @@ export function EventsTab({ items, onRefresh }: EventsTabProps) {
 
               {/* Entry Details */}
               <div>
-                <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A] mb-1.5">
-                  Entry Rule
-                </label>
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-1.5">
+                  <label className="block text-xs font-mono uppercase tracking-wider text-[#E4402A]">
+                    Entry / Pass Details
+                  </label>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    {['Free Entry / Open to all', 'TBA', 'Participant Pass / Paid'].map((preset) => (
+                      <button
+                        key={preset}
+                        type="button"
+                        onClick={() => setEntry(preset)}
+                        className={`px-2 py-0.5 text-[10px] font-mono border cursor-pointer transition-colors ${
+                          entry === preset
+                            ? 'bg-[#E4402A] text-[#14120F] border-[#E4402A] font-bold'
+                            : 'bg-[#14120F] text-[#F4EFE4]/70 border-[#F4EFE4]/20 hover:text-[#F4EFE4]'
+                        }`}
+                      >
+                        {preset === 'Free Entry / Open to all' ? 'Free Entry' : preset === 'Participant Pass / Paid' ? 'Paid Pass' : preset}
+                      </button>
+                    ))}
+                  </div>
+                </div>
                 <input
                   type="text"
                   value={entry}
                   onChange={(e) => setEntry(e.target.value)}
-                  placeholder="e.g., Free Entry / Open Mic"
+                  placeholder="e.g., Free Entry / Open to all, TBA, ₹299 Pass..."
                   className="w-full px-3.5 py-2.5 bg-[#14120F] border border-[#F4EFE4]/20 text-[#F4EFE4] font-sans text-sm focus:border-[#E4402A] focus:outline-none"
                 />
+                <span className="block text-[10px] font-mono text-[#F4EFE4]/50 mt-1">
+                  Leave empty to display as TBA, or type any custom entry/ticket text.
+                </span>
               </div>
 
               {/* Blurb / Description */}
